@@ -120,7 +120,7 @@ tnt_tt_set_hwaddr(struct device *dev, const char *hwaddr) {
 int
 tnt_tt_up(struct device *dev) {
 	dev->ifr.ifr_flags |= IFF_UP;
-	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &(dev->ifr)) == -1) {
+	if (ioctl(dev->ctrl_sock, SIOCSIFFLAGS, &(dev->ifr)) == -1) {
 		return -1;
 	}
 	return 0;
@@ -129,7 +129,7 @@ tnt_tt_up(struct device *dev) {
 int
 tnt_tt_down(struct device *dev) {
 	dev->ifr.ifr_flags &= ~IFF_UP;
-	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &(dev->ifr)) == -1) {
+	if (ioctl(dev->ctrl_sock, SIOCSIFFLAGS, &(dev->ifr)) == -1) {
 		return -1;
 	}
 	return 0;
