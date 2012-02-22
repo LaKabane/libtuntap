@@ -91,6 +91,19 @@ tnt_tt_sys_set_hwaddr(struct device *dev, const char *hwaddr) {
 }
 
 int
+tnt_tt_sys_set_mtu(struct device *dev, int mtu) {
+	int saved_mtu = dev->ifr.ifr_mtu;
+
+	dev->ifr.ifr_mtu = mtu;
+	/* Linux has a special flag for setting MTU */
+	if (ioctl(dev->ctrl_sock, SIOCSIFMTU, &(dev->ifr)) == -1) {
+		dev->ifr.ifr_mtu = saved_mtu;
+		return -1;
+	}
+	return 0;
+}
+
+int
 tnt_tt_sys_set_ip(struct device *dev, int iaddr, int imask) {
 	struct sockaddr_in addr;
 	struct sockaddr_in mask;

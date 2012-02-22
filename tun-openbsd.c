@@ -112,6 +112,19 @@ tnt_tt_sys_set_hwaddr(struct device *dev, const char *hwaddr) {
 }
 
 int
+tnt_tt_sys_set_mtu(struct device *dev, int mtu) {
+	int saved_mtu = dev->ifr.ifr_mtu;
+
+	dev->ifr.ifr_mtu = mtu;
+	/* There is no special flag for the MTU, use the general one */
+	if (ioctl(dev->ctrl_sock, SIOCSIFFLAGS, &(dev->ifr)) == -1) {
+		dev->ifr.ifr_mtu = saved_mtu;
+		return -1;
+	}
+	return 0;
+}
+
+int
 tnt_tt_sys_set_ip(struct device *dev, int iaddr, int imask) {
 	struct ifaliasreq ifa;
 	struct sockaddr_in addr;
