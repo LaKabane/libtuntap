@@ -17,13 +17,11 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
-#include <sys/param.h> /* For MAXPATHLEN */
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <net/if.h>
-#include <net/if_types.h>
-#include <net/if_tun.h>
+#include <linux/if.h>
+#include <linux/if_tun.h>
 #include <netinet/if_ether.h>
 
 #include <fcntl.h>
@@ -35,7 +33,6 @@
 #include "tun.h"
 
 #include <err.h>
-#include <errno.h>
 
 int
 tnt_tt_sys_start(struct device *dev, int mode, int tun) {
@@ -54,15 +51,22 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 	if (mode == TNT_TUNMODE_ETHERNET) {
 		dev->ifr.ifr_flags = IFF_TAP;
 		ifname = "tap%i";
-	} else (mode == TNT_TUNMODE_TUNNEL) {
+	} else if (mode == TNT_TUNMODE_TUNNEL) {
 		dev->ifr.ifr_flags = IFF_TUN;
 		ifname = "tun%i";
 	} else {
 		return -1;
 	}
-	dev->ifr.ifr_flags |= IFF_NOPI;
+	dev->ifr.ifr_flags |= IFF_NO_PI;
 
-	/* Set the interface name */
+	/* Configure the interface */
+	if (ioctl(fd, TUNSETIFF, &(dev->ifr)) == -1) {
+		warn("libtt (sys): ioctl TUNSETIFF");
+		return -1;
+	}
+
+	/* Set the interface name, if any */
+	/* XXX: Is this really necessary ? */
 	if (tun != TNT_TUNID_ANY) {
 		if (fd > TNT_TUNID_MAX) {
 			return -1;
@@ -71,10 +75,10 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 		    ifname, tun);
 	}
 
-	/* Set our modifications */
-	if (ioctl(fd, TUNSETIFF, &(dev->ifr)) == -1) {
-		warn("libtt (sys): ioctl TUNSETIFF");
-		return -1;
+	/* Get the internal parameters of ifr */
+	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &(dev->ifr)) == -1) {
+		warn("ioctl SIOCGIFFLAGS");
+	    	return -1;
 	}
 
 	return fd;
@@ -95,7 +99,6 @@ tnt_tt_sys_set_ip(struct device *dev, int iaddr, int imask) {
 	memset(&addr, '\0', sizeof addr);
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = iaddr;
-	addr.sin_len = sizeof addr;
 	memcpy(&dev->ifr.ifr_addr, &addr, sizeof dev->ifr.ifr_addr);
 	if (ioctl(dev->ctrl_sock, SIOCSIFADDR, &dev->ifr) == -1) {
 		warn("libtt (sys): ioctl SIOCSIFADDR");
@@ -105,7 +108,6 @@ tnt_tt_sys_set_ip(struct device *dev, int iaddr, int imask) {
 	memset(&addr, '\0', sizeof addr);
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = imask;
-	addr.sin_len = sizeof addr;
 	memcpy(&dev->ifr.ifr_netmask, &addr, sizeof dev->ifr.ifr_netmask);
 	if (ioctl(dev->ctrl_sock, SIOCSIFNETMASK, &dev->ifr) == -1) {
 		warn("libtt (sys): ioctl SIOCSIFNETMASK");

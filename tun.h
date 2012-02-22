@@ -17,7 +17,11 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-#include <net/if.h>
+#if defined Linux
+# include <linux/if.h>
+#else
+# include <net/if.h>
+#endif
 
 #ifndef TNETACLE_TUN_H_
 #define TNETACLE_TUN_H_
