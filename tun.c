@@ -20,6 +20,8 @@
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netinet/ether.h>
+
 
 #include <stdlib.h>
 #include <string.h>
@@ -112,7 +114,14 @@ tnt_tt_get_hwaddr(struct device *dev) {
 
 int
 tnt_tt_set_hwaddr(struct device *dev, const char *hwaddr) {
-	if (tnt_tt_sys_set_hwaddr(dev, hwaddr) == -1)
+	struct ether_addr *eth_addr;
+
+	eth_addr = ether_aton(hwaddr);
+	if (eth_addr == NULL) {
+		return -1;
+	}
+
+	if (tnt_tt_sys_set_hwaddr(dev, eth_addr) == -1)
 		return -1;
 	return 0;
 }

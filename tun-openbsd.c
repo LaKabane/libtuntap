@@ -96,14 +96,7 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 }
 
 int
-tnt_tt_sys_set_hwaddr(struct device *dev, const char *hwaddr) {
-	struct ether_addr *eth_addr;
-
-	eth_addr = ether_aton(hwaddr);
-	if (eth_addr == NULL) {
-		return -1;
-	}
-
+tnt_tt_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 	if (ioctl(dev->ctrl_sock, SIOCSIFADDR, eth_addr) == -1) {
 		perror(NULL);
 		return -1;

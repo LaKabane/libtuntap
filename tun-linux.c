@@ -23,6 +23,7 @@
 #include <linux/if.h>
 #include <linux/if_tun.h>
 #include <netinet/if_ether.h>
+#include <net/if_arp.h>
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -85,9 +86,16 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 }
 
 int
-tnt_tt_sys_set_hwaddr(struct device *dev, const char *hwaddr) {
-	warnx("libtt (sys): tnt_tt_sys_set_hwaddr: not implemented");
-	return -1;
+tnt_tt_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
+	dev->ifr.ifr_hwaddr.sa_family = ARPHRD_ETHER;
+	memcpy(dev->ifr.ifr_hwaddr.sa_data, eth_addr->ether_addr_octet, 6);
+
+	/* Linux has a special flag for setting the MAC address */
+	if (ioctl(dev->ctrl_sock, SIOCSIFHWADDR, &(dev->ifr)) == -1) {
+		warn("libtt (sys): ioctl SIOCSIFHWADDR");
+		return -1;
+	}
+	return 0;
 }
 
 int
