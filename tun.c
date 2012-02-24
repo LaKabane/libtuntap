@@ -20,8 +20,13 @@
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <netinet/ether.h>
-
+#if defined Linux
+# include <netinet/ether.h>
+#else
+# include <net/if.h>
+# include <netinet/in.h>
+# include <netinet/if_ether.h>
+#endif
 
 #include <stdlib.h>
 #include <string.h>
