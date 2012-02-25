@@ -71,7 +71,7 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 
 	/* Get the interface default values */
 	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &(dev->ifr)) == -1) {
-		warn("libtt: ioctl SIOCGIFFLAGS");
+		warn("libtt (sys): ioctl SIOCGIFFLAGS");
 		return -1;
 	}
 
@@ -88,7 +88,7 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 
 	/* Set back our modifications */
 	if (ioctl(dev->ctrl_sock, SIOCSIFFLAGS, &(dev->ifr)) == -1) {
-		warn("libtt: ioctl SIOCSIFFLAGS");
+		warn("libtt (sys): ioctl SIOCSIFFLAGS");
 		return -1;
 	}
 
@@ -97,21 +97,15 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 
 int
 tnt_tt_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
-	if (ioctl(dev->ctrl_sock, SIOCSIFADDR, eth_addr) == -1) {
-		perror(NULL);
-		return -1;
-	}
-	return 0;
-}
+	struct ifreq ifr;
 
-int
-tnt_tt_sys_set_mtu(struct device *dev, int mtu) {
-	int saved_mtu = dev->ifr.ifr_mtu;
-
-	dev->ifr.ifr_mtu = mtu;
-	/* There is no special flag for the MTU, use the general one */
-	if (ioctl(dev->ctrl_sock, SIOCSIFFLAGS, &(dev->ifr)) == -1) {
-		dev->ifr.ifr_mtu = saved_mtu;
+	memset(&ifr, '\0', sizeof ifr);
+	(void)strlcpy(ifr.ifr_name, dev->ifr.ifr_name, sizeof(ifr.ifr_name));
+	ifr.ifr_addr.sa_len = ETHER_ADDR_LEN;
+	ifr.ifr_addr.sa_family = AF_LINK;
+	memcpy(ifr.ifr_addr.sa_data, eth_addr, ETHER_ADDR_LEN);
+	if (ioctl(dev->ctrl_sock, SIOCSIFLLADDR, (caddr_t)&ifr) < 0) {
+	        warn("libtt (sys): ioctl SIOCSIFLLADDR");
 		return -1;
 	}
 	return 0;
@@ -124,12 +118,12 @@ tnt_tt_sys_set_ip(struct device *dev, int iaddr, int imask) {
 	struct sockaddr_in mask;
 
 	memset(&ifa, '\0', sizeof ifa);
-	strcpy(ifa.ifra_name, dev->ifr.ifr_name);
+	(void)strlcpy(ifa.ifra_name, dev->ifr.ifr_name, sizeof ifa.ifra_name);
 
 	/* Delete previously assigned address */
 	if (ioctl(dev->ctrl_sock, SIOCDIFADDR, &(dev->ifr)) == -1) {
-		warnx("libtt: ioctl SIOCDIFADDR");
-		return -1;
+		/* No previously assigned address, don't mind */
+		warn("libtt: ioctl SIOCDIFADDR");
 	}
 
 	/*

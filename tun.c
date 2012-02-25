@@ -156,7 +156,17 @@ tnt_tt_get_mtu(struct device *dev) {
 
 int
 tnt_tt_set_mtu(struct device *dev, int mtu) {
-	return tnt_tt_sys_set_mtu(dev, mtu);
+	int saved_mtu = dev->ifr.ifr_mtu;
+
+	if (dev->started == 0)
+		return 0;
+
+	dev->ifr.ifr_mtu = mtu;
+	if (ioctl(dev->ctrl_sock, SIOCSIFMTU, &(dev->ifr)) == -1) {
+		dev->ifr.ifr_mtu = saved_mtu;
+		return -1;
+	}
+	return 0;
 }
 
 int

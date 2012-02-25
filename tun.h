@@ -57,7 +57,6 @@ int		 tnt_tt_set_ip(struct device *, const char *, const char *);
 /* OS specific */
 int		tnt_tt_sys_start(struct device *, int, int);
 int		tnt_tt_sys_set_hwaddr(struct device *, struct ether_addr *);
-int		tnt_tt_sys_set_mtu(struct device *, int);
 int		tnt_tt_sys_set_ip(struct device *, int, int);
 
 #endif
