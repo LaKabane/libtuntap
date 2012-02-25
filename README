@@ -18,7 +18,7 @@ Supported Features
 
    * Creation of TUN _and_ TAP devices.
    * Autodetection of available TUN or TAP devices
-   * Getting and setting the MAC address of the device (Linux only)
+   * Getting and setting the MAC address of the device
    * Getting and setting the MTU of the device
    * Setting the device to up and down status
    * Setting the IPv4 address and netmask of the device
