@@ -44,8 +44,8 @@ struct device {
 
 struct device	*tnt_tt_init();
 void		 tnt_tt_destroy(struct device *);
+void		 tnt_tt_release(struct device *);
 int		 tnt_tt_start(struct device *, int, int);
-void		 tnt_tt_stop(struct device *);
 char		*tnt_tt_get_ifname(struct device *);
 char		*tnt_tt_get_hwaddr(struct device *);
 int		 tnt_tt_set_hwaddr(struct device *, const char *);

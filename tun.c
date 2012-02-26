@@ -53,9 +53,15 @@ tnt_tt_init(void) {
 
 void
 tnt_tt_destroy(struct device *dev) {
-	(void)memset(&(dev->ifr), '\0', sizeof(dev->ifr));
-	/* XXX: SIOCIFDESTROY ? */
-	free(dev);
+	struct ifreq ifr;
+
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)strlcpy(ifr.ifr_name, dev->ifr.ifr_name, sizeof dev->ifr.ifr_name);
+
+	if (ioctl(dev->ctrl_sock, SIOCIFDESTROY, &ifr) == -1)
+		warn("libtt: ioctl SIOCIFDESTROY");
+
+	tnt_tt_release(dev);
 }
 
 int
@@ -96,15 +102,12 @@ clean:
 }
 
 void
-tnt_tt_stop(struct device *dev) {
-	if (close(dev->tun_fd) == -1)
-		warn("libtt: close dev->tun_fd");
-	if (close(dev->ctrl_sock) == -1)
-		warn("libtt: close dev->ctrl_sock");
-	dev->tun_fd = -1;
-	dev->ctrl_sock = -1;
-	dev->started = 0;
+tnt_tt_release(struct device *dev) {
+	(void)close(dev->tun_fd);
+	(void)close(dev->ctrl_sock);
+	free(dev);
 }
+
 
 char *
 tnt_tt_get_ifname(struct device *dev) {
