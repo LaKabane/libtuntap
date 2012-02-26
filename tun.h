@@ -22,6 +22,7 @@
 #else
 # include <net/if.h>
 #endif
+#include <netinet/in.h>
 #include <netinet/if_ether.h>
 
 #ifndef TNETACLE_TUN_H_
