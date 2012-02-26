@@ -112,7 +112,7 @@ tnt_tt_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 }
 
 int
-tnt_tt_sys_set_ip(struct device *dev, int iaddr, int imask) {
+tnt_tt_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned int imask) {
 	struct ifaliasreq ifa;
 	struct sockaddr_in addr;
 	struct sockaddr_in mask;
