@@ -151,19 +151,32 @@ tnt_tt_down(struct device *dev) {
 
 int
 tnt_tt_get_mtu(struct device *dev) {
-	return dev->ifr.ifr_mtu;
-}
-
-int
-tnt_tt_set_mtu(struct device *dev, int mtu) {
-	int saved_mtu = dev->ifr.ifr_mtu;
+	struct ifreq ifr;
 
 	if (dev->started == 0)
 		return 0;
 
-	dev->ifr.ifr_mtu = mtu;
-	if (ioctl(dev->ctrl_sock, SIOCSIFMTU, &(dev->ifr)) == -1) {
-		dev->ifr.ifr_mtu = saved_mtu;
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)strlcpy(ifr.ifr_name, dev->ifr.ifr_name, sizeof dev->ifr.ifr_name);
+
+	if (ioctl(dev->ctrl_sock, SIOCGIFMTU, &ifr) == -1) {
+		return -1;
+	}
+	return ifr.ifr_mtu;
+}
+
+int
+tnt_tt_set_mtu(struct device *dev, int mtu) {
+	struct ifreq ifr;
+
+	if (dev->started == 0)
+		return 0;
+
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)strlcpy(ifr.ifr_name, dev->ifr.ifr_name, sizeof dev->ifr.ifr_name);
+	ifr.ifr_mtu = mtu;
+
+	if (ioctl(dev->ctrl_sock, SIOCSIFMTU, &ifr) == -1) {
 		return -1;
 	}
 	return 0;
