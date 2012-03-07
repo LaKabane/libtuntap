@@ -38,6 +38,7 @@ struct device {
 	int		tun_fd;
 	int		ctrl_sock;
 	int		started;
+	int		flags;     /* ifr.ifr_flags on Unix */
 	unsigned char	hwaddr[6];
 	struct ifreq	ifr;
 };
