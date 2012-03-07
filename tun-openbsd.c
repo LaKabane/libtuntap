@@ -92,6 +92,9 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 		return -1;
 	}
 
+	/* Save flags for tnt_tt_{up, down} */
+	dev->flags = dev->ifr.ifr_flags;
+
 	return fd;
 }
 

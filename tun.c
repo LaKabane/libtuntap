@@ -48,6 +48,7 @@ tnt_tt_init(void) {
 	dev->tun_fd = -1;
 	dev->ctrl_sock = -1;
 	dev->started = 0;
+	dev->flags = 0;
 	return dev;
 }
 
@@ -89,8 +90,8 @@ tnt_tt_start(struct device *dev, int mode, int tun) {
 
 	dev->tun_fd = fd;
 	dev->started = 1;
-	/* XXX: Status */
 	return 0;
+
 clean:
 	if (fd != -1) {
 		(void)close(fd);
@@ -136,19 +137,35 @@ tnt_tt_set_hwaddr(struct device *dev, const char *hwaddr) {
 
 int
 tnt_tt_up(struct device *dev) {
-	dev->ifr.ifr_flags |= IFF_UP;
-	if (ioctl(dev->ctrl_sock, SIOCSIFFLAGS, &(dev->ifr)) == -1) {
+	struct ifreq ifr;
+
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)strlcpy(ifr.ifr_name, dev->ifr.ifr_name, sizeof dev->ifr.ifr_name);
+	ifr.ifr_flags = dev->flags;
+	ifr.ifr_flags |= IFF_UP;
+
+	if (ioctl(dev->ctrl_sock, SIOCSIFFLAGS, &ifr) == -1) {
 		return -1;
 	}
+
+	dev->flags = ifr.ifr_flags;
 	return 0;
 }
 
 int
 tnt_tt_down(struct device *dev) {
+	struct ifreq ifr;
+
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)strlcpy(ifr.ifr_name, dev->ifr.ifr_name, sizeof dev->ifr.ifr_name);
+	ifr.ifr_flags = dev->flags;
 	dev->ifr.ifr_flags &= ~IFF_UP;
-	if (ioctl(dev->ctrl_sock, SIOCSIFFLAGS, &(dev->ifr)) == -1) {
+
+	if (ioctl(dev->ctrl_sock, SIOCSIFFLAGS, &ifr) == -1) {
 		return -1;
 	}
+
+	dev->flags = ifr.ifr_flags;
 	return 0;
 }
 
