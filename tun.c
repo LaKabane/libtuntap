@@ -167,7 +167,7 @@ tnt_tt_down(struct device *dev) {
 	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 	ifr.ifr_flags = dev->flags;
-	dev->ifr.ifr_flags &= ~IFF_UP;
+	ifr.ifr_flags &= ~IFF_UP;
 
 	if (ioctl(dev->ctrl_sock, SIOCSIFFLAGS, &ifr) == -1) {
 		return -1;
