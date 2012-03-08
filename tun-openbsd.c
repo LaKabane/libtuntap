@@ -102,11 +102,11 @@ int
 tnt_tt_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 	struct ifreq ifr;
 
-	memset(&ifr, '\0', sizeof ifr);
+	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)strlcpy(ifr.ifr_name, dev->ifr.ifr_name, sizeof(ifr.ifr_name));
 	ifr.ifr_addr.sa_len = ETHER_ADDR_LEN;
 	ifr.ifr_addr.sa_family = AF_LINK;
-	memcpy(ifr.ifr_addr.sa_data, eth_addr, ETHER_ADDR_LEN);
+	(void)memcpy(ifr.ifr_addr.sa_data, eth_addr, ETHER_ADDR_LEN);
 	if (ioctl(dev->ctrl_sock, SIOCSIFLLADDR, (caddr_t)&ifr) < 0) {
 	        warn("libtt (sys): ioctl SIOCSIFLLADDR");
 		return -1;
@@ -120,7 +120,7 @@ tnt_tt_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned int imask) {
 	struct sockaddr_in addr;
 	struct sockaddr_in mask;
 
-	memset(&ifa, '\0', sizeof ifa);
+	(void)memset(&ifa, '\0', sizeof ifa);
 	(void)strlcpy(ifa.ifra_name, dev->ifr.ifr_name, sizeof ifa.ifra_name);
 
 	/* Delete previously assigned address */
@@ -133,17 +133,17 @@ tnt_tt_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned int imask) {
 	 * Fill-in the destination address and netmask,
          * but don't care of the broadcast address
 	 */
-	memset(&addr, '\0', sizeof addr);
+	(void)memset(&addr, '\0', sizeof addr);
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = iaddr;
 	addr.sin_len = sizeof addr;
-	memcpy(&(ifa.ifra_addr), &addr, sizeof ifa.ifra_addr);
+	(void)memcpy(&(ifa.ifra_addr), &addr, sizeof ifa.ifra_addr);
 
-	memset(&mask, '\0', sizeof mask);
+	(void)memset(&mask, '\0', sizeof mask);
 	mask.sin_family = AF_INET;
 	mask.sin_addr.s_addr = imask;
 	mask.sin_len = sizeof mask;
-	memcpy(&ifa.ifra_mask, &mask, sizeof ifa.ifra_mask);
+	(void)memcpy(&ifa.ifra_mask, &mask, sizeof ifa.ifra_mask);
 
 	/* Simpler than calling SIOCSIFADDR and/or SIOCSIFBRDADDR */
 	if (ioctl(dev->ctrl_sock, SIOCAIFADDR, &ifa) == -1) {
