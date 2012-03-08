@@ -44,7 +44,7 @@ tnt_tt_init(void) {
 	if ((dev = malloc(sizeof(*dev))) == NULL)
 		return NULL;
 
-	(void)memset(&(dev->ifr), '\0', sizeof dev->ifr);
+	(void)memset(dev->if_name, '\0', sizeof dev->if_name);
 	(void)memset(dev->hwaddr, '\0', sizeof dev->hwaddr);
 	dev->tun_fd = -1;
 	dev->ctrl_sock = -1;

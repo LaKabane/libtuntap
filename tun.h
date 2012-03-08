@@ -40,7 +40,6 @@ struct device {
 	int		flags;     /* ifr.ifr_flags on Unix */
 	unsigned char	hwaddr[6];
 	char		if_name[IFNAMSIZ];
-	struct ifreq	ifr;
 };
 
 struct device	*tnt_tt_init();

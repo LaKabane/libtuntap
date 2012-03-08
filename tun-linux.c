@@ -39,6 +39,7 @@ int
 tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 	int fd;
 	char *ifname;
+	struct ifreq ifr;
 
 	fd = -1;
 	if ((fd = open("/dev/net/tun", O_RDWR)) == -1) {
@@ -46,22 +47,22 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 		return -1;
 	}
 
-	(void)memset(&(dev->ifr), '\0', sizeof dev->ifr);
+	(void)memset(&ifr, '\0', sizeof ifr);
 
         /* Set the mode: tun or tap */
 	if (mode == TNT_TUNMODE_ETHERNET) {
-		dev->ifr.ifr_flags = IFF_TAP;
+		ifr.ifr_flags = IFF_TAP;
 		ifname = "tap%i";
 	} else if (mode == TNT_TUNMODE_TUNNEL) {
-		dev->ifr.ifr_flags = IFF_TUN;
+		ifr.ifr_flags = IFF_TUN;
 		ifname = "tun%i";
 	} else {
 		return -1;
 	}
-	dev->ifr.ifr_flags |= IFF_NO_PI;
+	ifr.ifr_flags |= IFF_NO_PI;
 
 	/* Configure the interface */
-	if (ioctl(fd, TUNSETIFF, &(dev->ifr)) == -1) {
+	if (ioctl(fd, TUNSETIFF, &ifr) == -1) {
 		warn("libtt (sys): ioctl TUNSETIFF");
 		return -1;
 	}
@@ -71,22 +72,22 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 		if (fd > TNT_TUNID_MAX) {
 			return -1;
 		}
-		snprintf(dev->ifr.ifr_name, sizeof dev->ifr.ifr_name,
+		(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name,
 		    ifname, tun);
 	}
 
 	/* Get the internal parameters of ifr */
-	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &(dev->ifr)) == -1) {
+	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &ifr) == -1) {
 		warn("ioctl SIOCGIFFLAGS");
 	    	return -1;
 	}
 
 	/* Save flags for tnt_tt_{up, down} */
-	dev->flags = dev->ifr.ifr_flags;
+	dev->flags = ifr.ifr_flags;
 
 	/* Save the interface name */
-	(void)strlcpy(dev->if_name, dev->ifr.ifr_name,
-	    sizeof dev->ifr.ifr_name);
+	(void)strlcpy(dev->if_name, ifr.ifr_name,
+	    sizeof ifr.ifr_name);
 	return fd;
 }
 

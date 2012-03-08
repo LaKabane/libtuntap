@@ -39,6 +39,7 @@
 
 int
 tnt_tt_sys_start(struct device *dev, int mode, int tun) {
+	struct ifreq ifr;
 	char name[MAXPATHLEN];
 	int fd;
 
@@ -66,36 +67,36 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 	}
 
 	/* Set the interface name */
-	(void)snprintf(dev->ifr.ifr_name, sizeof dev->ifr.ifr_name,
-	    "tun%i", tun);
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name, "tun%i", tun);
 	/* And save it */
-	(void)snprintf(dev->if_name, sizeof dev->if_name, "tun%i", tun);
+	(void)strlcpy(dev->if_name, ifr.ifr_name, sizeof ifr.ifr_name);
 
 	/* Get the interface default values */
-	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &(dev->ifr)) == -1) {
+	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &ifr) == -1) {
 		warn("libtt (sys): ioctl SIOCGIFFLAGS");
 		return -1;
 	}
 
         /* Set the mode: tun or tap */
 	if (mode == TNT_TUNMODE_ETHERNET) {
-		dev->ifr.ifr_flags |= IFF_LINK0;
+		ifr.ifr_flags |= IFF_LINK0;
 	}
 	else if (mode == TNT_TUNMODE_TUNNEL) {
-		dev->ifr.ifr_flags &= ~IFF_LINK0;
+		ifr.ifr_flags &= ~IFF_LINK0;
 	}
 	else {
 		return -1;
 	}
 
 	/* Set back our modifications */
-	if (ioctl(dev->ctrl_sock, SIOCSIFFLAGS, &(dev->ifr)) == -1) {
+	if (ioctl(dev->ctrl_sock, SIOCSIFFLAGS, &ifr) == -1) {
 		warn("libtt (sys): ioctl SIOCSIFFLAGS");
 		return -1;
 	}
 
 	/* Save flags for tnt_tt_{up, down} */
-	dev->flags = dev->ifr.ifr_flags;
+	dev->flags = ifr.ifr_flags;
 
 	return fd;
 }
@@ -130,14 +131,19 @@ tnt_tt_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 int
 tnt_tt_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned int imask) {
 	struct ifaliasreq ifa;
+	struct ifreq ifr;
 	struct sockaddr_in addr;
 	struct sockaddr_in mask;
 
 	(void)memset(&ifa, '\0', sizeof ifa);
 	(void)strlcpy(ifa.ifra_name, dev->if_name, sizeof dev->if_name);
 
+	/* XXX: Will probably fail, we need the old IP address */
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
+
 	/* Delete previously assigned address */
-	if (ioctl(dev->ctrl_sock, SIOCDIFADDR, &(dev->ifr)) == -1) {
+	if (ioctl(dev->ctrl_sock, SIOCDIFADDR, &ifr) == -1) {
 		/* No previously assigned address, don't mind */
 		warn("libtt: ioctl SIOCDIFADDR");
 	}
