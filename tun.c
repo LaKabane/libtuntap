@@ -111,9 +111,10 @@ tnt_tt_get_ifname(struct device *dev) {
 
 char *
 tnt_tt_get_hwaddr(struct device *dev) {
-	/* TODO */
-	(void)dev;
-	return NULL;
+	struct ether_addr eth_attr;
+
+	(void)memcpy(&eth_attr, dev->hwaddr, sizeof dev->hwaddr);
+	return ether_ntoa(&eth_attr);
 }
 
 int
@@ -129,11 +130,13 @@ tnt_tt_set_hwaddr(struct device *dev, const char *hwaddr) {
 			eth_rand.ether_addr_octet[i] = (unsigned char)random();
 		eth_rand.ether_addr_octet[0] &= 0xfc;
 		eth_addr = &eth_rand;
+		(void)memcpy(dev->hwaddr, eth_addr, 6);
 	} else {
 		eth_addr = ether_aton(hwaddr);
 		if (eth_addr == NULL) {
 			return -1;
 		}
+		(void)memcpy(dev->hwaddr, eth_addr, 6);
 	}
 
 	if (tnt_tt_sys_set_hwaddr(dev, eth_addr) == -1)
