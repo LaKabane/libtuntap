@@ -66,8 +66,10 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 	}
 
 	/* Set the interface name */
-	snprintf(dev->ifr.ifr_name, sizeof(dev->ifr.ifr_name),
+	(void)snprintf(dev->ifr.ifr_name, sizeof dev->ifr.ifr_name,
 	    "tun%i", tun);
+	/* And save it */
+	(void)snprintf(dev->if_name, sizeof dev->if_name, "tun%i", tun);
 
 	/* Get the interface default values */
 	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &(dev->ifr)) == -1) {
@@ -103,7 +105,7 @@ tnt_tt_sys_destroy(struct device *dev) {
 	struct ifreq ifr;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev->ifr.ifr_name, sizeof dev->ifr.ifr_name);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 
 	if (ioctl(dev->ctrl_sock, SIOCIFDESTROY, &ifr) == -1)
 		warn("libtt: ioctl SIOCIFDESTROY");
@@ -114,7 +116,7 @@ tnt_tt_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 	struct ifreq ifr;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev->ifr.ifr_name, sizeof(ifr.ifr_name));
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 	ifr.ifr_addr.sa_len = ETHER_ADDR_LEN;
 	ifr.ifr_addr.sa_family = AF_LINK;
 	(void)memcpy(ifr.ifr_addr.sa_data, eth_addr, ETHER_ADDR_LEN);
@@ -132,7 +134,7 @@ tnt_tt_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned int imask) {
 	struct sockaddr_in mask;
 
 	(void)memset(&ifa, '\0', sizeof ifa);
-	(void)strlcpy(ifa.ifra_name, dev->ifr.ifr_name, sizeof ifa.ifra_name);
+	(void)strlcpy(ifa.ifra_name, dev->if_name, sizeof dev->if_name);
 
 	/* Delete previously assigned address */
 	if (ioctl(dev->ctrl_sock, SIOCDIFADDR, &(dev->ifr)) == -1) {

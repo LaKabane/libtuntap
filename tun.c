@@ -105,8 +105,7 @@ tnt_tt_release(struct device *dev) {
 
 char *
 tnt_tt_get_ifname(struct device *dev) {
-	/* XXX: Not portable outside of UNIX systems */
-	return dev->ifr.ifr_name;
+	return dev->if_name;
 }
 
 char *
@@ -135,7 +134,7 @@ tnt_tt_up(struct device *dev) {
 	struct ifreq ifr;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev->ifr.ifr_name, sizeof dev->ifr.ifr_name);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 	ifr.ifr_flags = dev->flags;
 	ifr.ifr_flags |= IFF_UP;
 
@@ -152,7 +151,7 @@ tnt_tt_down(struct device *dev) {
 	struct ifreq ifr;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev->ifr.ifr_name, sizeof dev->ifr.ifr_name);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 	ifr.ifr_flags = dev->flags;
 	dev->ifr.ifr_flags &= ~IFF_UP;
 
@@ -172,7 +171,7 @@ tnt_tt_get_mtu(struct device *dev) {
 		return 0;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev->ifr.ifr_name, sizeof dev->ifr.ifr_name);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 
 	if (ioctl(dev->ctrl_sock, SIOCGIFMTU, &ifr) == -1) {
 		return -1;
@@ -188,7 +187,7 @@ tnt_tt_set_mtu(struct device *dev, int mtu) {
 		return 0;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev->ifr.ifr_name, sizeof dev->ifr.ifr_name);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 	ifr.ifr_mtu = mtu;
 
 	if (ioctl(dev->ctrl_sock, SIOCSIFMTU, &ifr) == -1) {
