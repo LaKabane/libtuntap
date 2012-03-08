@@ -30,6 +30,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "tun.h"
@@ -117,11 +118,22 @@ tnt_tt_get_hwaddr(struct device *dev) {
 
 int
 tnt_tt_set_hwaddr(struct device *dev, const char *hwaddr) {
-	struct ether_addr *eth_addr;
+	struct ether_addr *eth_addr, eth_rand;
 
-	eth_addr = ether_aton(hwaddr);
-	if (eth_addr == NULL) {
-		return -1;
+	if (strcmp(hwaddr, "random") == 0) {
+		unsigned int i;
+
+		i = 0;
+		srandom(time(NULL));
+		for (; i < sizeof eth_rand.ether_addr_octet; ++i)
+			eth_rand.ether_addr_octet[i] = (unsigned char)random();
+		eth_rand.ether_addr_octet[0] &= 0xfc;
+		eth_addr = &eth_rand;
+	} else {
+		eth_addr = ether_aton(hwaddr);
+		if (eth_addr == NULL) {
+			return -1;
+		}
 	}
 
 	if (tnt_tt_sys_set_hwaddr(dev, eth_addr) == -1)
