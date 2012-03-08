@@ -48,7 +48,6 @@ tnt_tt_init(void) {
 	(void)memset(dev->hwaddr, '\0', sizeof dev->hwaddr);
 	dev->tun_fd = -1;
 	dev->ctrl_sock = -1;
-	dev->started = 0;
 	dev->flags = 0;
 	return dev;
 }
@@ -66,7 +65,8 @@ tnt_tt_start(struct device *dev, int mode, int tun) {
 
 	fd = sock = -1;
 	
-	if (dev->started == 1) {
+	/* Don't re-initialise a previously started device */
+	if (dev->tun_fd != -1) {
 		return -1;
 	}
 
@@ -83,7 +83,6 @@ tnt_tt_start(struct device *dev, int mode, int tun) {
 	}
 
 	dev->tun_fd = fd;
-	dev->started = 1;
 	return 0;
 
 clean:
@@ -182,7 +181,8 @@ int
 tnt_tt_get_mtu(struct device *dev) {
 	struct ifreq ifr;
 
-	if (dev->started == 0)
+	/* Only accept started device */
+	if (dev->tun_fd == -1)
 		return 0;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
@@ -198,7 +198,8 @@ int
 tnt_tt_set_mtu(struct device *dev, int mtu) {
 	struct ifreq ifr;
 
-	if (dev->started == 0)
+	/* Only accept started device */
+	if (dev->tun_fd == -1)
 		return 0;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
