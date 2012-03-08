@@ -36,7 +36,7 @@ main(void) {
 	}
 
 	hwaddr = tnt_tt_get_hwaddr(dev);
-	if (strcmp(hwaddr, "00:0C:29:A8:D0:FA") != 0)
+	if (strcasecmp(hwaddr, "00:0C:29:A8:D0:FA") != 0)
 		return 1;
 
 	tnt_tt_destroy(dev);
