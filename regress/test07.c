@@ -23,16 +23,21 @@
 
 int
 main(void) {
+	char *hwaddr;
 	struct device *dev;
 
 	dev = tnt_tt_init();
-	if (tnt_tt_start(dev, TNT_TUNMODE_ETHERNET, 0) == -1) {
+	if (tnt_tt_start(dev, TNT_TUNMODE_ETHERNET, TNT_TUNID_ANY) == -1) {
 		return 1;
 	}
 
-	if (tnt_tt_set_hwaddr(dev, "00:0C:29:A8:D0:FA") == -1) {
+	if (tnt_tt_set_hwaddr(dev, "54:1a:13:ef:b6:b5") == -1) {
 		return 1;
 	}
+
+	hwaddr = tnt_tt_get_hwaddr(dev);
+	if (strcasecmp(hwaddr, "54:1a:13:ef:b6:b5") != 0)
+		return 1;
 
 	tnt_tt_destroy(dev);
 	return 0;

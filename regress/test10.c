@@ -26,11 +26,11 @@ main(void) {
 	struct device *dev;
 
 	dev = tnt_tt_init();
-	if (tnt_tt_start(dev, TNT_TUNMODE_TUNNEL, 0) == -1) {
+	if (tnt_tt_start(dev, TNT_TUNMODE_TUNNEL, TNT_TUNID_ANY) == -1) {
 		return 1;
 	}
 
-	if (tnt_tt_up(dev) == -1) {
+	if (tnt_tt_set_hwaddr(dev, "random") == -1) {
 		return 1;
 	}
 

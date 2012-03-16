@@ -26,7 +26,7 @@ main(void) {
 	struct device *dev;
 
 	dev = tnt_tt_init();
-	if (tnt_tt_start(dev, TNT_TUNMODE_ETHERNET, 0) == -1) {
+	if (tnt_tt_start(dev, TNT_TUNMODE_ETHERNET, TNT_TUNID_ANY) == -1) {
 		return 1;
 	}
 

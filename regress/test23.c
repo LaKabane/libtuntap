@@ -21,21 +21,16 @@
 
 #include "tuntap.h"
 
-/*
- * Test 19:
- *   Set a stupid netmask should fail and a warning should be emitted.
- */
-
 int
 main(void) {
 	struct device *dev;
 
 	dev = tnt_tt_init();
-	if (tnt_tt_start(dev, TNT_TUNMODE_TUNNEL, 0) == -1) {
+	if (tnt_tt_start(dev, TNT_TUNMODE_ETHERNET, TNT_TUNID_ANY) == -1) {
 		return 1;
 	}
 
-	if (tnt_tt_set_ip(dev, "1.2.3.4", "Chipot !") == -1) {
+	if (tnt_tt_set_ip(dev, "1.2.3.4", NULL) == -1) {
 		tnt_tt_destroy(dev);
 		return 0;
 	}

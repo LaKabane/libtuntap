@@ -21,12 +21,6 @@
 
 #include "tuntap.h"
 
-/*
- * Test 16:
- *   Start a device with a stupid tun id should fail.
- *   Note: Depending of the OS, one or two warnings can be printed.
- */
-
 int
 main(void) {
 	struct device *dev;

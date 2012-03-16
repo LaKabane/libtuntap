@@ -23,7 +23,6 @@
 
 int
 main(void) {
-	int mtu;
 	struct device *dev;
 
 	dev = tnt_tt_init();
@@ -31,16 +30,11 @@ main(void) {
 		return 1;
 	}
 
-	if (tnt_tt_set_mtu(dev, 1400) == -1) {
-		return 1;
+	if (tnt_tt_set_ip(dev, "Chipot", "255.255.255.0") == -1) {
+		tnt_tt_destroy(dev);
+		return 0;
 	}
 
-	mtu = tnt_tt_get_mtu(dev);
-	if (mtu != 1400) {
-		return 1;
-	}
-
-	tnt_tt_destroy(dev);
-	return 0;
+	return 1;
 }
 

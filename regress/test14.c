@@ -21,25 +21,24 @@
 
 #include "tuntap.h"
 
-/*
- * Test 14:
- *   A double start should fail.
- */
-
 int
 main(void) {
 	struct device *dev;
 
 	dev = tnt_tt_init();
-	if (tnt_tt_start(dev, TNT_TUNMODE_ETHERNET, TNT_TUNID_ANY) == -1) {
-	    return 1;
+	if (tnt_tt_start(dev, TNT_TUNMODE_TUNNEL, TNT_TUNID_ANY) == -1) {
+		return 1;
 	}
 
-	if (tnt_tt_start(dev, TNT_TUNMODE_ETHERNET, TNT_TUNID_ANY) == -1) {
-	    tnt_tt_destroy(dev);
-	    return 0;
+	if (tnt_tt_up(dev) == -1) {
+		return 1;
 	}
 
-	return 1;
+	if (tnt_tt_set_ip(dev, "1.2.3.4", "255.255.255.0") == -1) {
+		return 1;
+	}
+
+	tnt_tt_destroy(dev);
+	return 0;
 }
 
