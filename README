@@ -28,11 +28,11 @@ Supported Systems
 
    * OpenBSD
    * Linux
+   * NetBSD
 
 Soon Supported Systems
 ----------------------
 
-   * NetBSD
    * FreeBSD
    * Darwin
    * Windows
