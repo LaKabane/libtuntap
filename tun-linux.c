@@ -67,7 +67,6 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 	}
 
 	/* Set the interface name, if any */
-	/* XXX: Is this really necessary ? */
 	if (tun != TNT_TUNID_ANY) {
 		if (fd > TNT_TUNID_MAX) {
 			return -1;
@@ -82,30 +81,31 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 	    	return -1;
 	}
 
+	/* Save flags for tnt_tt_{up, down} */
+	dev->flags = dev->ifr.ifr_flags;
+
 	return fd;
+}
+
+void
+tnt_tt_sys_destroy(struct device *dev) {
+	/* Linux automatically remove unused interface */
+	(void)dev;
 }
 
 int
 tnt_tt_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
-	dev->ifr.ifr_hwaddr.sa_family = ARPHRD_ETHER;
-	memcpy(dev->ifr.ifr_hwaddr.sa_data, eth_addr->ether_addr_octet, 6);
+	struct ifreq ifr;
+
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)strlcpy(ifr.ifr_name, dev->ifr.ifr_name, sizeof(ifr.ifr_name));
+
+	ifr.ifr_hwaddr.sa_family = ARPHRD_ETHER;
+	(void)memcpy(ifr.ifr_hwaddr.sa_data, eth_addr->ether_addr_octet, 6);
 
 	/* Linux has a special flag for setting the MAC address */
-	if (ioctl(dev->ctrl_sock, SIOCSIFHWADDR, &(dev->ifr)) == -1) {
+	if (ioctl(dev->ctrl_sock, SIOCSIFHWADDR, &ifr) == -1) {
 		warn("libtt (sys): ioctl SIOCSIFHWADDR");
-		return -1;
-	}
-	return 0;
-}
-
-int
-tnt_tt_sys_set_mtu(struct device *dev, int mtu) {
-	int saved_mtu = dev->ifr.ifr_mtu;
-
-	dev->ifr.ifr_mtu = mtu;
-	/* Linux has a special flag for setting MTU */
-	if (ioctl(dev->ctrl_sock, SIOCSIFMTU, &(dev->ifr)) == -1) {
-		dev->ifr.ifr_mtu = saved_mtu;
 		return -1;
 	}
 	return 0;
@@ -114,23 +114,30 @@ tnt_tt_sys_set_mtu(struct device *dev, int mtu) {
 int
 tnt_tt_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned int imask) {
 	struct sockaddr_in addr;
-	struct sockaddr_in mask;
+	struct ifreq ifr;
+
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)strlcpy(ifr.ifr_name, dev->ifr.ifr_name, sizeof(ifr.ifr_name));
 
 	/* Linux doesn't have SIOCDIFADDR, so let just do two calls */
-	memset(&addr, '\0', sizeof addr);
+	(void)memset(&addr, '\0', sizeof addr);
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = iaddr;
-	memcpy(&dev->ifr.ifr_addr, &addr, sizeof dev->ifr.ifr_addr);
-	if (ioctl(dev->ctrl_sock, SIOCSIFADDR, &dev->ifr) == -1) {
+	(void)memcpy(&ifr.ifr_addr, &addr, sizeof ifr.ifr_addr);
+	if (ioctl(dev->ctrl_sock, SIOCSIFADDR, &ifr) == -1) {
 		warn("libtt (sys): ioctl SIOCSIFADDR");
 		return -1;
 	}
 	
-	memset(&addr, '\0', sizeof addr);
+	/* Reinit the struct ifr */
+	(void)memset(&ifr.ifr_addr, '\0', sizeof ifr.ifr_addr);
+
+	/* Netmask */
+	(void)memset(&addr, '\0', sizeof addr);
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = imask;
-	memcpy(&dev->ifr.ifr_netmask, &addr, sizeof dev->ifr.ifr_netmask);
-	if (ioctl(dev->ctrl_sock, SIOCSIFNETMASK, &dev->ifr) == -1) {
+	(void)memcpy(&ifr.ifr_netmask, &addr, sizeof ifr.ifr_netmask);
+	if (ioctl(dev->ctrl_sock, SIOCSIFNETMASK, &ifr) == -1) {
 		warn("libtt (sys): ioctl SIOCSIFNETMASK");
 		return -1;
 	}

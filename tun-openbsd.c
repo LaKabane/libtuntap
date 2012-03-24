@@ -98,6 +98,17 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 	return fd;
 }
 
+void
+tnt_tt_sys_destroy(struct device *dev) {
+	struct ifreq ifr;
+
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)strlcpy(ifr.ifr_name, dev->ifr.ifr_name, sizeof dev->ifr.ifr_name);
+
+	if (ioctl(dev->ctrl_sock, SIOCIFDESTROY, &ifr) == -1)
+		warn("libtt: ioctl SIOCIFDESTROY");
+}
+
 int
 tnt_tt_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 	struct ifreq ifr;
