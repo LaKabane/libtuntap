@@ -18,7 +18,8 @@
 
 #include <stdio.h>
 #include <unistd.h>
-#include "tun.h"
+
+#include "tuntap.h"
 
 int
 main(void) {
