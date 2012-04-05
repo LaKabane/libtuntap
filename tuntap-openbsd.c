@@ -32,7 +32,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "tun.h"
+#include "tuntap.h"
 
 #include <err.h>
 #include <errno.h>

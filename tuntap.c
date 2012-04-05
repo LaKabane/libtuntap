@@ -33,7 +33,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "tun.h"
+#include "tuntap.h"
 
 #include <err.h>
 
