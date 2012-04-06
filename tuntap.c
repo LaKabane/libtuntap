@@ -28,14 +28,13 @@
 # include <netinet/if_ether.h>
 #endif
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
 
 #include "tuntap.h"
-
-#include <err.h>
 
 struct device *
 tnt_tt_init(void) {
@@ -220,14 +219,14 @@ tnt_tt_set_ip(struct device *dev, const char *saddr, const char *smask) {
 
 	/* Destination address */
 	if (inet_pton(AF_INET, saddr, &(sa.sin_addr)) != 1) {
-		warn("tnt_tt_set_ip (IPv4)");
+		fprintf(stderr, "libtuntap: tnt_tt_set_ip (IPv4) addr\n");
 		return -1;
 	}
 	addr = sa.sin_addr.s_addr;
 
 	/* Netmask */
 	if (inet_pton(AF_INET, smask, &(sa.sin_addr)) != 1) {
-		warn("tnt_tt_set_ip (IPv4)");
+		fprintf(stderr, "libtuntap: tnt_tt_set_ip (IPv4) netmask\n");
 		return -1;
 	}
 	mask = sa.sin_addr.s_addr;

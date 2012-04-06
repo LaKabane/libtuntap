@@ -33,8 +33,6 @@
 
 #include "tuntap.h"
 
-#include <err.h>
-
 int
 tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 	int fd;
@@ -43,7 +41,7 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 
 	fd = -1;
 	if ((fd = open("/dev/net/tun", O_RDWR)) == -1) {
-		warn("libtt (sys): open /dev/net/tun");
+		(void)fprintf(stderr, "libtuntap (sys): open /dev/net/tun\n");
 		return -1;
 	}
 
@@ -63,7 +61,7 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 
 	/* Configure the interface */
 	if (ioctl(fd, TUNSETIFF, &ifr) == -1) {
-		warn("libtt (sys): ioctl TUNSETIFF");
+		(void)fprintf(stderr, "libtuntap (sys): ioctl TUNSETIFF\n");
 		return -1;
 	}
 
@@ -78,7 +76,7 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 
 	/* Get the internal parameters of ifr */
 	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &ifr) == -1) {
-		warn("ioctl SIOCGIFFLAGS");
+		(void)fprintf(stderr, "libtuntap (sys): ioctl SIOCGIFFLAGS\n");
 	    	return -1;
 	}
 
@@ -109,7 +107,7 @@ tnt_tt_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 
 	/* Linux has a special flag for setting the MAC address */
 	if (ioctl(dev->ctrl_sock, SIOCSIFHWADDR, &ifr) == -1) {
-		warn("libtt (sys): ioctl SIOCSIFHWADDR");
+		(void)fprintf(stderr, "libtuntap (sys): ioctl SIOCSIFHWADDR\n");
 		return -1;
 	}
 	return 0;
@@ -129,7 +127,7 @@ tnt_tt_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned int imask) {
 	addr.sin_addr.s_addr = iaddr;
 	(void)memcpy(&ifr.ifr_addr, &addr, sizeof ifr.ifr_addr);
 	if (ioctl(dev->ctrl_sock, SIOCSIFADDR, &ifr) == -1) {
-		warn("libtt (sys): ioctl SIOCSIFADDR");
+		(void)fprintf(stderr, "libtuntap (sys): ioctl SIOCSIFADDR\n");
 		return -1;
 	}
 	
@@ -142,7 +140,7 @@ tnt_tt_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned int imask) {
 	addr.sin_addr.s_addr = imask;
 	(void)memcpy(&ifr.ifr_netmask, &addr, sizeof ifr.ifr_netmask);
 	if (ioctl(dev->ctrl_sock, SIOCSIFNETMASK, &ifr) == -1) {
-		warn("libtt (sys): ioctl SIOCSIFNETMASK");
+		(void)fprintf(stderr, "libtuntap (sys): ioctl SIOCSIFNETMASK\n");
 		return -1;
 	}
 

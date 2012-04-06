@@ -34,9 +34,6 @@
 
 #include "tuntap.h"
 
-#include <err.h>
-#include <errno.h>
-
 int
 tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 	struct ifreq ifr;
@@ -62,7 +59,7 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 	}
 
 	if (fd < 0 || fd == 256) {
-		warnx("libtt: Can't find a tun entry");
+		(void)fprintf(stderr, "libtuntap (sys): Can't find a tun entry\n");
 		return -1;
 	}
 
@@ -74,7 +71,7 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 
 	/* Get the interface default values */
 	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &ifr) == -1) {
-		warn("libtt (sys): ioctl SIOCGIFFLAGS");
+		(void)fprintf(stderr, "libtuntap (sys): ioctl SIOCGIFFLAGS\n");
 		return -1;
 	}
 
@@ -91,7 +88,7 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 
 	/* Set back our modifications */
 	if (ioctl(dev->ctrl_sock, SIOCSIFFLAGS, &ifr) == -1) {
-		warn("libtt (sys): ioctl SIOCSIFFLAGS");
+		(void)fprintf(stderr, "libtuntap (sys): ioctl SIOCSIFFLAGS\n");
 		return -1;
 	}
 
@@ -109,7 +106,7 @@ tnt_tt_sys_destroy(struct device *dev) {
 	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 
 	if (ioctl(dev->ctrl_sock, SIOCIFDESTROY, &ifr) == -1)
-		warn("libtt: ioctl SIOCIFDESTROY");
+		(void)fprintf(stderr, "libtuntap (sys): ioctl SIOCIFDESTROY\n");
 }
 
 int
@@ -122,7 +119,7 @@ tnt_tt_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 	ifr.ifr_addr.sa_family = AF_LINK;
 	(void)memcpy(ifr.ifr_addr.sa_data, eth_addr, ETHER_ADDR_LEN);
 	if (ioctl(dev->ctrl_sock, SIOCSIFLLADDR, (caddr_t)&ifr) < 0) {
-	        warn("libtt (sys): ioctl SIOCSIFLLADDR");
+	        (void)fprintf(stderr, "libtuntap (sys): ioctl SIOCSIFLLADDR\n");
 		return -1;
 	}
 	return 0;
@@ -145,7 +142,7 @@ tnt_tt_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned int imask) {
 	/* Delete previously assigned address */
 	if (ioctl(dev->ctrl_sock, SIOCDIFADDR, &ifr) == -1) {
 		/* No previously assigned address, don't mind */
-		warn("libtt: ioctl SIOCDIFADDR");
+		(void)fprintf(stderr, "libtuntap (sys): ioctl SIOCDIFADDR\n");
 	}
 
 	/*
@@ -166,7 +163,7 @@ tnt_tt_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned int imask) {
 
 	/* Simpler than calling SIOCSIFADDR and/or SIOCSIFBRDADDR */
 	if (ioctl(dev->ctrl_sock, SIOCAIFADDR, &ifa) == -1) {
-		warn("libtt (sys): ioctl SIOCAIFADDR");
+		(void)fprintf(stderr, "libtuntap (sys): ioctl SIOCAIFADDR\n");
 		return -1;
 	}
 	return 0;
