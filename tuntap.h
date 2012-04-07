@@ -61,6 +61,8 @@ int		 tnt_tt_down(struct device *);
 int		 tnt_tt_get_mtu(struct device *);
 int		 tnt_tt_set_mtu(struct device *, int);
 int		 tnt_tt_set_ip(struct device *, const char *, const char *);
+int		 tnt_tt_read(struct device *, void *, size_t);
+int		 tnt_tt_write(struct device *, void *, size_t);
 
 /* OS specific */
 int		tnt_tt_sys_start(struct device *, int, int);

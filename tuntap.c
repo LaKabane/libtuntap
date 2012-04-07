@@ -235,3 +235,37 @@ tnt_tt_set_ip(struct device *dev, const char *saddr, const char *smask) {
 	return tnt_tt_sys_set_ip(dev, addr, mask);
 }
 
+int
+tnt_tt_read(struct device *dev, void *buf, size_t size) {
+	int n;
+
+	/* Only accept started device */
+	if (dev->tun_fd == -1)
+		return 0;
+
+	n = read(dev->tun_fd, buf, size);
+	if (n == -1) {
+		(void)fprintf(stderr,
+		    "libtuntap: enable to read from device\n");
+		return -1;
+	}
+	return n;
+}
+
+int
+tnt_tt_write(struct device *dev, void *buf, size_t size) {
+	int n;
+
+	/* Only accept started device */
+	if (dev->tun_fd == -1)
+		return 0;
+
+	n = write(dev->tun_fd, buf, size);
+	if (n == -1) {
+		(void)fprintf(stderr,
+		    "libtuntap: enable to write to device\n");
+		return -1;
+	}
+	return n;
+}
+
