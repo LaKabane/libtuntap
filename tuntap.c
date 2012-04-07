@@ -217,17 +217,24 @@ tnt_tt_set_ip(struct device *dev, const char *saddr, const char *smask) {
 	unsigned int addr;
 	unsigned int mask;
 
+	if (saddr == NULL || smask == NULL) {
+		(void)fprintf(stderr, "libtuntap: tnt_tt_set_ip"
+		    " invalid argument\n");
+		return -1;
+	}
+
 	/* Destination address */
 	if (inet_pton(AF_INET, saddr, &(sa.sin_addr)) != 1) {
-		(void)fprintf(stderr, "libtuntap: tnt_tt_set_ip (IPv4) addr\n");
+		(void)fprintf(stderr, "libtuntap: tnt_tt_set_ip (IPv4)"
+		    " bad address\n");
 		return -1;
 	}
 	addr = sa.sin_addr.s_addr;
 
 	/* Netmask */
 	if (inet_pton(AF_INET, smask, &(sa.sin_addr)) != 1) {
-		(void)fprintf(stderr,
-		    "libtuntap: tnt_tt_set_ip (IPv4) netmask\n");
+		(void)fprintf(stderr, "libtuntap: tnt_tt_set_ip (IPv4)"
+		    " bad netmask\n");
 		return -1;
 	}
 	mask = sa.sin_addr.s_addr;
