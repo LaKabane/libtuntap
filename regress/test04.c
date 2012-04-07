@@ -32,11 +32,6 @@ main(void) {
 		return 1;
 	}
 
-	ifname = tnt_tt_get_ifname(dev);
-	if (strcmp(ifname, "tun0") != 0) {
-		return 1;
-	}
-
 	tnt_tt_destroy(dev);
 	return 0;
 }

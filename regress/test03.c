@@ -23,19 +23,14 @@
 
 int
 main(void) {
-	int i;
+	struct device *dev;
 
-	for (i = 0; i < 4; ++i) {
-		struct device *dev;
-
-		dev = tnt_tt_init();
-		if (tnt_tt_start(dev, TNT_TUNMODE_ETHERNET, i) == -1) {
-		    return 1;
-		}
-
-		tnt_tt_destroy(dev);
+	dev = tnt_tt_init();
+	if (tnt_tt_start(dev, TNT_TUNMODE_ETHERNET, 0) == -1) {
+	    return 1;
 	}
 
+	tnt_tt_destroy(dev);
 	return 0;
 }
 
