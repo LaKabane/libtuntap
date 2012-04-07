@@ -45,7 +45,11 @@ if(OpenBSD)
 	set(SOURCES_LIST ${SOURCES_LIST} tuntap-openbsd.c)
 endif(OpenBSD)
 
-if(Darwin OR NetBSD OR FreeBSD OR SunOS)
+if(NetBSD)
+	set(SOURCES_LIST ${SOURCES_LIST} tuntap-netbsd.c)
+endif(NetBSD)
+
+if(Darwin OR FreeBSD OR SunOS)
 	message(FATAL_ERROR "Your operating system is not supported yet")
 endif()
 
