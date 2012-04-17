@@ -34,6 +34,8 @@
 # define TNT_TUNMODE_ETHERNET 1
 # define TNT_TUNMODE_TUNNEL   2
 
+#define TNT_TT_GET_FD(x) (x)->tun_fd
+
 struct device {
 	int		tun_fd;
 	int		ctrl_sock;
