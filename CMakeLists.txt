@@ -27,7 +27,7 @@ if(UNIX)
 endif(UNIX)
 
 if(WINDOWS)
-	message("Windows is not supported yet")
+	message(FATAL_ERROR "Windows is not supported yet")
 endif(WINDOWS)
 
 # OS specific things
@@ -46,7 +46,7 @@ if(OpenBSD)
 endif(OpenBSD)
 
 if(Darwin OR NetBSD OR FreeBSD OR SunOS)
-	message("Your operating system is not supported yet")
+	message(FATAL_ERROR "Your operating system is not supported yet")
 endif()
 
 # Target
