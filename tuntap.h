@@ -36,6 +36,7 @@
 
 #define TNT_TT_GET_FD(x) (x)->tun_fd
 
+/* XXX: flags should probably be a short int */
 struct device {
 	int		tun_fd;
 	int		ctrl_sock;
@@ -44,7 +45,7 @@ struct device {
 	char		if_name[IFNAMSIZ];
 };
 
-struct device	*tnt_tt_init();
+struct device	*tnt_tt_init(void);
 void		 tnt_tt_destroy(struct device *);
 void		 tnt_tt_release(struct device *);
 int		 tnt_tt_start(struct device *, int, int);

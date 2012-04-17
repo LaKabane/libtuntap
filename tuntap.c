@@ -123,7 +123,7 @@ tnt_tt_set_hwaddr(struct device *dev, const char *hwaddr) {
 		unsigned int i;
 
 		i = 0;
-		srandom(time(NULL));
+		srandom((unsigned int)time(NULL));
 		for (; i < sizeof eth_rand.ether_addr_octet; ++i)
 			eth_rand.ether_addr_octet[i] = (unsigned char)random();
 		eth_rand.ether_addr_octet[0] &= 0xfc;
@@ -148,7 +148,7 @@ tnt_tt_up(struct device *dev) {
 
 	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
-	ifr.ifr_flags = dev->flags;
+	ifr.ifr_flags = (short int)dev->flags;
 	ifr.ifr_flags |= IFF_UP;
 
 	if (ioctl(dev->ctrl_sock, SIOCSIFFLAGS, &ifr) == -1) {
@@ -165,7 +165,7 @@ tnt_tt_down(struct device *dev) {
 
 	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
-	ifr.ifr_flags = dev->flags;
+	ifr.ifr_flags = (short)dev->flags;
 	ifr.ifr_flags &= ~IFF_UP;
 
 	if (ioctl(dev->ctrl_sock, SIOCSIFFLAGS, &ifr) == -1) {
@@ -219,14 +219,15 @@ tnt_tt_set_ip(struct device *dev, const char *saddr, const char *smask) {
 
 	/* Destination address */
 	if (inet_pton(AF_INET, saddr, &(sa.sin_addr)) != 1) {
-		fprintf(stderr, "libtuntap: tnt_tt_set_ip (IPv4) addr\n");
+		(void)fprintf(stderr, "libtuntap: tnt_tt_set_ip (IPv4) addr\n");
 		return -1;
 	}
 	addr = sa.sin_addr.s_addr;
 
 	/* Netmask */
 	if (inet_pton(AF_INET, smask, &(sa.sin_addr)) != 1) {
-		fprintf(stderr, "libtuntap: tnt_tt_set_ip (IPv4) netmask\n");
+		(void)fprintf(stderr,
+		    "libtuntap: tnt_tt_set_ip (IPv4) netmask\n");
 		return -1;
 	}
 	mask = sa.sin_addr.s_addr;
