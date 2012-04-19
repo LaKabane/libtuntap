@@ -25,8 +25,8 @@
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 
-#ifndef TNETACLE_TUN_H_
-#define TNETACLE_TUN_H_
+#ifndef LIBTUNTAP_H_
+#define LIBTUNTAP_H_
 
 # define TNT_TUNID_MAX 256
 # define TNT_TUNID_ANY 257
