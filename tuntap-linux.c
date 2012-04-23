@@ -84,7 +84,7 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 	dev->flags = ifr.ifr_flags;
 
 	/* Save the interface name */
-	(void)strlcpy(dev->if_name, ifr.ifr_name,
+	(void)memcpy(dev->if_name, ifr.ifr_name,
 	    sizeof ifr.ifr_name);
 	return fd;
 }
@@ -100,7 +100,7 @@ tnt_tt_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 	struct ifreq ifr;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
+	(void)memcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 
 	ifr.ifr_hwaddr.sa_family = ARPHRD_ETHER;
 	(void)memcpy(ifr.ifr_hwaddr.sa_data, eth_addr->ether_addr_octet, 6);
@@ -119,7 +119,7 @@ tnt_tt_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned int imask) {
 	struct ifreq ifr;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
+	(void)memcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 
 	/* Linux doesn't have SIOCDIFADDR, so let just do two calls */
 	(void)memset(&addr, '\0', sizeof addr);

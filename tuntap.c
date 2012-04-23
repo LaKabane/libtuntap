@@ -147,7 +147,7 @@ tnt_tt_up(struct device *dev) {
 	struct ifreq ifr;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
+	(void)memcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 	ifr.ifr_flags = (short int)dev->flags;
 	ifr.ifr_flags |= IFF_UP;
 
@@ -164,7 +164,7 @@ tnt_tt_down(struct device *dev) {
 	struct ifreq ifr;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
+	(void)memcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 	ifr.ifr_flags = (short)dev->flags;
 	ifr.ifr_flags &= ~IFF_UP;
 
@@ -185,7 +185,7 @@ tnt_tt_get_mtu(struct device *dev) {
 		return 0;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
+	(void)memcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 
 	if (ioctl(dev->ctrl_sock, SIOCGIFMTU, &ifr) == -1) {
 		return -1;
@@ -202,7 +202,7 @@ tnt_tt_set_mtu(struct device *dev, int mtu) {
 		return 0;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
+	(void)memcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 	ifr.ifr_mtu = mtu;
 
 	if (ioctl(dev->ctrl_sock, SIOCSIFMTU, &ifr) == -1) {
