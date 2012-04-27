@@ -24,7 +24,6 @@
 
 int
 main(void) {
-	char *ifname;
 	struct device *dev;
 
 	dev = tnt_tt_init();
