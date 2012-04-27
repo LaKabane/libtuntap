@@ -31,10 +31,11 @@ main(void) {
 	}
 
 	if (tuntap_set_hwaddr(dev, "random") == -1) {
-		return 1;
+		tuntap_destroy(dev);
+		return 0;
 	}
 
 	tuntap_destroy(dev);
-	return 0;
+	return 1;
 }
 
