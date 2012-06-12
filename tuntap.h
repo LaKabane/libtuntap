@@ -28,13 +28,15 @@
 #ifndef LIBTUNTAP_H_
 #define LIBTUNTAP_H_
 
-# define TNT_TUNID_MAX 256
-# define TNT_TUNID_ANY 257
+# define TUNTAP_TUNID_MAX 256
+# define TUNTAP_TUNID_ANY 257
 
-# define TNT_TUNMODE_ETHERNET 1
-# define TNT_TUNMODE_TUNNEL   2
+enum {
+	TUNTAP_TUNMODE_ETHERNET,
+	TUNTAP_TUNMODE_TUNNEL
+};
 
-#define TNT_TT_GET_FD(x) (x)->tun_fd
+#define TUNTAP_GET_FD(x) (x)->tun_fd
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,26 +51,26 @@ struct device {
 	char		if_name[IFNAMSIZ];
 };
 
-struct device	*tnt_tt_init(void);
-void		 tnt_tt_destroy(struct device *);
-void		 tnt_tt_release(struct device *);
-int		 tnt_tt_start(struct device *, int, int);
-char		*tnt_tt_get_ifname(struct device *);
-char		*tnt_tt_get_hwaddr(struct device *);
-int		 tnt_tt_set_hwaddr(struct device *, const char *);
-int		 tnt_tt_up(struct device *);
-int		 tnt_tt_down(struct device *);
-int		 tnt_tt_get_mtu(struct device *);
-int		 tnt_tt_set_mtu(struct device *, int);
-int		 tnt_tt_set_ip(struct device *, const char *, const char *);
-int		 tnt_tt_read(struct device *, void *, size_t);
-int		 tnt_tt_write(struct device *, void *, size_t);
+struct device	*tuntap_init(void);
+void		 tuntap_destroy(struct device *);
+void		 tuntap_release(struct device *);
+int		 tuntap_start(struct device *, int, int);
+char		*tuntap_get_ifname(struct device *);
+char		*tuntap_get_hwaddr(struct device *);
+int		 tuntap_set_hwaddr(struct device *, const char *);
+int		 tuntap_up(struct device *);
+int		 tuntap_down(struct device *);
+int		 tuntap_get_mtu(struct device *);
+int		 tuntap_set_mtu(struct device *, int);
+int		 tuntap_set_ip(struct device *, const char *, const char *);
+int		 tuntap_read(struct device *, void *, size_t);
+int		 tuntap_write(struct device *, void *, size_t);
 
 /* OS specific */
-int		tnt_tt_sys_start(struct device *, int, int);
-void		tnt_tt_sys_destroy(struct device *);
-int		tnt_tt_sys_set_hwaddr(struct device *, struct ether_addr *);
-int		tnt_tt_sys_set_ip(struct device *, unsigned int, unsigned int);
+int		 tuntap_sys_start(struct device *, int, int);
+void		 tuntap_sys_destroy(struct device *);
+int		 tuntap_sys_set_hwaddr(struct device *, struct ether_addr *);
+int		 tuntap_sys_set_ip(struct device *, unsigned int, unsigned int);
 
 #ifdef __cplusplus
 }

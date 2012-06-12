@@ -25,9 +25,9 @@ int
 main(void) {
 	struct device *dev;
 
-	dev = tnt_tt_init();
-	if (tnt_tt_start(dev, TNT_TUNMODE_TUNNEL, -1) == -1) {
-	    tnt_tt_destroy(dev);
+	dev = tuntap_init();
+	if (tuntap_start(dev, TUNTAP_TUNMODE_TUNNEL, -1) == -1) {
+	    tuntap_destroy(dev);
 	    return 0;
 	}
 

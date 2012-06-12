@@ -34,7 +34,7 @@
 #include "tuntap.h"
 
 int
-tnt_tt_sys_start(struct device *dev, int mode, int tun) {
+tuntap_sys_start(struct device *dev, int mode, int tun) {
 	int fd;
 	char *ifname;
 	struct ifreq ifr;
@@ -48,10 +48,10 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 	(void)memset(&ifr, '\0', sizeof ifr);
 
         /* Set the mode: tun or tap */
-	if (mode == TNT_TUNMODE_ETHERNET) {
+	if (mode == TUNTAP_TUNMODE_ETHERNET) {
 		ifr.ifr_flags = IFF_TAP;
 		ifname = "tap%i";
-	} else if (mode == TNT_TUNMODE_TUNNEL) {
+	} else if (mode == TUNTAP_TUNMODE_TUNNEL) {
 		ifr.ifr_flags = IFF_TUN;
 		ifname = "tun%i";
 	} else {
@@ -66,8 +66,8 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 	}
 
 	/* Set the interface name, if any */
-	if (tun != TNT_TUNID_ANY) {
-		if (fd > TNT_TUNID_MAX) {
+	if (tun != TUNTAP_TUNID_ANY) {
+		if (fd > TUNTAP_TUNID_MAX) {
 			return -1;
 		}
 		(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name,
@@ -80,7 +80,7 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 	    	return -1;
 	}
 
-	/* Save flags for tnt_tt_{up, down} */
+	/* Save flags for tuntap_{up, down} */
 	dev->flags = ifr.ifr_flags;
 
 	/* Save the interface name */
@@ -90,13 +90,13 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 }
 
 void
-tnt_tt_sys_destroy(struct device *dev) {
+tuntap_sys_destroy(struct device *dev) {
 	/* Linux automatically remove unused interface */
 	(void)dev;
 }
 
 int
-tnt_tt_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
+tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 	struct ifreq ifr;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
@@ -114,7 +114,7 @@ tnt_tt_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 }
 
 int
-tnt_tt_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned int imask) {
+tuntap_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned int imask) {
 	struct sockaddr_in addr;
 	struct ifreq ifr;
 

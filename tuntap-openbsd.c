@@ -35,7 +35,7 @@
 #include "tuntap.h"
 
 int
-tnt_tt_sys_start(struct device *dev, int mode, int tun) {
+tuntap_sys_start(struct device *dev, int mode, int tun) {
 	struct ifreq ifr;
 	char name[MAXPATHLEN];
 	int fd;
@@ -44,11 +44,11 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 	/*
 	 * Try to use the given tun driver, or loop throught the avaible ones
 	 */
-	if (tun < TNT_TUNID_MAX) {
+	if (tun < TUNTAP_TUNID_MAX) {
 		(void)snprintf(name, sizeof name, "/dev/tun%i", tun);
 		fd = open(name, O_RDWR);
-	} else if (tun == TNT_TUNID_ANY) {
-		for (tun = 0; tun < TNT_TUNID_MAX; ++tun) {
+	} else if (tun == TUNTAP_TUNID_ANY) {
+		for (tun = 0; tun < TUNTAP_TUNID_MAX; ++tun) {
 			(void)memset(name, '\0', sizeof name);
 			(void)snprintf(name, sizeof name, "/dev/tun%i", tun);
 			if ((fd = open(name, O_RDWR)) > 0)
@@ -76,10 +76,10 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 	}
 
         /* Set the mode: tun or tap */
-	if (mode == TNT_TUNMODE_ETHERNET) {
+	if (mode == TUNTAP_TUNMODE_ETHERNET) {
 		ifr.ifr_flags |= IFF_LINK0;
 	}
-	else if (mode == TNT_TUNMODE_TUNNEL) {
+	else if (mode == TUNTAP_TUNMODE_TUNNEL) {
 		ifr.ifr_flags &= ~IFF_LINK0;
 	}
 	else {
@@ -92,14 +92,14 @@ tnt_tt_sys_start(struct device *dev, int mode, int tun) {
 		return -1;
 	}
 
-	/* Save flags for tnt_tt_{up, down} */
+	/* Save flags for tuntap_{up, down} */
 	dev->flags = ifr.ifr_flags;
 
 	return fd;
 }
 
 void
-tnt_tt_sys_destroy(struct device *dev) {
+tuntap_sys_destroy(struct device *dev) {
 	struct ifreq ifr;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
@@ -110,7 +110,7 @@ tnt_tt_sys_destroy(struct device *dev) {
 }
 
 int
-tnt_tt_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
+tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 	struct ifreq ifr;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
@@ -126,7 +126,7 @@ tnt_tt_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 }
 
 int
-tnt_tt_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned int imask) {
+tuntap_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned int imask) {
 	struct ifaliasreq ifa;
 	struct ifreq ifr;
 	struct sockaddr_in addr;

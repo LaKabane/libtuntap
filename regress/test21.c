@@ -25,13 +25,13 @@ int
 main(void) {
 	struct device *dev;
 
-	dev = tnt_tt_init();
-	if (tnt_tt_start(dev, TNT_TUNMODE_ETHERNET, TNT_TUNID_ANY) == -1) {
+	dev = tuntap_init();
+	if (tuntap_start(dev, TUNTAP_TUNMODE_ETHERNET, TUNTAP_TUNID_ANY) == -1) {
 		return 1;
 	}
 
-	if (tnt_tt_set_ip(dev, NULL, "255.255.255.0") == -1) {
-		tnt_tt_destroy(dev);
+	if (tuntap_set_ip(dev, NULL, "255.255.255.0") == -1) {
+		tuntap_destroy(dev);
 		return 0;
 	}
 

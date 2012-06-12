@@ -25,16 +25,16 @@ int
 main(void) {
 	struct device *dev;
 
-	dev = tnt_tt_init();
-	if (tnt_tt_start(dev, TNT_TUNMODE_ETHERNET, TNT_TUNID_ANY) == -1) {
+	dev = tuntap_init();
+	if (tuntap_start(dev, TUNTAP_TUNMODE_ETHERNET, TUNTAP_TUNID_ANY) == -1) {
 		return 1;
 	}
 
-	if (tnt_tt_set_hwaddr(dev, "random") == -1) {
+	if (tuntap_set_hwaddr(dev, "random") == -1) {
 		return 1;
 	}
 
-	tnt_tt_destroy(dev);
+	tuntap_destroy(dev);
 	return 0;
 }
 

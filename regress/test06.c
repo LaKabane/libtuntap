@@ -26,21 +26,21 @@ main(void) {
 	int mtu;
 	struct device *dev;
 
-	dev = tnt_tt_init();
-	if (tnt_tt_start(dev, TNT_TUNMODE_TUNNEL, TNT_TUNID_ANY) == -1) {
+	dev = tuntap_init();
+	if (tuntap_start(dev, TUNTAP_TUNMODE_TUNNEL, TUNTAP_TUNID_ANY) == -1) {
 		return 1;
 	}
 
-	if (tnt_tt_set_mtu(dev, 1400) == -1) {
+	if (tuntap_set_mtu(dev, 1400) == -1) {
 		return 1;
 	}
 
-	mtu = tnt_tt_get_mtu(dev);
+	mtu = tuntap_get_mtu(dev);
 	if (mtu != 1400) {
 		return 1;
 	}
 
-	tnt_tt_destroy(dev);
+	tuntap_destroy(dev);
 	return 0;
 }
 

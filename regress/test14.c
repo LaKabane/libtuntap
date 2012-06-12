@@ -25,20 +25,20 @@ int
 main(void) {
 	struct device *dev;
 
-	dev = tnt_tt_init();
-	if (tnt_tt_start(dev, TNT_TUNMODE_TUNNEL, TNT_TUNID_ANY) == -1) {
+	dev = tuntap_init();
+	if (tuntap_start(dev, TUNTAP_TUNMODE_TUNNEL, TUNTAP_TUNID_ANY) == -1) {
 		return 1;
 	}
 
-	if (tnt_tt_up(dev) == -1) {
+	if (tuntap_up(dev) == -1) {
 		return 1;
 	}
 
-	if (tnt_tt_set_ip(dev, "1.2.3.4", "255.255.255.0") == -1) {
+	if (tuntap_set_ip(dev, "1.2.3.4", "255.255.255.0") == -1) {
 		return 1;
 	}
 
-	tnt_tt_destroy(dev);
+	tuntap_destroy(dev);
 	return 0;
 }
 

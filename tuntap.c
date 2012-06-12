@@ -37,7 +37,7 @@
 #include "tuntap.h"
 
 struct device *
-tnt_tt_init(void) {
+tuntap_init(void) {
 	struct device *dev = NULL;
 
 	if ((dev = malloc(sizeof(*dev))) == NULL)
@@ -52,13 +52,13 @@ tnt_tt_init(void) {
 }
 
 void
-tnt_tt_destroy(struct device *dev) {
-	tnt_tt_sys_destroy(dev);
-	tnt_tt_release(dev);
+tuntap_destroy(struct device *dev) {
+	tuntap_sys_destroy(dev);
+	tuntap_release(dev);
 }
 
 int
-tnt_tt_start(struct device *dev, int mode, int tun) {
+tuntap_start(struct device *dev, int mode, int tun) {
 	int sock;
 	int fd;
 
@@ -76,7 +76,7 @@ tnt_tt_start(struct device *dev, int mode, int tun) {
 	}
 	dev->ctrl_sock = sock;
 
-	fd = tnt_tt_sys_start(dev, mode, tun);
+	fd = tuntap_sys_start(dev, mode, tun);
 	if (fd == -1) {
 		goto clean;
 	}
@@ -95,7 +95,7 @@ clean:
 }
 
 void
-tnt_tt_release(struct device *dev) {
+tuntap_release(struct device *dev) {
 	(void)close(dev->tun_fd);
 	(void)close(dev->ctrl_sock);
 	free(dev);
@@ -103,12 +103,12 @@ tnt_tt_release(struct device *dev) {
 
 
 char *
-tnt_tt_get_ifname(struct device *dev) {
+tuntap_get_ifname(struct device *dev) {
 	return dev->if_name;
 }
 
 char *
-tnt_tt_get_hwaddr(struct device *dev) {
+tuntap_get_hwaddr(struct device *dev) {
 	struct ether_addr eth_attr;
 
 	(void)memcpy(&eth_attr, dev->hwaddr, sizeof dev->hwaddr);
@@ -116,7 +116,7 @@ tnt_tt_get_hwaddr(struct device *dev) {
 }
 
 int
-tnt_tt_set_hwaddr(struct device *dev, const char *hwaddr) {
+tuntap_set_hwaddr(struct device *dev, const char *hwaddr) {
 	struct ether_addr *eth_addr, eth_rand;
 
 	if (strcmp(hwaddr, "random") == 0) {
@@ -137,13 +137,13 @@ tnt_tt_set_hwaddr(struct device *dev, const char *hwaddr) {
 		(void)memcpy(dev->hwaddr, eth_addr, 6);
 	}
 
-	if (tnt_tt_sys_set_hwaddr(dev, eth_addr) == -1)
+	if (tuntap_sys_set_hwaddr(dev, eth_addr) == -1)
 		return -1;
 	return 0;
 }
 
 int
-tnt_tt_up(struct device *dev) {
+tuntap_up(struct device *dev) {
 	struct ifreq ifr;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
@@ -160,7 +160,7 @@ tnt_tt_up(struct device *dev) {
 }
 
 int
-tnt_tt_down(struct device *dev) {
+tuntap_down(struct device *dev) {
 	struct ifreq ifr;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
@@ -177,7 +177,7 @@ tnt_tt_down(struct device *dev) {
 }
 
 int
-tnt_tt_get_mtu(struct device *dev) {
+tuntap_get_mtu(struct device *dev) {
 	struct ifreq ifr;
 
 	/* Only accept started device */
@@ -194,7 +194,7 @@ tnt_tt_get_mtu(struct device *dev) {
 }
 
 int
-tnt_tt_set_mtu(struct device *dev, int mtu) {
+tuntap_set_mtu(struct device *dev, int mtu) {
 	struct ifreq ifr;
 
 	/* Only accept started device */
@@ -212,20 +212,20 @@ tnt_tt_set_mtu(struct device *dev, int mtu) {
 }
 
 int
-tnt_tt_set_ip(struct device *dev, const char *saddr, const char *smask) {
+tuntap_set_ip(struct device *dev, const char *saddr, const char *smask) {
 	struct sockaddr_in sa;
 	unsigned int addr;
 	unsigned int mask;
 
 	if (saddr == NULL || smask == NULL) {
-		(void)fprintf(stderr, "libtuntap: tnt_tt_set_ip"
+		(void)fprintf(stderr, "libtuntap: tuntap_set_ip"
 		    " invalid argument\n");
 		return -1;
 	}
 
 	/* Destination address */
 	if (inet_pton(AF_INET, saddr, &(sa.sin_addr)) != 1) {
-		(void)fprintf(stderr, "libtuntap: tnt_tt_set_ip (IPv4)"
+		(void)fprintf(stderr, "libtuntap: tuntap_set_ip (IPv4)"
 		    " bad address\n");
 		return -1;
 	}
@@ -233,17 +233,17 @@ tnt_tt_set_ip(struct device *dev, const char *saddr, const char *smask) {
 
 	/* Netmask */
 	if (inet_pton(AF_INET, smask, &(sa.sin_addr)) != 1) {
-		(void)fprintf(stderr, "libtuntap: tnt_tt_set_ip (IPv4)"
+		(void)fprintf(stderr, "libtuntap: tuntap_set_ip (IPv4)"
 		    " bad netmask\n");
 		return -1;
 	}
 	mask = sa.sin_addr.s_addr;
 
-	return tnt_tt_sys_set_ip(dev, addr, mask);
+	return tuntap_sys_set_ip(dev, addr, mask);
 }
 
 int
-tnt_tt_read(struct device *dev, void *buf, size_t size) {
+tuntap_read(struct device *dev, void *buf, size_t size) {
 	int n;
 
 	/* Only accept started device */
@@ -260,7 +260,7 @@ tnt_tt_read(struct device *dev, void *buf, size_t size) {
 }
 
 int
-tnt_tt_write(struct device *dev, void *buf, size_t size) {
+tuntap_write(struct device *dev, void *buf, size_t size) {
 	int n;
 
 	/* Only accept started device */
