@@ -170,12 +170,19 @@ tuntap_sys_destroy(struct device *dev) {
 
 int
 tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
-	(void)dev;
-	(void)eth_addr;
+	struct ifaliasreq ifra;
 
-	(void)fprintf(stderr, "libtuntap (sys):"
-	    " set_hwaddr not supported yet\n");
-	return -1;
+	(void)memset(&ifra, 0, sizeof ifra);
+	(void)memcpy(ifra.ifra_name, dev->if_name, sizeof dev->if_name);
+	ifra.ifra_addr.sa_len = ETHER_ADDR_LEN;
+	ifra.ifra_addr.sa_family = AF_LINK;
+	(void)memcpy(ifra.ifra_addr.sa_data, eth_addr, ETHER_ADDR_LEN);
+
+	if (ioctl(dev->ctrl_sock, SIOCSIFPHYADDR, &ifra) == -1) {
+		perror("ioctl SIOCALIFADDR");
+		return -1;
+	}
+	return 0;
 }
 
 int
