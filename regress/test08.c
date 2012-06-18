@@ -33,7 +33,8 @@ main(void) {
 	}
 
 	if (tuntap_set_hwaddr(dev, "54:1a:13:ef:b6:b5") == -1) {
-		return 1;
+		tuntap_destroy(dev);
+		return 0;
 	}
 
 	hwaddr = tuntap_get_hwaddr(dev);
@@ -41,6 +42,6 @@ main(void) {
 		return 1;
 
 	tuntap_destroy(dev);
-	return 0;
+	return 1;
 }
 

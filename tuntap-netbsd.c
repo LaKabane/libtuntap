@@ -41,18 +41,38 @@
  */
 
 static int
-tuntap_sys_start_tap(struct device *dev) {
+tuntap_sys_start_tap(struct device *dev, int tun) {
 	int fd;
 	struct ifreq ifr;
+	char name[IFNAMSIZ + 5]; /* For /dev/IFNAMSIZ */
 
 	fd = -1;
-	if ((fd = open("/dev/tap", O_RDWR)) == -1) {
-		(void)fprintf(stderr, "libtuntap (sys): open /dev/tap\n");
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)memset(name, '\0', sizeof name);
+
+	/* Set the device path to open */
+	if (tun < TUNTAP_TUNID_MAX) {
+		/* Create the wanted device */
+		(void)snprintf(ifr.ifr_name, IFNAMSIZ, "tap%i", tun);
+		if (ioctl(dev->ctrl_sock, SIOCIFCREATE, &ifr) == -1) {
+			(void)fprintf(stderr, "libtuntap (sys): "
+			    "ioctl SIOCIFCREATE\n");
+			return -1;
+		}
+		(void)snprintf(name, sizeof name, "/dev/tap%i", tun);
+	} else if (tun == TUNTAP_TUNID_ANY) {
+		/* Or use autocloning */
+		(void)memcpy(name, "/dev/tap", 8);
+	} else {
+		return -1;
+	}
+
+	if ((fd = open(name, O_RDWR)) == -1) {
+		(void)fprintf(stderr, "libtuntap (sys): open %s\n", name);
 		return -1;
 	}
 
 	/* Get the interface name */
-	(void)memset(&ifr, '\0', sizeof ifr);
 	if (ioctl(fd, TAPGIFNAME, &ifr) == -1) {
 		(void)fprintf(stderr, "libtuntap (sys): ioctl TAPGIFNAME\n");
 		return -1;
@@ -125,7 +145,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 
         /* tun and tap devices are not created in the same way */
 	if (mode == TUNTAP_TUNMODE_ETHERNET) {
-		fd = tuntap_sys_start_tap(dev);
+		fd = tuntap_sys_start_tap(dev, tun);
 	}
 	else if (mode == TUNTAP_TUNMODE_TUNNEL) {
 		fd = tuntap_sys_start_tun(dev, tun);
@@ -150,12 +170,19 @@ tuntap_sys_destroy(struct device *dev) {
 
 int
 tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
-	(void)dev;
-	(void)eth_addr;
+	struct ifaliasreq ifra;
 
-	(void)fprintf(stderr, "libtuntap (sys):"
-	    " set_hwaddr not supported yet\n");
-	return -1;
+	(void)memset(&ifra, 0, sizeof ifra);
+	(void)memcpy(ifra.ifra_name, dev->if_name, sizeof dev->if_name);
+	ifra.ifra_addr.sa_len = ETHER_ADDR_LEN;
+	ifra.ifra_addr.sa_family = AF_LINK;
+	(void)memcpy(ifra.ifra_addr.sa_data, eth_addr, ETHER_ADDR_LEN);
+
+	if (ioctl(dev->ctrl_sock, SIOCSIFPHYADDR, &ifra) == -1) {
+		perror("ioctl SIOCALIFADDR");
+		return -1;
+	}
+	return 0;
 }
 
 int
