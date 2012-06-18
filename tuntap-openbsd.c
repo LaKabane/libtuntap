@@ -95,6 +95,15 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	/* Save flags for tuntap_{up, down} */
 	dev->flags = ifr.ifr_flags;
 
+	if (mode == TUNTAP_TUNMODE_ETHERNET) {
+		struct ether_addr addr;
+
+		if (ioctl(fd, SIOCGIFADDR, &addr) == -1) {
+			perror("SIOCGIFADDR");
+			return -1;
+		}
+		(void)memcpy(dev->hwaddr, &addr, 6);
+	}
 	return fd;
 }
 

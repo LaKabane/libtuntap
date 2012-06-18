@@ -128,14 +128,13 @@ tuntap_set_hwaddr(struct device *dev, const char *hwaddr) {
 			eth_rand.ether_addr_octet[i] = (unsigned char)random();
 		eth_rand.ether_addr_octet[0] &= 0xfc;
 		eth_addr = &eth_rand;
-		(void)memcpy(dev->hwaddr, eth_addr, 6);
 	} else {
 		eth_addr = ether_aton(hwaddr);
 		if (eth_addr == NULL) {
 			return -1;
 		}
-		(void)memcpy(dev->hwaddr, eth_addr, 6);
 	}
+	(void)memcpy(dev->hwaddr, eth_addr, 6);
 
 	if (tuntap_sys_set_hwaddr(dev, eth_addr) == -1)
 		return -1;
