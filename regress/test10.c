@@ -21,21 +21,25 @@
 
 #include "tuntap.h"
 
+/* This test SHOULD fail, it's normal */
+
 int
 main(void) {
+	int ret;
 	struct device *dev;
 
+	ret = 1;
 	dev = tuntap_init();
 	if (tuntap_start(dev, TUNTAP_TUNMODE_TUNNEL, TUNTAP_TUNID_ANY) == -1) {
-		return 1;
+		goto clean;
 	}
 
 	if (tuntap_set_hwaddr(dev, "random") == -1) {
-		tuntap_destroy(dev);
-		return 0;
+		ret = 0;
 	}
 
+clean:
 	tuntap_destroy(dev);
-	return 1;
+	return ret;
 }
 

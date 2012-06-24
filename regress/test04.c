@@ -17,21 +17,21 @@
 #include <sys/types.h>
 
 #include <stdio.h>
-#include <string.h>
 #include <unistd.h>
 
 #include "tuntap.h"
 
 int
 main(void) {
+	int ret;
 	struct device *dev;
 
+	ret = 0;
 	dev = tuntap_init();
-	if (tuntap_start(dev, TUNTAP_TUNMODE_TUNNEL, 0) == -1) {
-		return 1;
-	}
+	if (tuntap_start(dev, TUNTAP_TUNMODE_TUNNEL, 0) == -1)
+		ret = 1;
 
 	tuntap_destroy(dev);
-	return 0;
+	return ret;
 }
 

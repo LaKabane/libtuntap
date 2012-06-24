@@ -22,26 +22,24 @@
 
 #include "tuntap.h"
 
+/* This test SHOULD fail, it's normal */
+
 int
 main(void) {
+	int ret;
 	char *hwaddr;
 	struct device *dev;
 
+	ret = 1;
 	dev = tuntap_init();
-	if (tuntap_start(dev, TUNTAP_TUNMODE_TUNNEL, TUNTAP_TUNID_ANY) == -1) {
-		return 1;
-	}
+	if (tuntap_start(dev, TUNTAP_TUNMODE_TUNNEL, TUNTAP_TUNID_ANY) == -1)
+		goto clean;
 
-	if (tuntap_set_hwaddr(dev, "54:1a:13:ef:b6:b5") == -1) {
-		tuntap_destroy(dev);
-		return 0;
-	}
+	if (tuntap_set_hwaddr(dev, "54:1a:13:ef:b6:b5") == -1)
+		ret = 0;
 
-	hwaddr = tuntap_get_hwaddr(dev);
-	if (strcasecmp(hwaddr, "54:1a:13:ef:b6:b5") != 0)
-		return 1;
-
+clean:
 	tuntap_destroy(dev);
-	return 1;
+	return ret;
 }
 

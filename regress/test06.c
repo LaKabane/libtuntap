@@ -23,24 +23,29 @@
 
 int
 main(void) {
+	int ret;
 	int mtu;
 	struct device *dev;
 
+	ret = 0;
 	dev = tuntap_init();
 	if (tuntap_start(dev, TUNTAP_TUNMODE_TUNNEL, TUNTAP_TUNID_ANY) == -1) {
-		return 1;
+		ret = 1;
+		goto clean;
 	}
 
 	if (tuntap_set_mtu(dev, 1400) == -1) {
-		return 1;
+		ret = 1;
+		goto clean;
 	}
 
 	mtu = tuntap_get_mtu(dev);
 	if (mtu != 1400) {
-		return 1;
+		ret = 1;
 	}
 
+clean:
 	tuntap_destroy(dev);
-	return 0;
+	return ret;
 }
 
