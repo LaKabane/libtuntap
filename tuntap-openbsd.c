@@ -34,6 +34,21 @@
 
 #include "tuntap.h"
 
+static int
+tuntap_sys_create_dev(struct device *dev, int tun) {
+	struct ifreq ifr;
+
+	/* At this point 'tun' can't be TUNTAP_TUNID_ANY */
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)snprintf(ifr.ifr_name, IFNAMSIZ, "tun%i", tun);
+
+	if (ioctl(dev->ctrl_sock, SIOCIFCREATE, &ifr) == -1) {
+		(void)fprintf(stderr, "libtuntap (sys): ioctl SIOCIFCREATE\n");
+		return -1;
+	}
+	return 0;
+}
+
 int
 tuntap_sys_start(struct device *dev, int mode, int tun) {
 	struct ifreq ifr;
@@ -41,9 +56,15 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	int fd;
 
 	fd = -1;
-	/*
-	 * Try to use the given tun driver, or loop throught the avaible ones
-	 */
+
+	/* Force creation of the driver if needed or let it resilient */
+	if (mode & TUNTAP_TUNMODE_PERSIST) {
+		mode &= ~TUNTAP_TUNMODE_PERSIST;
+		if (tuntap_sys_create_dev(dev, tun) == -1)
+			return -1;
+	}
+
+	/* Try to use the given tun driver or loop throught the avaible ones */
 	if (tun < TUNTAP_TUNID_MAX) {
 		(void)snprintf(name, sizeof name, "/dev/tun%i", tun);
 		fd = open(name, O_RDWR);
