@@ -26,23 +26,21 @@
 #include <netinet/if_ether.h>
 
 #ifndef LIBTUNTAP_H_
-#define LIBTUNTAP_H_
+# define LIBTUNTAP_H_
 
 # define TUNTAP_TUNID_MAX 256
 # define TUNTAP_TUNID_ANY 257
 
-enum {
-	TUNTAP_TUNMODE_ETHERNET,
-	TUNTAP_TUNMODE_TUNNEL
-};
+# define TUNTAP_TUNMODE_ETHERNET 0x0001
+# define TUNTAP_TUNMODE_TUNNEL   0x0002
+# define TUNTAP_TUNMODE_PERSIST  0x0004
 
-#define TUNTAP_GET_FD(x) (x)->tun_fd
+# define TUNTAP_GET_FD(x) (x)->tun_fd
 
-#ifdef __cplusplus
+# ifdef __cplusplus
 extern "C" {
-#endif
+# endif
 
-/* XXX: flags should probably be a short int */
 struct device {
 	int		tun_fd;
 	int		ctrl_sock;
@@ -72,8 +70,8 @@ void		 tuntap_sys_destroy(struct device *);
 int		 tuntap_sys_set_hwaddr(struct device *, struct ether_addr *);
 int		 tuntap_sys_set_ip(struct device *, unsigned int, unsigned int);
 
-#ifdef __cplusplus
+# ifdef __cplusplus
 }
-#endif
+# endif
 
 #endif
