@@ -27,7 +27,6 @@
 int
 main(void) {
 	int ret;
-	char *hwaddr;
 	struct device *dev;
 
 	ret = 1;
