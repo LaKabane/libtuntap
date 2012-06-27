@@ -35,11 +35,31 @@
 
 #include "tuntap.h"
 
+static int
+tuntap_sys_create_dev(struct device *dev, int mode, int tun) {
+	struct ifreq ifr;
+	char *name;
+
+	if (mode == TUNTAP_TUNMODE_ETHERNET)
+		name = "tap%i";
+	else
+		name = "tun%i";
+
+	/* At this point 'tun' can't be TUNTAP_TUNID_ANY */
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)snprintf(ifr.ifr_name, IFNAMSIZ, name, tun);
+
+	if (ioctl(dev->ctrl_sock, SIOCIFCREATE, &ifr) == -1) {
+		(void)fprintf(stderr, "libtuntap (sys): ioctl SIOCIFCREATE\n");
+		return -1;
+	}
+	return 0;
+}
+
 /*
  * NetBSD support auto-clonning, but only for tap device.
  * To access /dev/tapN we have to create it before.
  */
-
 static int
 tuntap_sys_start_tap(struct device *dev, int tun) {
 	int fd;
@@ -53,12 +73,7 @@ tuntap_sys_start_tap(struct device *dev, int tun) {
 	/* Set the device path to open */
 	if (tun < TUNTAP_TUNID_MAX) {
 		/* Create the wanted device */
-		(void)snprintf(ifr.ifr_name, IFNAMSIZ, "tap%i", tun);
-		if (ioctl(dev->ctrl_sock, SIOCIFCREATE, &ifr) == -1) {
-			(void)fprintf(stderr, "libtuntap (sys): "
-			    "ioctl SIOCIFCREATE\n");
-			return -1;
-		}
+		tuntap_sys_create_dev(dev, TUNTAP_TUNMODE_ETHERNET, tun);
 		(void)snprintf(name, sizeof name, "/dev/tap%i", tun);
 	} else if (tun == TUNTAP_TUNID_ANY) {
 		/* Or use autocloning */
@@ -115,9 +130,8 @@ tuntap_sys_start_tun(struct device *dev, int tun) {
 		return -1;
 	}
 
-	if (fd < 0 || fd == 256) {
-		(void)fprintf(stderr, "libtuntap (sys):"
-		    " Can't find a tun entry\n");
+	if ((fd = open(name, O_RDWR)) == -1) {
+		(void)fprintf(stderr, "libtuntap (sys): open %s\n", name);
 		return -1;
 	}
 
@@ -142,6 +156,13 @@ tuntap_sys_start_tun(struct device *dev, int tun) {
 int
 tuntap_sys_start(struct device *dev, int mode, int tun) {
 	int fd;
+
+	/* Force creation of the driver if needed or let it resilient */
+	if (mode & TUNTAP_TUNMODE_PERSIST) {
+		mode &= ~TUNTAP_TUNMODE_PERSIST;
+		if (tuntap_sys_create_dev(dev, mode, tun) == -1)
+			return -1;
+	}
 
         /* tun and tap devices are not created in the same way */
 	if (mode == TUNTAP_TUNMODE_ETHERNET) {
