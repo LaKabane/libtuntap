@@ -24,13 +24,15 @@
 int
 main(void) {
 	struct device *dev;
+	char *hwaddr;
 
 	dev = tuntap_init();
 	if (tuntap_start(dev, TUNTAP_TUNMODE_ETHERNET, TUNTAP_TUNID_ANY) == -1) {
 		return 1;
 	}
 
-	if (tuntap_get_hwaddr(dev) != NULL) {
+	hwaddr = tuntap_get_hwaddr(dev);
+	if (strcmp(hwaddr, "0:0:0:0:0:0") != 0) {
 		tuntap_destroy(dev);
 		return 0;
 	}
