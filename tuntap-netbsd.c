@@ -200,7 +200,8 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 	(void)memcpy(ifra.ifra_addr.sa_data, eth_addr, ETHER_ADDR_LEN);
 
 	if (ioctl(dev->ctrl_sock, SIOCSIFPHYADDR, &ifra) == -1) {
-		perror("ioctl SIOCALIFADDR");
+		(void)fprintf(stderr, "libtuntap (sys): "
+		    "ioctl SIOCSIFPHYADDR\n");
 		return -1;
 	}
 	return 0;

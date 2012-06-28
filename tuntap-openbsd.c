@@ -120,7 +120,8 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 		struct ether_addr addr;
 
 		if (ioctl(fd, SIOCGIFADDR, &addr) == -1) {
-			perror("SIOCGIFADDR");
+			(void)fprintf(stderr, "libtuntap (sys): "
+			    "ioctl SIOCGIFADDR\n");
 			return -1;
 		}
 		(void)memcpy(dev->hwaddr, &addr, 6);
