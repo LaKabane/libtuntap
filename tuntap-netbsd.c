@@ -130,8 +130,9 @@ tuntap_sys_start_tun(struct device *dev, int tun) {
 		return -1;
 	}
 
-	if ((fd = open(name, O_RDWR)) == -1) {
-		(void)fprintf(stderr, "libtuntap (sys): open %s\n", name);
+	if (fd < 0 || fd == 256) {
+		(void)fprintf(stderr, "libtuntap (sys):"
+		    " Can't find a tun entry\n");
 		return -1;
 	}
 
