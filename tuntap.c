@@ -214,14 +214,20 @@ tuntap_set_mtu(struct device *dev, int mtu) {
 }
 
 int
-tuntap_set_ip(struct device *dev, const char *saddr, const char *smask) {
+tuntap_set_ip(struct device *dev, const char *saddr, int bits) {
 	struct sockaddr_in sa;
 	unsigned int addr;
 	unsigned int mask;
 
-	if (saddr == NULL || smask == NULL) {
+	if (saddr == NULL) {
 		(void)fprintf(stderr, "libtuntap: tuntap_set_ip"
-		    " invalid argument\n");
+		    " invalid address\n");
+		return -1;
+	}
+
+	if (bits < 0 || bits > 128) {
+		(void)fprintf(stderr, "libtuntap: tuntap_set_ip"
+		    " invalid netmask\n");
 		return -1;
 	}
 
@@ -234,12 +240,9 @@ tuntap_set_ip(struct device *dev, const char *saddr, const char *smask) {
 	addr = sa.sin_addr.s_addr;
 
 	/* Netmask */
-	if (inet_pton(AF_INET, smask, &(sa.sin_addr)) != 1) {
-		(void)fprintf(stderr, "libtuntap: tuntap_set_ip (IPv4)"
-		    " bad netmask\n");
-		return -1;
-	}
-	mask = sa.sin_addr.s_addr;
+	mask = ~0;
+	mask = ~(mask >> bits);
+	mask = ntohl(mask);
 
 	return tuntap_sys_set_ip(dev, addr, mask);
 }

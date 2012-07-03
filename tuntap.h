@@ -60,7 +60,7 @@ int		 tuntap_up(struct device *);
 int		 tuntap_down(struct device *);
 int		 tuntap_get_mtu(struct device *);
 int		 tuntap_set_mtu(struct device *, int);
-int		 tuntap_set_ip(struct device *, const char *, const char *);
+int		 tuntap_set_ip(struct device *, const char *, int);
 int		 tuntap_read(struct device *, void *, size_t);
 int		 tuntap_write(struct device *, void *, size_t);
 
@@ -68,7 +68,7 @@ int		 tuntap_write(struct device *, void *, size_t);
 int		 tuntap_sys_start(struct device *, int, int);
 void		 tuntap_sys_destroy(struct device *);
 int		 tuntap_sys_set_hwaddr(struct device *, struct ether_addr *);
-int		 tuntap_sys_set_ip(struct device *, unsigned int, unsigned int);
+int		 tuntap_sys_set_ip(struct device *, unsigned int, unsigned long);
 
 # ifdef __cplusplus
 }
