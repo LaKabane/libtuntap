@@ -30,7 +30,7 @@ main(void) {
 		return 1;
 	}
 
-	if (tuntap_set_ip(dev, "1.2.3.4", NULL) == -1) {
+	if (tuntap_set_ip(dev, "1.2.3.4", -2) == -1) {
 		tuntap_destroy(dev);
 		return 0;
 	}
