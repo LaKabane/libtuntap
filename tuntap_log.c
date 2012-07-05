@@ -23,6 +23,11 @@
 #include "tuntap.h"
 
 void
+tuntap_log_set_cb(t_tuntap_log cb) {
+	tuntap_log = cb;
+}
+
+void
 tuntap_log_default(int level, const char *errmsg) {
 	(void)level;
 	fprintf(stderr, "%s\n", errmsg);
