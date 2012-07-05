@@ -2,26 +2,35 @@
 # ========================
 
 project(libtuntap)
-
 cmake_minimum_required(VERSION 2.8)
+
+# CMake Configuration
+# ------------------
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 set(CMAKE_INSTALL_PREFIX "/usr/local/")
 set(${CMAKE_SYSTEM_NAME} True)
 
-# Global definitions
-# ------------------
+# Global CPP definitions
+# ----------------------
 add_definitions(-D${CMAKE_SYSTEM_NAME})
 
 # OS families specific things
 # ---------------------------
 if(UNIX)
+	# Unix specific include directories
+	# ------------------
 	include_directories(
 		/usr/include/
 		/usr/local/include
 	)
 
-	set(CMAKE_C_FLAGS "-Wall -Wextra -ansi")
+	# Unix specific definitions
+	# ------------------
+  	add_definitions(-DUnix)
+
+	# Unix specific source files
+	# ------------------
 	set(SOURCES_LIST
 		tuntap.c
 		tuntap_log.c
@@ -46,8 +55,8 @@ elseif()
 	message(FATAL_ERROR "Your operating system is not supported yet")
 endif()
 
-# Target
-# ------
+# Library definition
+# ------------------
 add_library(tuntap ${SOURCES_LIST})
 
 # Install rules
@@ -57,3 +66,4 @@ if(UNIX)
 	install(FILES tuntap.h DESTINATION include)
 endif(UNIX)
 
+include(CMakeLists.txt.local OPTIONAL)
