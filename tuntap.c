@@ -242,7 +242,7 @@ tuntap_set_ip(struct device *dev, const char *saddr, int bits) {
 	/* Netmask */
 	mask = ~0;
 	mask = ~(mask >> bits);
-	mask = ntohl(mask);
+	mask = htonl(mask);
 
 	return tuntap_sys_set_ip(dev, addr, mask);
 }
