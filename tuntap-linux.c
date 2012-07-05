@@ -41,7 +41,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 
 	fd = -1;
 	if ((fd = open("/dev/net/tun", O_RDWR)) == -1) {
-		(void)fprintf(stderr, "libtuntap (sys): open /dev/net/tun\n");
+		tuntap_log(0, "libtuntap (sys): open /dev/net/tun");
 		return -1;
 	}
 
@@ -61,7 +61,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 
 	/* Configure the interface */
 	if (ioctl(fd, TUNSETIFF, &ifr) == -1) {
-		(void)fprintf(stderr, "libtuntap (sys): ioctl TUNSETIFF\n");
+		tuntap_log(0, "libtuntap (sys): ioctl TUNSETIFF");
 		return -1;
 	}
 
@@ -76,7 +76,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 
 	/* Get the internal parameters of ifr */
 	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &ifr) == -1) {
-		(void)fprintf(stderr, "libtuntap (sys): ioctl SIOCGIFFLAGS\n");
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCGIFFLAGS");
 	    	return -1;
 	}
 
@@ -107,7 +107,7 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 
 	/* Linux has a special flag for setting the MAC address */
 	if (ioctl(dev->ctrl_sock, SIOCSIFHWADDR, &ifr) == -1) {
-		(void)fprintf(stderr, "libtuntap (sys): ioctl SIOCSIFHWADDR\n");
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFHWADDR");
 		return -1;
 	}
 	return 0;
@@ -127,7 +127,7 @@ tuntap_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned int imask) {
 	addr.sin_addr.s_addr = iaddr;
 	(void)memcpy(&ifr.ifr_addr, &addr, sizeof ifr.ifr_addr);
 	if (ioctl(dev->ctrl_sock, SIOCSIFADDR, &ifr) == -1) {
-		(void)fprintf(stderr, "libtuntap (sys): ioctl SIOCSIFADDR\n");
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFADDR");
 		return -1;
 	}
 	
@@ -140,7 +140,7 @@ tuntap_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned int imask) {
 	addr.sin_addr.s_addr = imask;
 	(void)memcpy(&ifr.ifr_netmask, &addr, sizeof ifr.ifr_netmask);
 	if (ioctl(dev->ctrl_sock, SIOCSIFNETMASK, &ifr) == -1) {
-		(void)fprintf(stderr, "libtuntap (sys): ioctl SIOCSIFNETMASK\n");
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFNETMASK");
 		return -1;
 	}
 

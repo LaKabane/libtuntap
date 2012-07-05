@@ -50,7 +50,7 @@ tuntap_sys_create_dev(struct device *dev, int mode, int tun) {
 	(void)snprintf(ifr.ifr_name, IFNAMSIZ, name, tun);
 
 	if (ioctl(dev->ctrl_sock, SIOCIFCREATE, &ifr) == -1) {
-		(void)fprintf(stderr, "libtuntap (sys): ioctl SIOCIFCREATE\n");
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCIFCREATE");
 		return -1;
 	}
 	return 0;
@@ -83,20 +83,24 @@ tuntap_sys_start_tap(struct device *dev, int tun) {
 	}
 
 	if ((fd = open(name, O_RDWR)) == -1) {
-		(void)fprintf(stderr, "libtuntap (sys): open %s\n", name);
+		char buf[22+IFNAMSIZ+5];
+
+		(void)memset(buf, 0, sizeof buf);
+		snprintf(buf, sizeof buf, "libtuntap (sys): open %s", name);
+		tuntap_log(0, buf);
 		return -1;
 	}
 
 	/* Get the interface name */
 	if (ioctl(fd, TAPGIFNAME, &ifr) == -1) {
-		(void)fprintf(stderr, "libtuntap (sys): ioctl TAPGIFNAME\n");
+		tuntap_log(0, "libtuntap (sys): ioctl TAPGIFNAME");
 		return -1;
 	}
 	(void)strlcpy(dev->if_name, ifr.ifr_name, sizeof ifr.ifr_name);
 
 	/* Get the interface default values */
 	if (ioctl(fd, SIOCGIFFLAGS, &ifr) == -1) {
-		(void)fprintf(stderr, "libtuntap (sys): ioctl SIOCGIFFLAGS\n");
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCGIFFLAGS");
 		return -1;
 	}
 
@@ -131,7 +135,11 @@ tuntap_sys_start_tun(struct device *dev, int tun) {
 	}
 
 	if ((fd = open(name, O_RDWR)) == -1) {
-		(void)fprintf(stderr, "libtuntap (sys): open %s\n", name);
+		char buf[22+MAXPATHLEN];
+
+		(void)memset(buf, 0, sizeof buf);
+		snprintf(buf, sizeof buf, "libtuntap (sys): open %s", name);
+		tuntap_log(0, buf);
 		return -1;
 	}
 
@@ -143,7 +151,7 @@ tuntap_sys_start_tun(struct device *dev, int tun) {
 
 	/* Get the interface default values */
 	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &ifr) == -1) {
-		(void)fprintf(stderr, "libtuntap (sys): ioctl SIOCGIFFLAGS\n");
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCGIFFLAGS");
 		return -1;
 	}
 
@@ -186,7 +194,7 @@ tuntap_sys_destroy(struct device *dev) {
 	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 
 	if (ioctl(dev->ctrl_sock, SIOCIFDESTROY, &ifr) == -1)
-		(void)fprintf(stderr, "libtuntap (sys): ioctl SIOCIFDESTROY\n");
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCIFDESTROY\n");
 }
 
 int
@@ -223,7 +231,7 @@ tuntap_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned int imask) {
 	/* Delete previously assigned address */
 	if (ioctl(dev->ctrl_sock, SIOCDIFADDR, &ifr) == -1) {
 		/* No previously assigned address, don't mind */
-		(void)fprintf(stderr, "libtuntap (sys): ioctl SIOCDIFADDR\n");
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCDIFADDR\n");
 	}
 
 	/*
@@ -244,7 +252,7 @@ tuntap_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned int imask) {
 
 	/* Simpler than calling SIOCSIFADDR and/or SIOCSIFBRDADDR */
 	if (ioctl(dev->ctrl_sock, SIOCAIFADDR, &ifa) == -1) {
-		(void)fprintf(stderr, "libtuntap (sys): ioctl SIOCAIFADDR\n");
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCAIFADDR\n");
 		return -1;
 	}
 	return 0;

@@ -24,6 +24,7 @@ if(UNIX)
 	set(CMAKE_C_FLAGS "-Wall -Wextra -ansi")
 	set(SOURCES_LIST
 		tuntap.c
+		tuntap_log.c
 	)
 
 endif(UNIX)
