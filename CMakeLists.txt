@@ -22,7 +22,9 @@ if(UNIX)
 	)
 
 	set(CMAKE_C_FLAGS "-Wall -Wextra -ansi")
-	set(SOURCES_LIST tuntap.c)
+	set(SOURCES_LIST
+		tuntap.c
+	)
 
 endif(UNIX)
 
@@ -35,21 +37,11 @@ endif(WINDOWS)
 if(Linux)
 	add_definitions(-D_GNU_SOURCE)
 	set(SOURCES_LIST ${SOURCES_LIST} tuntap-linux.c)
-	#find_package(Bsd)
-	#if (BSD_FOUND)
-	#	target_link_libraries(tNETacle ${BSD_LIBRARIES})
-	#endif(BSD_FOUND)
-endif(Linux)
-
-if(OpenBSD)
+elseif (OpenBSD)
 	set(SOURCES_LIST ${SOURCES_LIST} tuntap-openbsd.c)
-endif(OpenBSD)
-
-if(NetBSD)
+elseif (NetBSD)
 	set(SOURCES_LIST ${SOURCES_LIST} tuntap-netbsd.c)
-endif(NetBSD)
-
-if(Darwin OR FreeBSD OR SunOS)
+elseif()
 	message(FATAL_ERROR "Your operating system is not supported yet")
 endif()
 
