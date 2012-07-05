@@ -120,7 +120,8 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 		struct ether_addr addr;
 
 		if (ioctl(fd, SIOCGIFADDR, &addr) == -1) {
-			perror("SIOCGIFADDR");
+			(void)fprintf(stderr, "libtuntap (sys): "
+			    "ioctl SIOCGIFADDR\n");
 			return -1;
 		}
 		(void)memcpy(dev->hwaddr, &addr, 6);
@@ -156,7 +157,7 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 }
 
 int
-tuntap_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned int imask) {
+tuntap_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned long imask) {
 	struct ifaliasreq ifa;
 	struct ifreq ifr;
 	struct sockaddr_in addr;

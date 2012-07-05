@@ -134,12 +134,8 @@ tuntap_sys_start_tun(struct device *dev, int tun) {
 		return -1;
 	}
 
-	if ((fd = open(name, O_RDWR)) == -1) {
-		char buf[22+MAXPATHLEN];
-
-		(void)memset(buf, 0, sizeof buf);
-		snprintf(buf, sizeof buf, "libtuntap (sys): open %s", name);
-		tuntap_log(0, buf);
+	if (fd < 0 || fd == 256) {
+		tuntap_log(0, "libtuntap (sys): Can't find a tun entry\n");
 		return -1;
 	}
 
@@ -208,14 +204,15 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 	(void)memcpy(ifra.ifra_addr.sa_data, eth_addr, ETHER_ADDR_LEN);
 
 	if (ioctl(dev->ctrl_sock, SIOCSIFPHYADDR, &ifra) == -1) {
-		perror("ioctl SIOCALIFADDR");
+		(void)fprintf(stderr, "libtuntap (sys): "
+		    "ioctl SIOCSIFPHYADDR\n");
 		return -1;
 	}
 	return 0;
 }
 
 int
-tuntap_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned int imask) {
+tuntap_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned long imask) {
 	struct ifaliasreq ifa;
 	struct ifreq ifr;
 	struct sockaddr_in addr;

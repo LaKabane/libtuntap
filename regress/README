@@ -19,12 +19,12 @@ test17: Create a tapN device, set its IPv4 address and turn it up
 test18: Create a tunN device, set its IPv4 address and turn it up
 test21: Create a tapN device and set its IP address to NULL
 test22: Create a tunN device and set its IP address to NULL
-test23: Create a tapN device and set its netmask to NULL
-test24: Create a tunN device and set its netmask to NULL
+test23: Create a tapN device and set its netmask to a negative value
+test24: Create a tunN device and set its netmask to a negative value
 test25: Create a tapN device and set its IP address to a dumb value
 test26: Create a tunN device and set its IP address to a dumb value
-test27: Create a tapN device and set its netmask to a dumb value
-test28: Create a tunN device and set its netmask to a dumb value
+#test27: Create a tapN device and set its netmask to a dumb value
+#test28: Create a tunN device and set its netmask to a dumb value
 test29: Double create a tapN device
 test30: Create a device with a wrong type
 test31: Create a device with a wrong number

@@ -36,16 +36,23 @@
 int
 tuntap_sys_start(struct device *dev, int mode, int tun) {
 	int fd;
+	int persist;
 	char *ifname;
 	struct ifreq ifr;
 
 	fd = -1;
+	persist = 0;
 	if ((fd = open("/dev/net/tun", O_RDWR)) == -1) {
 		tuntap_log(0, "libtuntap (sys): open /dev/net/tun");
 		return -1;
 	}
 
 	(void)memset(&ifr, '\0', sizeof ifr);
+
+	if (mode & TUNTAP_TUNMODE_PERSIST) {
+		mode &= ~TUNTAP_TUNMODE_PERSIST;
+		persist = 1;
+	}
 
         /* Set the mode: tun or tap */
 	if (mode == TUNTAP_TUNMODE_ETHERNET) {
@@ -64,6 +71,15 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 		tuntap_log(0, "libtuntap (sys): ioctl TUNSETIFF");
 		return -1;
 	}
+
+	/* Set it persistent if needed */
+	if (persist == 1) {
+		if (ioctl(fd, TUNSETPERSIST, &ifr) == -1) {
+        		(void)fprintf(stderr, "libtuntap (sys): "
+			    "failed to set persistent\n");
+			return -1;
+		}
+        }
 
 	/* Set the interface name, if any */
 	if (tun != TUNTAP_TUNID_ANY) {
@@ -114,7 +130,7 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 }
 
 int
-tuntap_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned int imask) {
+tuntap_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned long imask) {
 	struct sockaddr_in addr;
 	struct ifreq ifr;
 
