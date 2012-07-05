@@ -48,6 +48,8 @@ tuntap_init(void) {
 	dev->tun_fd = -1;
 	dev->ctrl_sock = -1;
 	dev->flags = 0;
+
+	tuntap_log = tuntap_log_default;
 	return dev;
 }
 
@@ -220,21 +222,18 @@ tuntap_set_ip(struct device *dev, const char *saddr, int bits) {
 	unsigned int mask;
 
 	if (saddr == NULL) {
-		(void)fprintf(stderr, "libtuntap: tuntap_set_ip"
-		    " invalid address\n");
+		tuntap_log(0, "libtuntap: tuntap_set_ip invalid address");
 		return -1;
 	}
 
 	if (bits < 0 || bits > 128) {
-		(void)fprintf(stderr, "libtuntap: tuntap_set_ip"
-		    " invalid netmask\n");
+		tuntap_log(0, "libtuntap: tuntap_set_ip invalid netmask");
 		return -1;
 	}
 
 	/* Destination address */
 	if (inet_pton(AF_INET, saddr, &(sa.sin_addr)) != 1) {
-		(void)fprintf(stderr, "libtuntap: tuntap_set_ip (IPv4)"
-		    " bad address\n");
+		tuntap_log(0, "libtuntap: tuntap_set_ip (IPv4) bad address");
 		return -1;
 	}
 	addr = sa.sin_addr.s_addr;
@@ -257,8 +256,7 @@ tuntap_read(struct device *dev, void *buf, size_t size) {
 
 	n = read(dev->tun_fd, buf, size);
 	if (n == -1) {
-		(void)fprintf(stderr,
-		    "libtuntap: enable to read from device\n");
+		tuntap_log(0, "libtuntap: enable to read from device");
 		return -1;
 	}
 	return n;
@@ -274,8 +272,7 @@ tuntap_write(struct device *dev, void *buf, size_t size) {
 
 	n = write(dev->tun_fd, buf, size);
 	if (n == -1) {
-		(void)fprintf(stderr,
-		    "libtuntap: enable to write to device\n");
+		tuntap_log(0, "libtuntap: enable to write to device");
 		return -1;
 	}
 	return n;

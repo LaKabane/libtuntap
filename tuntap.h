@@ -49,6 +49,11 @@ struct device {
 	char		if_name[IFNAMSIZ];
 };
 
+/* User definable log callback */
+typedef void (*t_tuntap_log)(int, const char *);
+t_tuntap_log tuntap_log;
+
+/* Portable "public" functions */
 struct device	*tuntap_init(void);
 void		 tuntap_destroy(struct device *);
 void		 tuntap_release(struct device *);
@@ -64,7 +69,12 @@ int		 tuntap_set_ip(struct device *, const char *, int);
 int		 tuntap_read(struct device *, void *, size_t);
 int		 tuntap_write(struct device *, void *, size_t);
 
-/* OS specific */
+/* Logging functions */
+void		 tuntap_log_default(int, const char *);
+void		 tuntap_log_hexdump(void *, size_t);
+void		 tuntap_log_chksum(void *, int);
+
+/* OS specific functions */
 int		 tuntap_sys_start(struct device *, int, int);
 void		 tuntap_sys_destroy(struct device *);
 int		 tuntap_sys_set_hwaddr(struct device *, struct ether_addr *);
