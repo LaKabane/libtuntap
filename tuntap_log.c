@@ -35,7 +35,7 @@ tuntap_log_default(int level, const char *errmsg) {
 
 void
 tuntap_log_hexdump(void *data, size_t size) {
-	intptr_t p = (intptr_t)data;
+	unsigned char *p = (unsigned char *)data;
 	unsigned int c;
 	size_t n;
 	char bytestr[4] = {0};
@@ -48,16 +48,16 @@ tuntap_log_hexdump(void *data, size_t size) {
 		if (n % 16 == 1) {
 			/* store address for this line */
 			snprintf(addrstr, sizeof(addrstr), "%.4lx",
-			    (p-(intptr_t)data) );
+			    ((uintptr_t)p - (uintptr_t)data) );
 		}
 
-		c = p;
+		c = *p;
 		if (isalnum(c) == 0) {
 			c = '.';
 		}
 
 		/* store hex str (for left side) */
-		snprintf(bytestr, sizeof(bytestr), "%02lX ", p);
+		snprintf(bytestr, sizeof(bytestr), "%02X ", *p);
 		strncat(hexstr, bytestr, sizeof(hexstr)-strlen(hexstr)-1);
 
 		/* store char str (for right side) */
