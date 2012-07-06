@@ -46,10 +46,10 @@
 #  define ETHER_ADDR_LEN 6 
 # endif
 
-# if defined IFNAMSIZ
+# if defined IFNAMSIZ && !defined IF_NAMESIZE
 #  define IF_NAMESIZE IFNAMSIZ /* Historical BSD name */
 # elif !defined IF_NAMESIZE
-#  define IF_NAMSIZE 16
+#  define IF_NAMESIZE 16
 # endif
 
 #if defined TUNSETDEBUG

@@ -212,7 +212,7 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 }
 
 int
-tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
+tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s, uint32_t bits) {
 	struct ifaliasreq ifa;
 	struct ifreq ifr;
 	struct sockaddr_in mask;
@@ -230,7 +230,7 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
 	 * Fill-in the destination address and netmask,
          * but don't care of the broadcast address
 	 */
-	(void)memcpy(&(ifa.ifra_addr), s4, sizeof ifa.ifra_addr);
+	(void)memcpy(&(ifa.ifra_addr), s, sizeof ifa.ifra_addr);
 
 	(void)memset(&mask, '\0', sizeof mask);
 	mask.sin_family = AF_INET;
@@ -247,10 +247,10 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
 }
 
 int
-tuntap_sys_set_ipv6(struct device *dev, struct sockaddr_in6 *s6, uint32_t bits) {
+tuntap_sys_set_ipv6(struct device *dev, struct sockaddr_in6 *s, uint32_t bits) {
 	tuntap_log(0, "libtuntap: IPv6 is not supported on your system");
 	(void)dev;
-	(void)sin;
+	(void)s;
 	(void)bits;
 	return -1;
 }
