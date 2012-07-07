@@ -45,6 +45,7 @@ tuntap_sys_set_ifname(struct device *dev, const char *ifname, size_t len) {
 
 int
 tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len) {
+#if !defined Darwin && !defined NetBSD
 	struct ifreq ifr;
 	struct ifreq_buffer ifrbuf;
 
@@ -61,5 +62,8 @@ tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len) {
 		return -1;
 	}
 	return 0;
+#else
+	return -1;
+#endif
 }
 
