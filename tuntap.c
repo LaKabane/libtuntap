@@ -126,12 +126,17 @@ tuntap_set_hwaddr(struct device *dev, const char *hwaddr) {
 
 	if (strcmp(hwaddr, "random") == 0) {
 		unsigned int i;
+		unsigned char *ptr;
 
 		i = 0;
+		ptr = (unsigned char *)&eth_rand;
 		srandom((unsigned int)time(NULL));
-		for (; i < sizeof eth_rand.ether_addr_octet; ++i)
-			eth_rand.ether_addr_octet[i] = (unsigned char)random();
-		eth_rand.ether_addr_octet[0] &= 0xfc;
+		for (; i < sizeof eth_rand; ++i) {
+			*ptr = (unsigned char)random();
+			ptr++;
+		}
+		ptr = (unsigned char *)&eth_rand;
+		*ptr &= 0xfc;
 		eth_addr = &eth_rand;
 	} else {
 		eth_addr = ether_aton(hwaddr);

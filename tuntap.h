@@ -70,6 +70,7 @@ int		 tuntap_read(struct device *, void *, size_t);
 int		 tuntap_write(struct device *, void *, size_t);
 
 /* Logging functions */
+void		 tuntap_log_set_cb(t_tuntap_log cb);
 void		 tuntap_log_default(int, const char *);
 void		 tuntap_log_hexdump(void *, size_t);
 void		 tuntap_log_chksum(void *, int);

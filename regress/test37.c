@@ -21,27 +21,25 @@
 
 #include "tuntap.h"
 
+int exit_value;
+
+void
+test_cb(int level, const char *errmsg) {
+	fprintf(stderr, "successfully set a callback\n");
+	exit_value = 0;
+}
+
 int
 main(void) {
-	int ret;
 	struct device *dev;
-	char *hwaddr;
 
-	ret = 1;
+	exit_value = 1;
 	dev = tuntap_init();
-	if (tuntap_start(dev, TUNTAP_TUNMODE_ETHERNET, TUNTAP_TUNID_ANY) == -1)
-		goto clean;
+	tuntap_log_set_cb(test_cb);
 
-	hwaddr = tuntap_get_hwaddr(dev);
-	(void)fprintf(stderr, "%s\n", hwaddr);
-	if (strcmp(hwaddr, "0:0:0:0:0:0") == 0)
-		goto clean;
-	if (strcmp(hwaddr, "00:00:00:00:00:00") == 0)
-		goto clean;
+	tuntap_start(dev, 0, -1);
 
-	ret = 0;
-clean:
 	tuntap_destroy(dev);
-	return ret;
+	return exit_value;
 }
 
