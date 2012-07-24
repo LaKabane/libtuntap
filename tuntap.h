@@ -36,6 +36,12 @@
 # define TUNTAP_MODE_TUNNEL   0x0002
 # define TUNTAP_MODE_PERSIST  0x0004
 
+# define TUNTAP_LOG_DEBUG     0x0001
+# define TUNTAP_LOG_INFO      0x0002
+# define TUNTAP_LOG_NOTICE    0x0004
+# define TUNTAP_LOG_WARN      0x0008
+# define TUNTAP_LOG_ERR       0x0016
+
 # define TUNTAP_GET_FD(x) (x)->tun_fd
 
 # ifdef __cplusplus
