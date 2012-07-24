@@ -217,9 +217,10 @@ tuntap_set_mtu(struct device *dev, int mtu) {
 
 int
 tuntap_set_ip(struct device *dev, const char *saddr, int bits) {
-	struct sockaddr_in sa;
-	unsigned int addr;
-	unsigned int mask;
+	struct sockaddr_in sin;
+	struct sockaddr_in6 sin6;
+	uint32_t mask;
+	int errval;
 
 	if (saddr == NULL) {
 		tuntap_log(0, "libtuntap: tuntap_set_ip invalid address");
@@ -231,19 +232,37 @@ tuntap_set_ip(struct device *dev, const char *saddr, int bits) {
 		return -1;
 	}
 
-	/* Destination address */
-	if (inet_pton(AF_INET, saddr, &(sa.sin_addr)) != 1) {
-		tuntap_log(0, "libtuntap: tuntap_set_ip (IPv4) bad address");
-		return -1;
-	}
-	addr = sa.sin_addr.s_addr;
-
 	/* Netmask */
 	mask = ~0;
 	mask = ~(mask >> bits);
 	mask = ntohl(mask);
 
-	return tuntap_sys_set_ip(dev, addr, mask);
+	/*
+	 * Destination address parsing: we try IPv4 first and fall back to
+	 * IPv6 if inet_pton return 0
+	 */
+	errval = inet_pton(AF_INET, saddr, &(sin.sin_addr));
+	if (errval == 1) {
+		uint32_t addr;
+
+		addr = sin.sin_addr.s_addr;
+		return tuntap_sys_set_ipv4(dev, addr, mask);
+	} else if (errval == -1) {
+		tuntap_log(0, "libtuntap: tuntap_set_ip bad IPv4 address");
+		return -1;
+	} else {
+		uint32_t *addr;
+
+		if (inet_pton(AF_INET6, saddr, &(sin6.sin6_addr)) == -1) {
+			tuntap_log(0, "libtuntap: tuntap_set_ip bad IPv6 address");
+			return -1;
+		}
+		addr = (uint32_t *)sin6.sin6_addr.s6_addr;
+		return tuntap_sys_set_ipv6(dev, addr, mask);
+	}
+
+	/* NOTREACHED */
+	return -1;
 }
 
 int

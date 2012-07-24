@@ -27,6 +27,7 @@
 #include <netinet/if_ether.h>
 
 #include <fcntl.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -157,7 +158,7 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 }
 
 int
-tuntap_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned long imask) {
+tuntap_sys_set_ipv4(struct device *dev, uint32_t iaddr, uint32_t imask) {
 	struct ifaliasreq ifa;
 	struct ifreq ifr;
 	struct sockaddr_in addr;
@@ -198,5 +199,19 @@ tuntap_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned long imask) {
 		return -1;
 	}
 	return 0;
+}
+
+int
+tuntap_sys_set_ipv6(struct device *dev, uint32_t *iaddr, uint32_t imask) {
+	/*
+	 * #include <netinet6/in6_var.h>
+	 * SIOCDIFADDR_IN6
+	 * SIOCAIFADDR_IN6
+	 */
+	tuntap_log(0, "libtuntap: IPv6 is not supported on your system");
+	(void)dev;
+	(void)iaddr;
+	(void)imask;
+	return -1;
 }
 

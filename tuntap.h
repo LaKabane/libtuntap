@@ -16,6 +16,7 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <stdint.h>
 
 #if defined Linux
 # include <linux/if.h>
@@ -79,7 +80,8 @@ void		 tuntap_log_chksum(void *, int);
 int		 tuntap_sys_start(struct device *, int, int);
 void		 tuntap_sys_destroy(struct device *);
 int		 tuntap_sys_set_hwaddr(struct device *, struct ether_addr *);
-int		 tuntap_sys_set_ip(struct device *, unsigned int, unsigned long);
+int		 tuntap_sys_set_ipv4(struct device *, uint32_t, uint32_t);
+int		 tuntap_sys_set_ipv6(struct device *, uint32_t *, uint32_t);
 
 # ifdef __cplusplus
 }
