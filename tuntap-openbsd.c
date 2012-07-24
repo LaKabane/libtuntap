@@ -16,15 +16,15 @@
 
 #include <sys/types.h>
 #include <sys/ioctl.h>
-#include <sys/socket.h>
 #include <sys/param.h> /* For MAXPATHLEN */
+#include <sys/socket.h>
 
-#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <net/if.h>
-#include <net/if_types.h>
 #include <net/if_tun.h>
+#include <net/if_types.h>
 #include <netinet/if_ether.h>
+#include <netinet/in.h>
 
 #include <fcntl.h>
 #include <stdint.h>
