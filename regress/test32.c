@@ -23,20 +23,26 @@
 
 int
 main(void) {
+	int ret;
 	struct device *dev;
 	char *hwaddr;
 
+	ret = 1;
 	dev = tuntap_init();
 	if (tuntap_start(dev, TUNTAP_MODE_ETHERNET, TUNTAP_ID_ANY) == -1) {
-		return 1;
+		goto clean;
 	}
 
 	hwaddr = tuntap_get_hwaddr(dev);
-	if (strcmp(hwaddr, "0:0:0:0:0:0") != 0) {
-		tuntap_destroy(dev);
-		return 0;
-	}
+	(void)fprintf(stderr, "%s\n", hwaddr);
+	if (strcmp(hwaddr, "0:0:0:0:0:0") == 0)
+		goto clean;
+	if (strcmp(hwaddr, "00:00:00:00:00:00") == 0)
+		goto clean;
 
-	return 1;
+	ret = 0;
+clean:
+	tuntap_destroy(dev);
+	return ret;
 }
 
