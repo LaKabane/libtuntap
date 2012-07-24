@@ -50,16 +50,16 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 
 	(void)memset(&ifr, '\0', sizeof ifr);
 
-	if (mode & TUNTAP_TUNMODE_PERSIST) {
-		mode &= ~TUNTAP_TUNMODE_PERSIST;
+	if (mode & TUNTAP_MODE_PERSIST) {
+		mode &= ~TUNTAP_MODE_PERSIST;
 		persist = 1;
 	}
 
         /* Set the mode: tun or tap */
-	if (mode == TUNTAP_TUNMODE_ETHERNET) {
+	if (mode == TUNTAP_MODE_ETHERNET) {
 		ifr.ifr_flags = IFF_TAP;
 		ifname = "tap%i";
-	} else if (mode == TUNTAP_TUNMODE_TUNNEL) {
+	} else if (mode == TUNTAP_MODE_TUNNEL) {
 		ifr.ifr_flags = IFF_TUN;
 		ifname = "tun%i";
 	} else {
@@ -83,8 +83,8 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
         }
 
 	/* Set the interface name, if any */
-	if (tun != TUNTAP_TUNID_ANY) {
-		if (fd > TUNTAP_TUNID_MAX) {
+	if (tun != TUNTAP_ID_ANY) {
+		if (fd > TUNTAP_ID_MAX) {
 			return -1;
 		}
 		(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name,

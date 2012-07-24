@@ -39,7 +39,7 @@ static int
 tuntap_sys_create_dev(struct device *dev, int tun) {
 	struct ifreq ifr;
 
-	/* At this point 'tun' can't be TUNTAP_TUNID_ANY */
+	/* At this point 'tun' can't be TUNTAP_ID_ANY */
 	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)snprintf(ifr.ifr_name, IFNAMSIZ, "tun%i", tun);
 
@@ -59,18 +59,18 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	fd = -1;
 
 	/* Force creation of the driver if needed or let it resilient */
-	if (mode & TUNTAP_TUNMODE_PERSIST) {
-		mode &= ~TUNTAP_TUNMODE_PERSIST;
+	if (mode & TUNTAP_MODE_PERSIST) {
+		mode &= ~TUNTAP_MODE_PERSIST;
 		if (tuntap_sys_create_dev(dev, tun) == -1)
 			return -1;
 	}
 
 	/* Try to use the given tun driver or loop throught the avaible ones */
-	if (tun < TUNTAP_TUNID_MAX) {
+	if (tun < TUNTAP_ID_MAX) {
 		(void)snprintf(name, sizeof name, "/dev/tun%i", tun);
 		fd = open(name, O_RDWR);
-	} else if (tun == TUNTAP_TUNID_ANY) {
-		for (tun = 0; tun < TUNTAP_TUNID_MAX; ++tun) {
+	} else if (tun == TUNTAP_ID_ANY) {
+		for (tun = 0; tun < TUNTAP_ID_MAX; ++tun) {
 			(void)memset(name, '\0', sizeof name);
 			(void)snprintf(name, sizeof name, "/dev/tun%i", tun);
 			if ((fd = open(name, O_RDWR)) > 0)
@@ -98,10 +98,10 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	}
 
         /* Set the mode: tun or tap */
-	if (mode == TUNTAP_TUNMODE_ETHERNET) {
+	if (mode == TUNTAP_MODE_ETHERNET) {
 		ifr.ifr_flags |= IFF_LINK0;
 	}
-	else if (mode == TUNTAP_TUNMODE_TUNNEL) {
+	else if (mode == TUNTAP_MODE_TUNNEL) {
 		ifr.ifr_flags &= ~IFF_LINK0;
 	}
 	else {
@@ -117,7 +117,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	/* Save flags for tuntap_{up, down} */
 	dev->flags = ifr.ifr_flags;
 
-	if (mode == TUNTAP_TUNMODE_ETHERNET) {
+	if (mode == TUNTAP_MODE_ETHERNET) {
 		struct ether_addr addr;
 
 		if (ioctl(fd, SIOCGIFADDR, &addr) == -1) {

@@ -78,7 +78,7 @@ tuntap_start(struct device *dev, int mode, int tun) {
 	}
 	dev->ctrl_sock = sock;
 
-	if (mode & TUNTAP_TUNMODE_PERSIST && tun == TUNTAP_TUNID_ANY) {
+	if (mode & TUNTAP_MODE_PERSIST && tun == TUNTAP_ID_ANY) {
 		goto clean; /* XXX: Explain why */
 	}
 

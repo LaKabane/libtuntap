@@ -41,12 +41,12 @@ tuntap_sys_create_dev(struct device *dev, int mode, int tun) {
 	struct ifreq ifr;
 	char *name;
 
-	if (mode == TUNTAP_TUNMODE_ETHERNET)
+	if (mode == TUNTAP_MODE_ETHERNET)
 		name = "tap%i";
 	else
 		name = "tun%i";
 
-	/* At this point 'tun' can't be TUNTAP_TUNID_ANY */
+	/* At this point 'tun' can't be TUNTAP_ID_ANY */
 	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)snprintf(ifr.ifr_name, IFNAMSIZ, name, tun);
 
@@ -72,11 +72,11 @@ tuntap_sys_start_tap(struct device *dev, int tun) {
 	(void)memset(name, '\0', sizeof name);
 
 	/* Set the device path to open */
-	if (tun < TUNTAP_TUNID_MAX) {
+	if (tun < TUNTAP_ID_MAX) {
 		/* Create the wanted device */
-		tuntap_sys_create_dev(dev, TUNTAP_TUNMODE_ETHERNET, tun);
+		tuntap_sys_create_dev(dev, TUNTAP_MODE_ETHERNET, tun);
 		(void)snprintf(name, sizeof name, "/dev/tap%i", tun);
-	} else if (tun == TUNTAP_TUNID_ANY) {
+	} else if (tun == TUNTAP_ID_ANY) {
 		/* Or use autocloning */
 		(void)memcpy(name, "/dev/tap", 8);
 	} else {
@@ -121,11 +121,11 @@ tuntap_sys_start_tun(struct device *dev, int tun) {
 	 * Try to use the given driver, or loop throught the avaible ones
 	 */
 	fd = -1;
-	if (tun < TUNTAP_TUNID_MAX) {
+	if (tun < TUNTAP_ID_MAX) {
 		(void)snprintf(name, sizeof name, "/dev/tun%i", tun);
 		fd = open(name, O_RDWR);
-	} else if (tun == TUNTAP_TUNID_ANY) {
-		for (tun = 0; tun < TUNTAP_TUNID_MAX; ++tun) {
+	} else if (tun == TUNTAP_ID_ANY) {
+		for (tun = 0; tun < TUNTAP_ID_MAX; ++tun) {
 			(void)memset(name, '\0', sizeof name);
 			(void)snprintf(name, sizeof name, "/dev/tun%i", tun);
 			if ((fd = open(name, O_RDWR)) > 0)
@@ -163,17 +163,17 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	int fd;
 
 	/* Force creation of the driver if needed or let it resilient */
-	if (mode & TUNTAP_TUNMODE_PERSIST) {
-		mode &= ~TUNTAP_TUNMODE_PERSIST;
+	if (mode & TUNTAP_MODE_PERSIST) {
+		mode &= ~TUNTAP_MODE_PERSIST;
 		if (tuntap_sys_create_dev(dev, mode, tun) == -1)
 			return -1;
 	}
 
         /* tun and tap devices are not created in the same way */
-	if (mode == TUNTAP_TUNMODE_ETHERNET) {
+	if (mode == TUNTAP_MODE_ETHERNET) {
 		fd = tuntap_sys_start_tap(dev, tun);
 	}
-	else if (mode == TUNTAP_TUNMODE_TUNNEL) {
+	else if (mode == TUNTAP_MODE_TUNNEL) {
 		fd = tuntap_sys_start_tun(dev, tun);
 	}
 	else {
