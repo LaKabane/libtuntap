@@ -38,3 +38,4 @@ test34: Create a tun0 persistent device and destroy it
 test35: Create a tap0 persistent device and release it
 test36: Create a tun1 persistent device and release it
 test37: Set a log callback and generate an error
+test38: Set a log callback and generate all possible error levels
