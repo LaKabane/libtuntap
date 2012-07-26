@@ -41,7 +41,76 @@ tuntap_sys_create_dev(struct device *dev, int tun) {
 
 int
 tuntap_sys_start(struct device *dev, int mode, int tun) {
-	return -1;
+	struct ifreq ifr;
+	char name[MAXPATHLEN];
+	int fd;
+	char *name;
+
+	fd = -1;
+
+	/* Force creation of the driver if needed or let it resilient */
+	if (mode & TUNTAP_MODE_PERSIST) {
+		mode &= ~TUNTAP_MODE_PERSIST;
+		/* TODO: Call tuntap_sys_create_dev() */
+	}
+
+        /* Set the mode: tun or tap */
+	if (mode == TUNTAP_MODE_ETHERNET) {
+		name = "tap";
+		ifr.ifr_flags |= IFF_LINK0;
+	}
+	else if (mode == TUNTAP_MODE_TUNNEL) {
+		name = "tun";
+		ifr.ifr_flags &= ~IFF_LINK0;
+	}
+	else {
+		return -1;
+	}
+
+	/* Try to use the given tun/tap driver or loop throught the avaible ones */
+	if (tun < TUNTAP_ID_MAX) {
+		(void)snprintf(name, sizeof name, "/dev/%s%i", name, tun);
+		fd = open(name, O_RDWR);
+	} else if (tun == TUNTAP_ID_ANY) {
+		for (tun = 0; tun < TUNTAP_ID_MAX; ++tun) {
+			(void)memset(name, '\0', sizeof name);
+			(void)snprintf(name, sizeof name, "/dev/%s%i",
+			    name, tun);
+			if ((fd = open(name, O_RDWR)) > 0)
+				break;
+		}
+	} else {
+		return -1;
+	}
+
+	if (fd < 0 || fd == 256) {
+		tuntap_log(0, "libtuntap (sys): Can't find a tun entry");
+		return -1;
+	}
+
+	/* Set the interface name */
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name, "%s%i", name, tun);
+	/* And save it */
+	(void)strlcpy(dev->if_name, ifr.ifr_name, sizeof ifr.ifr_name);
+
+	/* Get the interface default values */
+	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &ifr) == -1) {
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCGIFFLAGS");
+		return -1;
+	}
+
+	/* Set our modifications */
+	if (ioctl(dev->ctrl_sock, SIOCSIFFLAGS, &ifr) == -1) {
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFFLAGS");
+		return -1;
+	}
+
+	/* Save flags for tuntap_{up, down} */
+	dev->flags = ifr.ifr_flags;
+
+	/* TODO: Save pre-existing MAC address */
+	return fd;
 }
 
 void
@@ -51,12 +120,62 @@ tuntap_sys_destroy(struct device *dev) {
 
 int
 tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
-	return -1;
+	struct ifreq ifr;
+
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
+	ifr.ifr_addr.sa_len = HWADDRLEN;
+	ifr.ifr_addr.sa_family = AF_LINK;
+	(void)memcpy(ifr.ifr_addr.sa_data, eth_addr, HWADDRLEN);
+	if (ioctl(dev->ctrl_sock, SIOCSIFLLADDR, &ifr) < 0) {
+	        tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFLLADDR");
+		return -1;
+	}
+	return 0;
 }
 
 int
 tuntap_sys_set_ipv4(struct device *dev, uint32_t iaddr, uint32_t imask) {
-	return -1;
+	struct ifaliasreq ifa;
+	struct ifreq ifr;
+	struct sockaddr_in addr;
+	struct sockaddr_in mask;
+
+	(void)memset(&ifa, '\0', sizeof ifa);
+	(void)strlcpy(ifa.ifra_name, dev->if_name, sizeof dev->if_name);
+
+	/* XXX: Will probably fail, we need the old IP address */
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
+
+	/* Delete previously assigned address */
+	if (ioctl(dev->ctrl_sock, SIOCDIFADDR, &ifr) == -1) {
+		/* No previously assigned address, don't mind */
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCDIFADDR\n");
+	}
+
+	/*
+	 * Fill-in the destination address and netmask,
+         * but don't care of the broadcast address
+	 */
+	(void)memset(&addr, '\0', sizeof addr);
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = iaddr;
+	addr.sin_len = sizeof addr;
+	(void)memcpy(&(ifa.ifra_addr), &addr, sizeof ifa.ifra_addr);
+
+	(void)memset(&mask, '\0', sizeof mask);
+	mask.sin_family = AF_INET;
+	mask.sin_addr.s_addr = imask;
+	mask.sin_len = sizeof mask;
+	(void)memcpy(&ifa.ifra_mask, &mask, sizeof ifa.ifra_mask);
+
+	/* Simpler than calling SIOCSIFADDR and/or SIOCSIFBRDADDR */
+	if (ioctl(dev->ctrl_sock, SIOCAIFADDR, &ifa) == -1) {
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCAIFADDR\n");
+		return -1;
+	}
+	return 0;
 }
 
 int
