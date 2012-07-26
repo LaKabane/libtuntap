@@ -205,8 +205,7 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 	(void)memcpy(ifra.ifra_addr.sa_data, eth_addr, ETHER_ADDR_LEN);
 
 	if (ioctl(dev->ctrl_sock, SIOCSIFPHYADDR, &ifra) == -1) {
-		(void)fprintf(stderr, "libtuntap (sys): "
-		    "ioctl SIOCSIFPHYADDR\n");
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFPHYADDR");
 		return -1;
 	}
 	return 0;
@@ -229,7 +228,7 @@ tuntap_sys_set_ipv4(struct device *dev, uint32_t iaddr, uint32_t imask) {
 	/* Delete previously assigned address */
 	if (ioctl(dev->ctrl_sock, SIOCDIFADDR, &ifr) == -1) {
 		/* No previously assigned address, don't mind */
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCDIFADDR\n");
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCDIFADDR");
 	}
 
 	/*
@@ -250,7 +249,7 @@ tuntap_sys_set_ipv4(struct device *dev, uint32_t iaddr, uint32_t imask) {
 
 	/* Simpler than calling SIOCSIFADDR and/or SIOCSIFBRDADDR */
 	if (ioctl(dev->ctrl_sock, SIOCAIFADDR, &ifa) == -1) {
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCAIFADDR\n");
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCAIFADDR");
 		return -1;
 	}
 	return 0;
