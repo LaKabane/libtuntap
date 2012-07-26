@@ -213,7 +213,7 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 }
 
 int
-tuntap_sys_set_ip(struct device *dev, uint32_t iaddr, uint32_t imask) {
+tuntap_sys_set_ipv4(struct device *dev, uint32_t iaddr, uint32_t imask) {
 	struct ifaliasreq ifa;
 	struct ifreq ifr;
 	struct sockaddr_in addr;
