@@ -25,6 +25,7 @@
 #include <net/if_types.h>
 #include <netinet/if_ether.h>
 #include <netinet/in.h>
+#include <netinet6/in6_var.h>
 
 #include <fcntl.h>
 #include <stdint.h>
@@ -175,6 +176,7 @@ tuntap_sys_set_ipv4(struct device *dev, uint32_t iaddr, uint32_t imask) {
 	if (ioctl(dev->ctrl_sock, SIOCDIFADDR, &ifr) == -1) {
 		/* No previously assigned address, don't mind */
 		tuntap_log(0, "libtuntap (sys): ioctl SIOCDIFADDR");
+		perror("ioctl");
 	}
 
 	/*
@@ -203,15 +205,46 @@ tuntap_sys_set_ipv4(struct device *dev, uint32_t iaddr, uint32_t imask) {
 
 int
 tuntap_sys_set_ipv6(struct device *dev, uint32_t *iaddr, uint32_t imask) {
+	struct in6_aliasreq ifra;
+	struct sockaddr_in6 addr;
+	struct sockaddr_in6 mask;
+
+	(void)memset(&ifra, '\0', sizeof ifra);
+	(void)strlcpy(ifra.ifra_name, dev->if_name, sizeof dev->if_name);
+
+	/* Delete previously assigned address */
+	if (ioctl(dev->ctrl_sock, SIOCDIFADDR, &ifra) == -1) {
+		/* No previously assigned address, don't mind */
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCDIFADDR_IN6");
+		perror("ioctl");
+	}
+
+	/*
+	 * Fill-in the destination address and netmask,
+         * but don't care of the broadcast address
+	 */
+	(void)memset(&addr, '\0', sizeof addr);
+	addr.sin6_family = AF_INET6;
+	(void)memcpy(addr.sin6_addr.s6_addr, iaddr, sizeof iaddr);
+	addr.sin6_len = sizeof addr;
+	(void)memcpy(&(ifra.ifra_addr), &addr, sizeof ifra.ifra_addr);
+
+	(void)memset(&mask, '\0', sizeof mask);
+	/*mask.sin6_family = AF_INET6;
+	mask.sin6_addr.s6_addr[0] = imask;*/ /* XXX */
+	/*mask.sin6_len = sizeof mask;*/
+	(void)memcpy(&ifra.ifra_prefixmask, &mask, sizeof ifra.ifra_prefixmask);
+
+	/* Simpler than calling SIOCSIFADDR and/or SIOCSIFBRDADDR */
+	if (ioctl(dev->ctrl_sock, SIOCAIFADDR, &ifra) == -1) {
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCAIFADDR");
+		return -1;
+	}
 	/*
 	 * #include <netinet6/in6_var.h>
 	 * SIOCDIFADDR_IN6
 	 * SIOCAIFADDR_IN6
 	 */
-	tuntap_log(0, "libtuntap: IPv6 is not supported on your system");
-	(void)dev;
-	(void)iaddr;
-	(void)imask;
-	return -1;
+	return 0;
 }
 
