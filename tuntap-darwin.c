@@ -18,9 +18,9 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/param.h>
+
 #include <arpa/inet.h>
 #include <net/if.h>
-/* #include <net/if_tun.h> */
 #include <net/if_types.h>
 #include <netinet/if_ether.h>
 #include <netinet/in.h>
@@ -120,19 +120,18 @@ tuntap_sys_destroy(struct device *dev) {
 
 int
 tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
-	/* struct ifreq ifr; */
+	struct ifreq ifr;
 
-	/* (void)memset(&ifr, '\0', sizeof ifr); */
-	/* (void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name); */
-	/* ifr.ifr_addr.sa_len = HWADDRLEN; */
-	/* ifr.ifr_addr.sa_family = AF_LINK; */
-	/* (void)memcpy(ifr.ifr_addr.sa_data, eth_addr, HWADDRLEN); */
-	/* if (ioctl(dev->ctrl_sock, SIOCSIFLLADDR, &ifr) < 0) { */
-	/*         tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFLLADDR"); */
-	/* 	return -1; */
-	/* } */
-	/* return 0; */
-    return -1;
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
+	ifr.ifr_addr.sa_len = ETHER_ADDR_LEN;
+	ifr.ifr_addr.sa_family = AF_LINK;
+	(void)memcpy(ifr.ifr_addr.sa_data, eth_addr, ETHER_ADDR_LEN);
+	if (ioctl(dev->ctrl_sock, SIOCSIFLLADDR, &ifr) < 0) {
+	        tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFLLADDR");
+		return -1;
+	}
+	return 0;
 }
 
 int
