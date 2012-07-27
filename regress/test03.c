@@ -28,7 +28,7 @@ main(void) {
 
 	ret = 0;
 	dev = tuntap_init();
-	if (tuntap_start(dev, TUNTAP_TUNMODE_ETHERNET, 0) == -1)
+	if (tuntap_start(dev, TUNTAP_MODE_ETHERNET, 0) == -1)
 		ret = 1;
 
 	tuntap_destroy(dev);

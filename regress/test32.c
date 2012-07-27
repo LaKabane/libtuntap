@@ -29,8 +29,9 @@ main(void) {
 
 	ret = 1;
 	dev = tuntap_init();
-	if (tuntap_start(dev, TUNTAP_TUNMODE_ETHERNET, TUNTAP_TUNID_ANY) == -1)
+	if (tuntap_start(dev, TUNTAP_MODE_ETHERNET, TUNTAP_ID_ANY) == -1) {
 		goto clean;
+	}
 
 	hwaddr = tuntap_get_hwaddr(dev);
 	(void)fprintf(stderr, "%s\n", hwaddr);

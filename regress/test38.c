@@ -21,16 +21,52 @@
 
 #include "tuntap.h"
 
+int debug, info, notice, warn, err;
+
+void
+test_cb(int level, const char *errmsg) {
+	const char *prefix;
+
+	switch (level) {
+	case TUNTAP_LOG_DEBUG:
+		prefix = "debug";
+		debug = 1;
+		break;
+	case TUNTAP_LOG_INFO:
+		prefix = "info";
+		info = 1;
+		break;
+	case TUNTAP_LOG_NOTICE:
+		prefix = "notice";
+		notice = 1;
+		break;
+	case TUNTAP_LOG_WARN:
+		prefix = "warn";
+		warn = 1;
+		break;
+	case TUNTAP_LOG_ERR:
+		prefix = "err";
+		err = 1;
+		break;
+	default:
+		/* NOTREACHED */
+		break;
+	}
+	(void)fprintf(stderr, "%s: %s\n", prefix, errmsg);
+}
+
 int
 main(void) {
-	struct device *dev;
+	tuntap_log_set_cb(test_cb);
 
-	dev = tuntap_init();
-	if (tuntap_start(dev, 42, TUNTAP_ID_ANY) == -1) {
-	    tuntap_destroy(dev);
-	    return 0;
-	}
+	tuntap_log(TUNTAP_LOG_DEBUG, "debug message");
+	tuntap_log(TUNTAP_LOG_INFO, "info message");
+	tuntap_log(TUNTAP_LOG_NOTICE, "notice message");
+	tuntap_log(TUNTAP_LOG_WARN, "warn message");
+	tuntap_log(TUNTAP_LOG_ERR, "err message");
 
-	return 1;
+	if (debug + info + notice + warn + err != 5)
+		return -1;
+	return 0;
 }
 

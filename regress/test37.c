@@ -25,6 +25,7 @@ int exit_value;
 
 void
 test_cb(int level, const char *errmsg) {
+	(void)level;
 	fprintf(stderr, "successfully set a callback\n");
 	exit_value = 0;
 }

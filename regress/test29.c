@@ -26,11 +26,11 @@ main(void) {
 	struct device *dev;
 
 	dev = tuntap_init();
-	if (tuntap_start(dev, TUNTAP_TUNMODE_ETHERNET, TUNTAP_TUNID_ANY) == -1) {
+	if (tuntap_start(dev, TUNTAP_MODE_ETHERNET, TUNTAP_ID_ANY) == -1) {
 	    return 1;
 	}
 
-	if (tuntap_start(dev, TUNTAP_TUNMODE_ETHERNET, TUNTAP_TUNID_ANY) == -1) {
+	if (tuntap_start(dev, TUNTAP_MODE_ETHERNET, TUNTAP_ID_ANY) == -1) {
 	    tuntap_destroy(dev);
 	    return 0;
 	}
