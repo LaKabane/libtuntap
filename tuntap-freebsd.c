@@ -51,12 +51,61 @@ tuntap_sys_destroy(struct device *dev) {
 
 int
 tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
-	return -1;
+	struct ifreq ifr;
+
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
+	ifr.ifr_addr.sa_len = HWADDRLEN;
+	ifr.ifr_addr.sa_family = AF_LINK;
+	(void)memcpy(ifr.ifr_addr.sa_data, eth_addr, HWADDRLEN);
+	if (ioctl(dev->ctrl_sock, SIOCSIFLLADDR, &ifr) < 0) {
+	        tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFLLADDR");
+		return -1;
+	}
+	return 0;
 }
 
 int
 tuntap_sys_set_ipv4(struct device *dev, uint32_t iaddr, uint32_t imask) {
-	return -1;
+	struct ifaliasreq ifa;
+	struct ifreq ifr;
+	struct sockaddr_in addr;
+	struct sockaddr_in mask;
+
+	(void)memset(&ifa, '\0', sizeof ifa);
+	(void)strlcpy(ifa.ifra_name, dev->if_name, sizeof dev->if_name);
+
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
+
+	/* Delete previously assigned address */
+	if (ioctl(dev->ctrl_sock, SIOCDIFADDR, &ifr) == -1) {
+		/* No previously assigned address, don't mind */
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCDIFADDR\n");
+	}
+
+	/*
+	 * Fill-in the destination address and netmask,
+         * but don't care of the broadcast address
+	 */
+	(void)memset(&addr, '\0', sizeof addr);
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = iaddr;
+	addr.sin_len = sizeof addr;
+	(void)memcpy(&(ifa.ifra_addr), &addr, sizeof ifa.ifra_addr);
+
+	(void)memset(&mask, '\0', sizeof mask);
+	mask.sin_family = AF_INET;
+	mask.sin_addr.s_addr = imask;
+	mask.sin_len = sizeof mask;
+	(void)memcpy(&ifa.ifra_mask, &mask, sizeof ifa.ifra_mask);
+
+	/* Simpler than calling SIOCSIFADDR and/or SIOCSIFBRDADDR */
+	if (ioctl(dev->ctrl_sock, SIOCAIFADDR, &ifa) == -1) {
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCAIFADDR\n");
+		return -1;
+	}
+	return 0;
 }
 
 int

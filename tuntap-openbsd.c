@@ -168,7 +168,6 @@ tuntap_sys_set_ipv4(struct device *dev, uint32_t iaddr, uint32_t imask) {
 	(void)memset(&ifa, '\0', sizeof ifa);
 	(void)strlcpy(ifa.ifra_name, dev->if_name, sizeof dev->if_name);
 
-	/* XXX: Will probably fail, we need the old IP address */
 	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 
