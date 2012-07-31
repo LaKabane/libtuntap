@@ -23,14 +23,27 @@
 
 int
 main(void) {
+	int ret;
 	struct device *dev;
 
+	ret = 0;
 	dev = tuntap_init();
-	if (tuntap_start(dev, 42, TUNTAP_ID_ANY) == -1) {
-	    tuntap_destroy(dev);
-	    return 0;
+	if (tuntap_start(dev, TUNTAP_MODE_ETHERNET, TUNTAP_ID_ANY) == -1) {
+		ret = 1;
+		goto clean;
 	}
 
-	return 1;
+	if (tuntap_up(dev) == -1) {
+		ret = 1;
+		goto clean;
+	}
+
+	if (tuntap_set_ip(dev, "::1", 24) == -1) {
+		ret = 1;
+	}
+
+clean:
+	tuntap_destroy(dev);
+	return ret;
 }
 

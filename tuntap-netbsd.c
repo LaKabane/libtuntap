@@ -28,6 +28,7 @@
 #include <netinet/if_ether.h>
 
 #include <fcntl.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -40,12 +41,12 @@ tuntap_sys_create_dev(struct device *dev, int mode, int tun) {
 	struct ifreq ifr;
 	char *name;
 
-	if (mode == TUNTAP_TUNMODE_ETHERNET)
+	if (mode == TUNTAP_MODE_ETHERNET)
 		name = "tap%i";
 	else
 		name = "tun%i";
 
-	/* At this point 'tun' can't be TUNTAP_TUNID_ANY */
+	/* At this point 'tun' can't be TUNTAP_ID_ANY */
 	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)snprintf(ifr.ifr_name, IFNAMSIZ, name, tun);
 
@@ -71,11 +72,11 @@ tuntap_sys_start_tap(struct device *dev, int tun) {
 	(void)memset(name, '\0', sizeof name);
 
 	/* Set the device path to open */
-	if (tun < TUNTAP_TUNID_MAX) {
+	if (tun < TUNTAP_ID_MAX) {
 		/* Create the wanted device */
-		tuntap_sys_create_dev(dev, TUNTAP_TUNMODE_ETHERNET, tun);
+		tuntap_sys_create_dev(dev, TUNTAP_MODE_ETHERNET, tun);
 		(void)snprintf(name, sizeof name, "/dev/tap%i", tun);
-	} else if (tun == TUNTAP_TUNID_ANY) {
+	} else if (tun == TUNTAP_ID_ANY) {
 		/* Or use autocloning */
 		(void)memcpy(name, "/dev/tap", 8);
 	} else {
@@ -120,11 +121,11 @@ tuntap_sys_start_tun(struct device *dev, int tun) {
 	 * Try to use the given driver, or loop throught the avaible ones
 	 */
 	fd = -1;
-	if (tun < TUNTAP_TUNID_MAX) {
+	if (tun < TUNTAP_ID_MAX) {
 		(void)snprintf(name, sizeof name, "/dev/tun%i", tun);
 		fd = open(name, O_RDWR);
-	} else if (tun == TUNTAP_TUNID_ANY) {
-		for (tun = 0; tun < TUNTAP_TUNID_MAX; ++tun) {
+	} else if (tun == TUNTAP_ID_ANY) {
+		for (tun = 0; tun < TUNTAP_ID_MAX; ++tun) {
 			(void)memset(name, '\0', sizeof name);
 			(void)snprintf(name, sizeof name, "/dev/tun%i", tun);
 			if ((fd = open(name, O_RDWR)) > 0)
@@ -162,17 +163,17 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	int fd;
 
 	/* Force creation of the driver if needed or let it resilient */
-	if (mode & TUNTAP_TUNMODE_PERSIST) {
-		mode &= ~TUNTAP_TUNMODE_PERSIST;
+	if (mode & TUNTAP_MODE_PERSIST) {
+		mode &= ~TUNTAP_MODE_PERSIST;
 		if (tuntap_sys_create_dev(dev, mode, tun) == -1)
 			return -1;
 	}
 
         /* tun and tap devices are not created in the same way */
-	if (mode == TUNTAP_TUNMODE_ETHERNET) {
+	if (mode == TUNTAP_MODE_ETHERNET) {
 		fd = tuntap_sys_start_tap(dev, tun);
 	}
-	else if (mode == TUNTAP_TUNMODE_TUNNEL) {
+	else if (mode == TUNTAP_MODE_TUNNEL) {
 		fd = tuntap_sys_start_tun(dev, tun);
 	}
 	else {
@@ -204,15 +205,14 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 	(void)memcpy(ifra.ifra_addr.sa_data, eth_addr, ETHER_ADDR_LEN);
 
 	if (ioctl(dev->ctrl_sock, SIOCSIFPHYADDR, &ifra) == -1) {
-		(void)fprintf(stderr, "libtuntap (sys): "
-		    "ioctl SIOCSIFPHYADDR\n");
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFPHYADDR");
 		return -1;
 	}
 	return 0;
 }
 
 int
-tuntap_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned long imask) {
+tuntap_sys_set_ipv4(struct device *dev, uint32_t iaddr, uint32_t imask) {
 	struct ifaliasreq ifa;
 	struct ifreq ifr;
 	struct sockaddr_in addr;
@@ -221,14 +221,13 @@ tuntap_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned long imask) {
 	(void)memset(&ifa, '\0', sizeof ifa);
 	(void)strlcpy(ifa.ifra_name, dev->if_name, sizeof dev->if_name);
 
-	/* XXX: Will probably fail, we need the old IP address */
 	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 
 	/* Delete previously assigned address */
 	if (ioctl(dev->ctrl_sock, SIOCDIFADDR, &ifr) == -1) {
 		/* No previously assigned address, don't mind */
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCDIFADDR\n");
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCDIFADDR");
 	}
 
 	/*
@@ -249,9 +248,18 @@ tuntap_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned long imask) {
 
 	/* Simpler than calling SIOCSIFADDR and/or SIOCSIFBRDADDR */
 	if (ioctl(dev->ctrl_sock, SIOCAIFADDR, &ifa) == -1) {
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCAIFADDR\n");
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCAIFADDR");
 		return -1;
 	}
 	return 0;
+}
+
+int
+tuntap_sys_set_ipv6(struct device *dev, uint32_t *iaddr, uint32_t imask) {
+	tuntap_log(0, "libtuntap: IPv6 is not supported on your system");
+	(void)dev;
+	(void)iaddr;
+	(void)imask;
+	return -1;
 }
 

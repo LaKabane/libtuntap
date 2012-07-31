@@ -26,7 +26,7 @@ main(void) {
 	struct device *dev;
 
 	dev = tuntap_init();
-	if (tuntap_start(dev, TUNTAP_TUNMODE_TUNNEL, -1) == -1) {
+	if (tuntap_start(dev, TUNTAP_MODE_TUNNEL, -1) == -1) {
 	    tuntap_destroy(dev);
 	    return 0;
 	}

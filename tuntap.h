@@ -16,6 +16,7 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <stdint.h>
 
 #if defined Linux
 # include <linux/if.h>
@@ -28,12 +29,18 @@
 #ifndef LIBTUNTAP_H_
 # define LIBTUNTAP_H_
 
-# define TUNTAP_TUNID_MAX 256
-# define TUNTAP_TUNID_ANY 257
+# define TUNTAP_ID_MAX 256
+# define TUNTAP_ID_ANY 257
 
-# define TUNTAP_TUNMODE_ETHERNET 0x0001
-# define TUNTAP_TUNMODE_TUNNEL   0x0002
-# define TUNTAP_TUNMODE_PERSIST  0x0004
+# define TUNTAP_MODE_ETHERNET 0x0001
+# define TUNTAP_MODE_TUNNEL   0x0002
+# define TUNTAP_MODE_PERSIST  0x0004
+
+# define TUNTAP_LOG_DEBUG     0x0001
+# define TUNTAP_LOG_INFO      0x0002
+# define TUNTAP_LOG_NOTICE    0x0004
+# define TUNTAP_LOG_WARN      0x0008
+# define TUNTAP_LOG_ERR       0x0016
 
 # define TUNTAP_GET_FD(x) (x)->tun_fd
 
@@ -79,7 +86,8 @@ void		 tuntap_log_chksum(void *, int);
 int		 tuntap_sys_start(struct device *, int, int);
 void		 tuntap_sys_destroy(struct device *);
 int		 tuntap_sys_set_hwaddr(struct device *, struct ether_addr *);
-int		 tuntap_sys_set_ip(struct device *, unsigned int, unsigned long);
+int		 tuntap_sys_set_ipv4(struct device *, uint32_t, uint32_t);
+int		 tuntap_sys_set_ipv6(struct device *, uint32_t *, uint32_t);
 
 # ifdef __cplusplus
 }

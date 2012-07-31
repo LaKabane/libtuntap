@@ -26,11 +26,19 @@ main(void) {
 	struct device *dev;
 
 	dev = tuntap_init();
-	if (tuntap_start(dev, 42, TUNTAP_ID_ANY) == -1) {
-	    tuntap_destroy(dev);
-	    return 0;
+	if (tuntap_start(dev, TUNTAP_MODE_TUNNEL, TUNTAP_ID_ANY) == -1) {
+		return 1;
 	}
 
-	return 1;
+	if (tuntap_up(dev) == -1) {
+		return 1;
+	}
+
+	if (tuntap_set_ip(dev, "::1", 24) == -1) {
+		return 1;
+	}
+	sleep(5);
+	tuntap_destroy(dev);
+	return 0;
 }
 

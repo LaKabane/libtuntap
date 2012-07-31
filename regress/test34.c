@@ -28,7 +28,7 @@ main(void) {
 
 	ret = 0;
 	dev = tuntap_init();
-	if (tuntap_start(dev, TUNTAP_TUNMODE_TUNNEL|TUNTAP_TUNMODE_PERSIST, 0)
+	if (tuntap_start(dev, TUNTAP_MODE_TUNNEL|TUNTAP_MODE_PERSIST, 0)
 	    == -1)
 		ret = 1;
 

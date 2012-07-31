@@ -26,6 +26,7 @@
 #include <net/if_arp.h>
 
 #include <fcntl.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -49,16 +50,16 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 
 	(void)memset(&ifr, '\0', sizeof ifr);
 
-	if (mode & TUNTAP_TUNMODE_PERSIST) {
-		mode &= ~TUNTAP_TUNMODE_PERSIST;
+	if (mode & TUNTAP_MODE_PERSIST) {
+		mode &= ~TUNTAP_MODE_PERSIST;
 		persist = 1;
 	}
 
         /* Set the mode: tun or tap */
-	if (mode == TUNTAP_TUNMODE_ETHERNET) {
+	if (mode == TUNTAP_MODE_ETHERNET) {
 		ifr.ifr_flags = IFF_TAP;
 		ifname = "tap%i";
-	} else if (mode == TUNTAP_TUNMODE_TUNNEL) {
+	} else if (mode == TUNTAP_MODE_TUNNEL) {
 		ifr.ifr_flags = IFF_TUN;
 		ifname = "tun%i";
 	} else {
@@ -82,8 +83,8 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
         }
 
 	/* Set the interface name, if any */
-	if (tun != TUNTAP_TUNID_ANY) {
-		if (fd > TUNTAP_TUNID_MAX) {
+	if (tun != TUNTAP_ID_ANY) {
+		if (fd > TUNTAP_ID_MAX) {
 			return -1;
 		}
 		(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name,
@@ -130,7 +131,7 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 }
 
 int
-tuntap_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned long imask) {
+tuntap_sys_set_ipv4(struct device *dev, uint32_t iaddr, uint32_t imask) {
 	struct sockaddr_in addr;
 	struct ifreq ifr;
 
@@ -161,5 +162,14 @@ tuntap_sys_set_ip(struct device *dev, unsigned int iaddr, unsigned long imask) {
 	}
 
 	return 0;
+}
+
+int
+tuntap_sys_set_ipv6(struct device *dev, uint32_t *iaddr, uint32_t imask) {
+	tuntap_log(0, "libtuntap: IPv6 is not supported on your system");
+	(void)dev;
+	(void)iaddr;
+	(void)imask;
+	return -1;
 }
 

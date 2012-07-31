@@ -31,7 +31,7 @@ main(void) {
 
 	ret = 1;
 	dev = tuntap_init();
-	if (tuntap_start(dev, TUNTAP_TUNMODE_TUNNEL, TUNTAP_TUNID_ANY) == -1)
+	if (tuntap_start(dev, TUNTAP_MODE_TUNNEL, TUNTAP_ID_ANY) == -1)
 		goto clean;
 
 	if (tuntap_set_hwaddr(dev, "54:1a:13:ef:b6:b5") == -1)
