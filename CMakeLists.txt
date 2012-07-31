@@ -45,6 +45,7 @@ endif(WINDOWS)
 # OS specific things
 # ------------------
 if(Linux)
+	set(CMAKE_INSTALL_PREFIX "/usr/")
 	add_definitions(-D_GNU_SOURCE)
 	set(SOURCES_LIST ${SOURCES_LIST} tuntap-linux.c)
 elseif (OpenBSD)
