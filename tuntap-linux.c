@@ -144,11 +144,12 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 int
 tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
 	struct ifreq ifr;
+	struct sockaddr_in mask;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)memcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 
-	/* Linux doesn't have SIOCDIFADDR, so let just do two calls */
+	/* Set the IP address first */
 	(void)memcpy(&ifr.ifr_addr, s4, sizeof ifr.ifr_addr);
 	if (ioctl(dev->ctrl_sock, SIOCSIFADDR, &ifr) == -1) {
 		tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFADDR");
@@ -158,11 +159,11 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
 	/* Reinit the struct ifr */
 	(void)memset(&ifr.ifr_addr, '\0', sizeof ifr.ifr_addr);
 
-	/* Netmask */
-	(void)memset(&addr, '\0', sizeof addr);
-	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = bits;
-	(void)memcpy(&ifr.ifr_netmask, &addr, sizeof ifr.ifr_netmask);
+	/* Then set the netmask */
+	(void)memset(&mask, '\0', sizeof mask);
+	mask.sin_family = AF_INET;
+	mask.sin_addr.s_addr = bits;
+	(void)memcpy(&ifr.ifr_netmask, &mask, sizeof ifr.ifr_netmask);
 	if (ioctl(dev->ctrl_sock, SIOCSIFNETMASK, &ifr) == -1) {
 		tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFNETMASK");
 		return -1;
