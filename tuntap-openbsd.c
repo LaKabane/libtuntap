@@ -118,6 +118,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	/* Save flags for tuntap_{up, down} */
 	dev->flags = ifr.ifr_flags;
 
+	/* Save pre-existing MAC address */
 	if (mode == TUNTAP_MODE_ETHERNET) {
 		struct ether_addr addr;
 

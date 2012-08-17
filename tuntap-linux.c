@@ -103,6 +103,17 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	/* Save the interface name */
 	(void)memcpy(dev->if_name, ifr.ifr_name,
 	    sizeof ifr.ifr_name);
+
+	/* Save pre-existing MAC address */
+	if (mode == TUNTAP_MODE_ETHERNET) {
+		struct ether_addr addr;
+
+		if (ioctl(fd, SIOCGIFHWADDR, &addr) == -1) {
+			tuntap_log(0, "libtuntap (sys): ioctl SIOCGIFHWADDR\n");
+			return -1;
+		}
+		(void)memcpy(dev->hwaddr, &addr, 6);
+	}
 	return fd;
 }
 
