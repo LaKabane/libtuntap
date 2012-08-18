@@ -209,7 +209,7 @@ tuntap_sys_set_ipv6(struct device *dev, struct sockaddr_in6 *s6, uint32_t bits) 
 	/* Delete previously assigned address */
 	if (ioctl(dev->ctrl_sock, SIOCDIFADDR, &ifra) == -1) {
 		/* No previously assigned address, don't mind */
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCDIFADDR_IN6");
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCDIFADDR");
 		perror("ioctl");
 	}
 
