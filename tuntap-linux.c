@@ -142,18 +142,14 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 }
 
 int
-tuntap_sys_set_ipv4(struct device *dev, uint32_t iaddr, uint32_t imask) {
-	struct sockaddr_in addr;
+tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
 	struct ifreq ifr;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)memcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 
 	/* Linux doesn't have SIOCDIFADDR, so let just do two calls */
-	(void)memset(&addr, '\0', sizeof addr);
-	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = iaddr;
-	(void)memcpy(&ifr.ifr_addr, &addr, sizeof ifr.ifr_addr);
+	(void)memcpy(&ifr.ifr_addr, s4, sizeof ifr.ifr_addr);
 	if (ioctl(dev->ctrl_sock, SIOCSIFADDR, &ifr) == -1) {
 		tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFADDR");
 		return -1;
@@ -165,7 +161,7 @@ tuntap_sys_set_ipv4(struct device *dev, uint32_t iaddr, uint32_t imask) {
 	/* Netmask */
 	(void)memset(&addr, '\0', sizeof addr);
 	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = imask;
+	addr.sin_addr.s_addr = bits;
 	(void)memcpy(&ifr.ifr_netmask, &addr, sizeof ifr.ifr_netmask);
 	if (ioctl(dev->ctrl_sock, SIOCSIFNETMASK, &ifr) == -1) {
 		tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFNETMASK");
@@ -176,11 +172,11 @@ tuntap_sys_set_ipv4(struct device *dev, uint32_t iaddr, uint32_t imask) {
 }
 
 int
-tuntap_sys_set_ipv6(struct device *dev, uint32_t *iaddr, uint32_t imask) {
-	tuntap_log(0, "libtuntap: IPv6 is not supported on your system");
+tuntap_sys_set_ipv6(struct device *dev, struct sockaddr_in6 *s6, uint32_t bits) {
 	(void)dev;
-	(void)iaddr;
-	(void)imask;
+	(void)s6;
+	(void)bits;
+	tuntap_log(0, "libtuntap (sys): ipv6 not implemented");
 	return -1;
 }
 

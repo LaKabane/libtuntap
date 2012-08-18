@@ -86,8 +86,8 @@ void		 tuntap_log_chksum(void *, int);
 int		 tuntap_sys_start(struct device *, int, int);
 void		 tuntap_sys_destroy(struct device *);
 int		 tuntap_sys_set_hwaddr(struct device *, struct ether_addr *);
-int		 tuntap_sys_set_ipv4(struct device *, uint32_t, uint32_t);
-int		 tuntap_sys_set_ipv6(struct device *, uint32_t *, uint32_t);
+int		 tuntap_sys_set_ipv4(struct device *, struct sockaddr_in *, uint32_t);
+int		 tuntap_sys_set_ipv6(struct device *, struct sockaddr_in6 *, uint32_t);
 
 # ifdef __cplusplus
 }

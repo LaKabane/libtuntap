@@ -160,10 +160,9 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 }
 
 int
-tuntap_sys_set_ipv4(struct device *dev, uint32_t iaddr, uint32_t imask) {
+tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
 	struct ifaliasreq ifa;
 	struct ifreq ifr;
-	struct sockaddr_in addr;
 	struct sockaddr_in mask;
 
 	(void)memset(&ifa, '\0', sizeof ifa);
@@ -183,15 +182,11 @@ tuntap_sys_set_ipv4(struct device *dev, uint32_t iaddr, uint32_t imask) {
 	 * Fill-in the destination address and netmask,
          * but don't care of the broadcast address
 	 */
-	(void)memset(&addr, '\0', sizeof addr);
-	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = iaddr;
-	addr.sin_len = sizeof addr;
-	(void)memcpy(&(ifa.ifra_addr), &addr, sizeof ifa.ifra_addr);
+	(void)memcpy(&(ifa.ifra_addr), s4, sizeof ifa.ifra_addr);
 
 	(void)memset(&mask, '\0', sizeof mask);
 	mask.sin_family = AF_INET;
-	mask.sin_addr.s_addr = imask;
+	mask.sin_addr.s_addr = bits;
 	mask.sin_len = sizeof mask;
 	(void)memcpy(&ifa.ifra_mask, &mask, sizeof ifa.ifra_mask);
 
@@ -204,9 +199,8 @@ tuntap_sys_set_ipv4(struct device *dev, uint32_t iaddr, uint32_t imask) {
 }
 
 int
-tuntap_sys_set_ipv6(struct device *dev, uint32_t *iaddr, uint32_t imask) {
+tuntap_sys_set_ipv6(struct device *dev, struct sockaddr_in6 *s6, uint32_t bits) {
 	struct in6_aliasreq ifra;
-	struct sockaddr_in6 addr;
 	struct sockaddr_in6 mask;
 
 	(void)memset(&ifra, '\0', sizeof ifra);
@@ -223,16 +217,14 @@ tuntap_sys_set_ipv6(struct device *dev, uint32_t *iaddr, uint32_t imask) {
 	 * Fill-in the destination address and netmask,
          * but don't care of the broadcast address
 	 */
-	(void)memset(&addr, '\0', sizeof addr);
-	addr.sin6_family = AF_INET6;
-	(void)memcpy(addr.sin6_addr.s6_addr, iaddr, sizeof iaddr);
-	addr.sin6_len = sizeof addr;
-	(void)memcpy(&(ifra.ifra_addr), &addr, sizeof ifra.ifra_addr);
+	(void)memcpy(&(ifra.ifra_addr), s6, sizeof ifra.ifra_addr);
 
 	(void)memset(&mask, '\0', sizeof mask);
-	/*mask.sin6_family = AF_INET6;
-	mask.sin6_addr.s6_addr[0] = imask;*/ /* XXX */
-	/*mask.sin6_len = sizeof mask;*/
+#if 0
+	mask.sin6_family = AF_INET6;
+	mask.sin6_addr.s6_addr[0] = bits;
+	mask.sin6_len = sizeof mask;
+#endif
 	(void)memcpy(&ifra.ifra_prefixmask, &mask, sizeof ifra.ifra_prefixmask);
 
 	/* Simpler than calling SIOCSIFADDR and/or SIOCSIFBRDADDR */
@@ -240,11 +232,6 @@ tuntap_sys_set_ipv6(struct device *dev, uint32_t *iaddr, uint32_t imask) {
 		tuntap_log(0, "libtuntap (sys): ioctl SIOCAIFADDR");
 		return -1;
 	}
-	/*
-	 * #include <netinet6/in6_var.h>
-	 * SIOCDIFADDR_IN6
-	 * SIOCAIFADDR_IN6
-	 */
 	return 0;
 }
 

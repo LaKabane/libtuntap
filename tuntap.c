@@ -71,7 +71,6 @@ tuntap_start(struct device *dev, int mode, int tun) {
 		return -1;
 	}
 
-	/* OpenBSD needs the control socket to be ready now */
 	sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sock == -1) {
 		goto clean;
@@ -248,22 +247,16 @@ tuntap_set_ip(struct device *dev, const char *saddr, int bits) {
 	 */
 	errval = inet_pton(AF_INET, saddr, &(sin.sin_addr));
 	if (errval == 1) {
-		uint32_t addr;
-
-		addr = sin.sin_addr.s_addr;
-		return tuntap_sys_set_ipv4(dev, addr, mask);
-	} else if (errval == -1) {
-		tuntap_log(0, "libtuntap: tuntap_set_ip bad IPv4 address");
-		return -1;
-	} else {
-		uint32_t *addr;
-
+		return tuntap_sys_set_ipv4(dev, &sin, mask);
+	} else if (errval == 0) {
 		if (inet_pton(AF_INET6, saddr, &(sin6.sin6_addr)) == -1) {
 			tuntap_log(0, "libtuntap: tuntap_set_ip bad IPv6 address");
 			return -1;
 		}
-		addr = (uint32_t *)sin6.sin6_addr.s6_addr;
-		return tuntap_sys_set_ipv6(dev, addr, mask);
+		return tuntap_sys_set_ipv6(dev, &sin6, mask);
+	} else if (errval == -1) {
+		tuntap_log(0, "libtuntap: tuntap_set_ip bad IPv4 address");
+		return -1;
 	}
 
 	/* NOTREACHED */
