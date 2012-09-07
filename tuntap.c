@@ -251,17 +251,16 @@ tuntap_set_ip(struct device *dev, const char *saddr, int bits) {
 	errval = inet_pton(AF_INET, saddr, &(sin.sin_addr));
 	if (errval == 1) {
 		sin.sin_family = AF_INET;
-		/* sin.sin_len = sizeof sin; */
 		return tuntap_sys_set_ipv4(dev, &sin, mask);
 	} else if (errval == 0) {
 		if (inet_pton(AF_INET6, saddr, &(sin6.sin6_addr)) == -1) {
-			tuntap_log(0, "libtuntap: tuntap_set_ip bad IPv6 address");
+			tuntap_log(0, "libtuntap: tuntap_set_ip bad address");
 			return -1;
 		}
 		sin.sin_family = AF_INET6;
 		return tuntap_sys_set_ipv6(dev, &sin6, mask);
 	} else if (errval == -1) {
-		tuntap_log(0, "libtuntap: tuntap_set_ip bad IPv4 address");
+		tuntap_log(0, "libtuntap: tuntap_set_ip bad address");
 		return -1;
 	}
 
