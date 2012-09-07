@@ -182,7 +182,7 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
 	 * Fill-in the destination address and netmask,
          * but don't care of the broadcast address
 	 */
-	(void)memcpy(&(ifa.ifra_addr), s4, sizeof ifa.ifra_addr);
+	(void)memcpy(&ifa.ifra_addr, s4, sizeof ifa.ifra_addr);
 
 	(void)memset(&mask, '\0', sizeof mask);
 	mask.sin_family = AF_INET;

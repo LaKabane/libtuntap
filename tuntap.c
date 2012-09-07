@@ -245,9 +245,13 @@ tuntap_set_ip(struct device *dev, const char *saddr, int bits) {
 	 * Destination address parsing: we try IPv4 first and fall back to
 	 * IPv6 if inet_pton return 0
 	 */
+	(void)memset(&sin, '\0', sizeof sin);
+	(void)memset(&sin6, '\0', sizeof sin6);
+
 	errval = inet_pton(AF_INET, saddr, &(sin.sin_addr));
 	if (errval == 1) {
 		sin.sin_family = AF_INET;
+		/* sin.sin_len = sizeof sin; */
 		return tuntap_sys_set_ipv4(dev, &sin, mask);
 	} else if (errval == 0) {
 		if (inet_pton(AF_INET6, saddr, &(sin6.sin6_addr)) == -1) {
