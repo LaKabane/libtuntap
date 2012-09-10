@@ -24,6 +24,7 @@
 # include <netinet/ether.h>
 #else
 # include <net/if.h>
+# include <net/if_tun.h>
 # include <netinet/in.h>
 # include <netinet/if_ether.h>
 #endif
@@ -317,6 +318,15 @@ int
 tuntap_set_nonblocking(struct device *dev, int set) {
 	if (ioctl(dev->tun_fd, FIONBIO, &set) == -1) {
 		tuntap_log(0, "libtuntap (sys): failed to (un)set nonblocking");
+		return -1;
+	}
+	return 0;
+}
+
+int
+tuntap_set_debug(struct device *dev, int set) {
+	if (ioctl(dev->tun_fd, TUNSDEBUG, &set) == -1) {
+		tuntap_log(0, "libtuntap (sys): failed to (un)set debug");
 		return -1;
 	}
 	return 0;
