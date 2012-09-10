@@ -147,10 +147,7 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *sin, uint32_t bits) 
 	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 
 	/* Delete previously assigned address */
-	if (ioctl(dev->ctrl_sock, SIOCDIFADDR, &ifr) == -1) {
-		/* No previously assigned address, don't mind */
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCDIFADDR\n");
-	}
+	(void)ioctl(dev->ctrl_sock, SIOCDIFADDR, &ifr);
 
 	/*
 	 * Fill-in the destination address and netmask,
