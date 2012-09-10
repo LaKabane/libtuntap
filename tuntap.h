@@ -76,6 +76,7 @@ int		 tuntap_set_ip(struct device *, const char *, int);
 int		 tuntap_read(struct device *, void *, size_t);
 int		 tuntap_write(struct device *, void *, size_t);
 int		 tuntap_get_readable(struct device *);
+int		 tuntap_set_nonblocking(struct device *dev, int);
 
 /* Logging functions */
 void		 tuntap_log_set_cb(t_tuntap_log cb);
