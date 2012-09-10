@@ -152,6 +152,7 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 	ifr.ifr_addr.sa_len = ETHER_ADDR_LEN;
 	ifr.ifr_addr.sa_family = AF_LINK;
 	(void)memcpy(ifr.ifr_addr.sa_data, eth_addr, ETHER_ADDR_LEN);
+
 	if (ioctl(dev->ctrl_sock, SIOCSIFLLADDR, (caddr_t)&ifr) < 0) {
 	        tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFLLADDR");
 		return -1;

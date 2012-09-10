@@ -15,6 +15,12 @@ set(${CMAKE_SYSTEM_NAME} True)
 # ----------------------
 add_definitions(-D${CMAKE_SYSTEM_NAME})
 
+# Portable source files
+# ------------------
+set(SOURCES_LIST
+	tuntap_log.c
+)
+
 # OS families specific things
 # ---------------------------
 if(UNIX)
@@ -31,15 +37,19 @@ if(UNIX)
 
 	# Unix specific source files
 	# ------------------
-	set(SOURCES_LIST
-		tuntap.c
-		tuntap_log.c
-	)
+	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix.c )
 
 endif(UNIX)
 
 if(WINDOWS)
-	message(FATAL_ERROR "Windows is not supported yet")
+ 	# Windows specific definitions
+	# ------------------
+ 	add_definitions(-DWindows)
+
+	# Windows specific source files
+	# ------------------
+	set(SOURCES_LIST ${SOURCES_LIST} tuntap-windows.c )
+
 endif(WINDOWS)
 
 # OS specific things
@@ -47,13 +57,13 @@ endif(WINDOWS)
 if(Linux)
 	set(CMAKE_INSTALL_PREFIX "/usr/")
 	add_definitions(-D_GNU_SOURCE)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-linux.c)
+	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-linux.c)
 elseif (OpenBSD)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-openbsd.c)
+	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-openbsd.c)
 elseif (NetBSD)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-netbsd.c)
+	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-netbsd.c)
 elseif (Darwin)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-darwin.c)
+	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-darwin.c)
 elseif()
 	message(FATAL_ERROR "Your operating system is not supported yet")
 endif()
