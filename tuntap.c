@@ -300,3 +300,16 @@ tuntap_write(struct device *dev, void *buf, size_t size) {
 	return n;
 }
 
+int
+tuntap_get_readable(struct device *dev) {
+	int n;
+
+	n = 0;
+	if (ioctl(dev->tun_fd, FIONREAD, &n) == -1) {
+		tuntap_log(0, "libtuntap (sys): "
+		    "your system does not support FIONREAD, fallback to MTU");
+		return tuntap_get_mtu(dev);
+	}
+	return n;
+}
+
