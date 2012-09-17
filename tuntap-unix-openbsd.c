@@ -168,10 +168,10 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
 	struct sockaddr_in addr;
 
 	(void)memset(&ifa, '\0', sizeof ifa);
-	(void)strlcpy(ifa.ifra_name, dev->if_name, sizeof dev->if_name);
+	(void)strlcpy(ifa.ifra_name, dev->if_name, sizeof ifa.ifra_name);
 
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof ifr.ifr_name);
 
 	/* Delete previously assigned address */
 	(void)ioctl(dev->ctrl_sock, SIOCDIFADDR, &ifr);
@@ -201,39 +201,11 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
 }
 
 int
-tuntap_sys_set_ipv6(struct device *dev, struct sockaddr_in6 *s6, uint32_t bits) {
-	struct in6_aliasreq ifra;
-	struct sockaddr_in6 mask;
-
-	(void)memset(&ifra, '\0', sizeof ifra);
-	(void)strlcpy(ifra.ifra_name, dev->if_name, sizeof dev->if_name);
-
-	/* Delete previously assigned address */
-	if (ioctl(dev->ctrl_sock, SIOCDIFADDR, &ifra) == -1) {
-		/* No previously assigned address, don't mind */
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCDIFADDR");
-		perror("ioctl");
-	}
-
-	/*
-	 * Fill-in the destination address and netmask,
-         * but don't care of the broadcast address
-	 */
-	(void)memcpy(&(ifra.ifra_addr), s6, sizeof ifra.ifra_addr);
-
-	(void)memset(&mask, '\0', sizeof mask);
-#if 0
-	mask.sin6_family = AF_INET6;
-	mask.sin6_addr.s6_addr[0] = bits;
-	mask.sin6_len = sizeof mask;
-#endif
-	(void)memcpy(&ifra.ifra_prefixmask, &mask, sizeof ifra.ifra_prefixmask);
-
-	/* Simpler than calling SIOCSIFADDR and/or SIOCSIFBRDADDR */
-	if (ioctl(dev->ctrl_sock, SIOCAIFADDR, &ifra) == -1) {
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCAIFADDR");
-		return -1;
-	}
-	return 0;
+tuntap_sys_set_ipv6(struct device *dev, struct sockaddr_in6 *s, uint32_t bits) {
+	(void)dev;
+	(void)s;
+	(void)bits;
+	tuntap_log(0, "libtuntap (sys): ipv6 not implemented");
+	return -1;
 }
 
