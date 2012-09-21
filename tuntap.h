@@ -15,16 +15,26 @@
  */
 
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <stdint.h>
-
-#if defined Linux
-# include <linux/if.h>
-#else
-# include <net/if.h>
+#if defined Unix
+# include <sys/socket.h>
+#else /* Windows */
+# include <winsock2.h>
 #endif
-#include <netinet/in.h>
-#include <netinet/if_ether.h>
+
+#if defined Unix
+# if defined Linux
+#  include <linux/if.h>
+# else
+#  include <net/if.h>
+# endif
+# include <netinet/in.h>
+# include <netinet/if_ether.h>
+#else /* Windows */
+# include <netioapi.h>
+# define IFNAMSIZ IF_NAMESIZE
+#endif
+
+#include <stdint.h>
 
 #ifndef LIBTUNTAP_H_
 # define LIBTUNTAP_H_
