@@ -41,7 +41,7 @@ if(UNIX)
 
 endif(UNIX)
 
-if(WINDOWS)
+if(Windows)
  	# Windows specific definitions
 	# ------------------
  	add_definitions(-DWindows)
@@ -50,7 +50,7 @@ if(WINDOWS)
 	# ------------------
 	set(SOURCES_LIST ${SOURCES_LIST} tuntap-windows.c )
 
-endif(WINDOWS)
+endif(Windows)
 
 # OS specific things
 # ------------------
