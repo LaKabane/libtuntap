@@ -59,7 +59,11 @@ extern "C" {
 # endif
 
 struct device {
+#if defined Unix
 	int		tun_fd;
+#else /* Windows */
+	HANDLE	tun_fd;
+#endif
 	int		ctrl_sock;
 	int		flags;     /* ifr.ifr_flags on Unix */
 	unsigned char	hwaddr[6];
