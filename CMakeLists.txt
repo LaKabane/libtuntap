@@ -18,6 +18,7 @@ add_definitions(-D${CMAKE_SYSTEM_NAME})
 # Portable source files
 # ------------------
 set(SOURCES_LIST
+	tuntap.c
 	tuntap_log.c
 )
 

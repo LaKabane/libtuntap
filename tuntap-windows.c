@@ -25,34 +25,14 @@
 
 #include "tuntap.h"
 
-struct device *
-tuntap_init(void) {
-	return -1;
-}
-
-void
-tuntap_destroy(struct device *dev) {
-	return -1;
-}
-
 int
 tuntap_start(struct device *dev, int mode, int tun) {
 	return -1;
 }
 
-void
-tuntap_release(struct device *dev) {
-	return -1;
-}
-
-char *
-tuntap_get_ifname(struct device *dev) {
-	return -1;
-}
-
 char *
 tuntap_get_hwaddr(struct device *dev) {
-	return -1;
+	return NULL;
 }
 
 int
