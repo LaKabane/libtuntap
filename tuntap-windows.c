@@ -15,8 +15,6 @@
  */
 
 #include <sys/types.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,6 +26,13 @@
 int
 tuntap_start(struct device *dev, int mode, int tun) {
 	return -1;
+}
+
+void
+tuntap_release(struct device *dev) {
+	(void)closesocket(dev->tun_fd);
+	(void)closesocket(dev->ctrl_sock);
+	free(dev);
 }
 
 char *

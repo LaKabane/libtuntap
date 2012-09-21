@@ -77,6 +77,13 @@ clean:
 	return -1;
 }
 
+void
+tuntap_release(struct device *dev) {
+	(void)close(dev->tun_fd);
+	(void)close(dev->ctrl_sock);
+	free(dev);
+}
+
 char *
 tuntap_get_hwaddr(struct device *dev) {
 	struct ether_addr eth_attr;

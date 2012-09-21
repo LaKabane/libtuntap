@@ -45,16 +45,8 @@ tuntap_destroy(struct device *dev) {
 	tuntap_release(dev);
 }
 
-void
-tuntap_release(struct device *dev) {
-	(void)close(dev->tun_fd);
-	(void)close(dev->ctrl_sock);
-	free(dev);
-}
-
 char *
 tuntap_get_ifname(struct device *dev) {
 	return dev->if_name;
 }
-
 
