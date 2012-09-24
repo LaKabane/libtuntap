@@ -15,6 +15,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
 **/
 
+#include <windows.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>

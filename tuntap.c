@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <windows.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -21,6 +22,12 @@
 #include <ctype.h>
 
 #include "tuntap.h"
+
+#ifdef Unix
+# define TUNFD_INVALID_VALUE -1
+#else /* Windows */
+# define TUNFD_INVALID_VALUE INVALID_HANDLE_VALUE
+#endif
 
 struct device *
 tuntap_init(void) {
@@ -31,7 +38,7 @@ tuntap_init(void) {
 
 	(void)memset(dev->if_name, '\0', sizeof dev->if_name);
 	(void)memset(dev->hwaddr, '\0', sizeof dev->hwaddr);
-	dev->tun_fd = -1;
+	dev->tun_fd = TUNFD_INVALID_VALUE;
 	dev->ctrl_sock = -1;
 	dev->flags = 0;
 

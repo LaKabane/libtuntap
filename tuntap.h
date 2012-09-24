@@ -17,8 +17,6 @@
 #include <sys/types.h>
 #if defined Unix
 # include <sys/socket.h>
-#else /* Windows */
-# include <winsock2.h>
 #endif
 
 #if defined Unix
@@ -30,8 +28,7 @@
 # include <netinet/in.h>
 # include <netinet/if_ether.h>
 #else /* Windows */
-# include <netioapi.h>
-# define IFNAMSIZ IF_NAMESIZE
+# define IFNAMSIZ 16 /* IF_NAMESIZE in netioapi.h */
 #endif
 
 #include <stdint.h>
