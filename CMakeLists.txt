@@ -76,7 +76,9 @@ set_target_properties(tuntap PROPERTIES VERSION 1.0)
 
 add_library(tuntap-static STATIC ${SOURCES_LIST})
 set_target_properties(tuntap-static PROPERTIES OUTPUT_NAME "tuntap")
-set_target_properties(tuntap-static PROPERTIES PREFIX "lib")
+if(UNIX)
+    set_target_properties(tuntap-static PROPERTIES PREFIX "lib")
+endif(UNIX)
 
 if (Windows)
 	target_link_libraries(tuntap Ws2_32.lib)
