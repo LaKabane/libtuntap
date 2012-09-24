@@ -18,7 +18,7 @@
 
 #include <stdio.h>
 #include <strings.h>
-#include <unistd.h>
+
 
 #include "tuntap.h"
 
