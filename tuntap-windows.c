@@ -14,19 +14,29 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/*
- * DeviceIoControl
- */
-
 #include <sys/types.h>
 
+#include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <Winbase.h>
+#include <strsafe.h>
 
 #include "tuntap.h"
+
+/* From OpenVPN tap driver, common.h */
+#define TAP_CONTROL_CODE(request,method) CTL_CODE(FILE_DEVICE_UNKNOWN, request, method, FILE_ANY_ACCESS)
+#define TAP_IOCTL_GET_MAC               TAP_CONTROL_CODE (1, METHOD_BUFFERED)
+#define TAP_IOCTL_GET_VERSION           TAP_CONTROL_CODE (2, METHOD_BUFFERED)
+#define TAP_IOCTL_GET_MTU               TAP_CONTROL_CODE (3, METHOD_BUFFERED)
+#define TAP_IOCTL_GET_INFO              TAP_CONTROL_CODE (4, METHOD_BUFFERED)
+#define TAP_IOCTL_CONFIG_POINT_TO_POINT TAP_CONTROL_CODE (5, METHOD_BUFFERED)
+#define TAP_IOCTL_SET_MEDIA_STATUS      TAP_CONTROL_CODE (6, METHOD_BUFFERED)
+#define TAP_IOCTL_CONFIG_DHCP_MASQ      TAP_CONTROL_CODE (7, METHOD_BUFFERED)
+#define TAP_IOCTL_GET_LOG_LINE          TAP_CONTROL_CODE (8, METHOD_BUFFERED)
+#define TAP_IOCTL_CONFIG_DHCP_SET_OPT   TAP_CONTROL_CODE (9, METHOD_BUFFERED)
+#define TAP_IOCTL_CONFIG_TUN            TAP_CONTROL_CODE (10, METHOD_BUFFERED)
 
 void
 tuntap_sys_destroy(struct device *dev) {
@@ -37,6 +47,7 @@ tuntap_sys_destroy(struct device *dev) {
 int
 tuntap_start(struct device *dev, int mode, int tun) {
 	HANDLE tun_fd;
+	char vers[3];
 
 	/* Don't re-initialise a previously started device */
 	if (dev->tun_fd != INVALID_HANDLE_VALUE) {
@@ -44,18 +55,38 @@ tuntap_start(struct device *dev, int mode, int tun) {
 	}
 
 	/* TODO: Get the tap device name */
-	tun_fd = CreateFile("blah", GENERIC_WRITE | GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM, 0);
+	tun_fd = CreateFile("blah", GENERIC_WRITE | GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM|FILE_FLAG_OVERLAPPED, 0);
 	if (tun_fd == INVALID_HANDLE_VALUE) {
 		return -1;
 	}
 
-	dev->tun_fd - tun_fd;
+	if (DeviceIoControl(tun_fd, TAP_IOCTL_GET_VERSION, NULL, 0, &vers, sizeof(vers), NULL, NULL) == 0) {
+		LPVOID lpMsgBuf;
+		LPVOID lpDisplayBuf;
+		DWORD dw = GetLastError();
+
+		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS,
+			NULL, 
+			dw, 
+			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+			(LPTSTR) &lpMsgBuf,
+			0, 
+			NULL);
+		lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen("tuntap_start") + 40) * sizeof(TCHAR)); 
+		StringCchPrintf((LPTSTR)lpDisplayBuf, LocalSize(lpDisplayBuf) / sizeof(TCHAR), TEXT("tuntap_start failed with error %d: %s"), dw, lpMsgBuf); 
+		MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
+
+		LocalFree(lpMsgBuf);
+		LocalFree(lpDisplayBuf);
+		return -1;
+	}
+	dev->tun_fd = tun_fd;
 	return 0;
 }
 
 void
 tuntap_release(struct device *dev) {
-	(void)closesocket(dev->tun_fd); /* XXX: Really? */
+	(void)CloseHandle(dev->tun_fd); /* XXX: Really? */
 	free(dev);
 }
 
