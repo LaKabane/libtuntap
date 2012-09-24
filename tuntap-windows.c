@@ -61,23 +61,6 @@ tuntap_start(struct device *dev, int mode, int tun) {
 	}
 
 	if (DeviceIoControl(tun_fd, TAP_IOCTL_GET_VERSION, NULL, 0, &vers, sizeof(vers), NULL, NULL) == 0) {
-		LPVOID lpMsgBuf;
-		LPVOID lpDisplayBuf;
-		DWORD dw = GetLastError();
-
-		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL, 
-			dw, 
-			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-			(LPTSTR) &lpMsgBuf,
-			0, 
-			NULL);
-		lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen("tuntap_start") + 40) * sizeof(TCHAR)); 
-		StringCchPrintf((LPTSTR)lpDisplayBuf, LocalSize(lpDisplayBuf) / sizeof(TCHAR), TEXT("tuntap_start failed with error %d: %s"), dw, lpMsgBuf); 
-		MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
-
-		LocalFree(lpMsgBuf);
-		LocalFree(lpDisplayBuf);
 		return -1;
 	}
 	dev->tun_fd = tun_fd;
