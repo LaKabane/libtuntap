@@ -10,13 +10,14 @@ enable_testing()
 set(TUNTAP tuntap)
 include_directories(..)
 # XXX: You must build libtuntap in the 'build' directory first
-link_directories(${CMAKE_BINARY_DIR}/../../build/lib)
 
 if(UNIX)
   add_definitions(-DUnix)
+  link_directories(${CMAKE_BINARY_DIR}/../../build/lib)
 endif(UNIX)
 if (Windows)
   add_definitions(-DWindows)
+  link_directories(${CMAKE_BINARY_DIR}/../../build/lib/Debug)
 endif(Windows)
 
 file(GLOB ALL_TESTS test*.c)
