@@ -15,16 +15,23 @@
  */
 
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <stdint.h>
-
-#if defined Linux
-# include <linux/if.h>
-#else
-# include <net/if.h>
+#if defined Unix
+# include <sys/socket.h>
 #endif
-#include <netinet/in.h>
-#include <netinet/if_ether.h>
+
+#if defined Unix
+# if defined Linux
+#  include <linux/if.h>
+# else
+#  include <net/if.h>
+# endif
+# include <netinet/in.h>
+# include <netinet/if_ether.h>
+#else /* Windows */
+# define IFNAMSIZ 16 /* IF_NAMESIZE in netioapi.h */
+#endif
+
+#include <stdint.h>
 
 #ifndef LIBTUNTAP_H_
 # define LIBTUNTAP_H_
@@ -49,7 +56,11 @@ extern "C" {
 # endif
 
 struct device {
+#if defined Unix
 	int		tun_fd;
+#else /* Windows */
+	HANDLE	tun_fd;
+#endif
 	int		ctrl_sock;
 	int		flags;     /* ifr.ifr_flags on Unix */
 	unsigned char	hwaddr[6];

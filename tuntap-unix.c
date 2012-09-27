@@ -39,29 +39,6 @@
 
 #include "tuntap.h"
 
-struct device *
-tuntap_init(void) {
-	struct device *dev = NULL;
-
-	if ((dev = malloc(sizeof(*dev))) == NULL)
-		return NULL;
-
-	(void)memset(dev->if_name, '\0', sizeof dev->if_name);
-	(void)memset(dev->hwaddr, '\0', sizeof dev->hwaddr);
-	dev->tun_fd = -1;
-	dev->ctrl_sock = -1;
-	dev->flags = 0;
-
-	tuntap_log = tuntap_log_default;
-	return dev;
-}
-
-void
-tuntap_destroy(struct device *dev) {
-	tuntap_sys_destroy(dev);
-	tuntap_release(dev);
-}
-
 int
 tuntap_start(struct device *dev, int mode, int tun) {
 	int sock;
@@ -107,11 +84,6 @@ tuntap_release(struct device *dev) {
 	(void)close(dev->tun_fd);
 	(void)close(dev->ctrl_sock);
 	free(dev);
-}
-
-char *
-tuntap_get_ifname(struct device *dev) {
-	return dev->if_name;
 }
 
 char *

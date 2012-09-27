@@ -15,12 +15,20 @@
  * PERFORMANCE OF THIS SOFTWARE.
 **/
 
+#if defined Windows
+# include <windows.h>
+#endif
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <stdint.h>
 
 #include "tuntap.h"
+
+#if defined Windows
+# define snprintf(x, y, z, ...) _snprintf_s((x), (y), (y), (z), __VA_ARGS__);
+# define strncat(x, y, z) strncat_s((x), _countof(x), (y), (z))
+#endif
 
 void
 tuntap_log_set_cb(t_tuntap_log cb) {

@@ -18,7 +18,9 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
+#if defined Windows
+# include <windows.h>
+#endif
 
 #include "tuntap.h"
 

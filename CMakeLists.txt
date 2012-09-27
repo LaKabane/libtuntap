@@ -18,6 +18,7 @@ add_definitions(-D${CMAKE_SYSTEM_NAME})
 # Portable source files
 # ------------------
 set(SOURCES_LIST
+	tuntap.c
 	tuntap_log.c
 )
 
@@ -41,7 +42,7 @@ if(UNIX)
 
 endif(UNIX)
 
-if(WINDOWS)
+if(Windows)
  	# Windows specific definitions
 	# ------------------
  	add_definitions(-DWindows)
@@ -50,7 +51,7 @@ if(WINDOWS)
 	# ------------------
 	set(SOURCES_LIST ${SOURCES_LIST} tuntap-windows.c )
 
-endif(WINDOWS)
+endif(Windows)
 
 # OS specific things
 # ------------------
@@ -75,7 +76,14 @@ set_target_properties(tuntap PROPERTIES VERSION 1.0)
 
 add_library(tuntap-static STATIC ${SOURCES_LIST})
 set_target_properties(tuntap-static PROPERTIES OUTPUT_NAME "tuntap")
-set_target_properties(tuntap-static PROPERTIES PREFIX "lib")
+if(UNIX)
+    set_target_properties(tuntap-static PROPERTIES PREFIX "lib")
+endif(UNIX)
+
+if (Windows)
+	target_link_libraries(tuntap Ws2_32.lib)
+	target_link_libraries(tuntap-static Ws2_32.lib)
+endif(Windows)
 
 # Install rules
 # -------------

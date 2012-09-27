@@ -15,35 +15,56 @@
  */
 
 #include <sys/types.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
 
+#include <arpa/inet.h>
+#include <net/if.h>
+#include <net/if_tun.h>
+#include <net/if_types.h>
+#include <netinet/if_ether.h>
+#include <netinet/in.h>
+
+#include <fcntl.h>
+#include <stdint.h>
 #include <stdio.h>
-#if defined Windows
-# include <windows.h>
-#endif
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "tuntap.h"
 
-int exit_value;
-
-void
-test_cb(int level, const char *errmsg) {
-	(void)level;
-	(void)errmsg;
-	fprintf(stderr, "successfully set a callback\n");
-	exit_value = 0;
+static int
+tuntap_sys_create_dev(struct device *dev, int tun) {
+	return -1;
 }
 
 int
-main(void) {
-	struct device *dev;
+tuntap_sys_start(struct device *dev, int mode, int tun) {
+	return -1;
+}
 
-	exit_value = 1;
-	dev = tuntap_init();
-	tuntap_log_set_cb(test_cb);
+void
+tuntap_sys_destroy(struct device *dev) {
+	return;
+}
 
-	tuntap_start(dev, 0, -1);
+int
+tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
+	return -1;
+}
 
-	tuntap_destroy(dev);
-	return exit_value;
+int
+tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
+	return -1;
+}
+
+int
+tuntap_sys_set_ipv6(struct device *dev, struct sockaddr_in6 *s, uint32_t bits) {
+	(void)dev;
+	(void)s6;
+	(void)bits;
+	tuntap_log(0, "libtuntap (sys): ipv6 not implemented");
+	return -1;
 }
 

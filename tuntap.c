@@ -14,40 +14,48 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
-
-#include <stdio.h>
 #if defined Windows
 # include <windows.h>
 #endif
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 
 #include "tuntap.h"
 
-int
-main(void) {
-	int ret;
-	int mtu;
-	struct device *dev;
+#ifdef Unix
+# define TUNFD_INVALID_VALUE -1
+#else /* Windows */
+# define TUNFD_INVALID_VALUE INVALID_HANDLE_VALUE
+#endif
 
-	ret = 0;
-	dev = tuntap_init();
-	if (tuntap_start(dev, TUNTAP_MODE_ETHERNET, TUNTAP_ID_ANY)
-	    == -1) {
-		ret = 1;
-		goto clean;
-	}
+struct device *
+tuntap_init(void) {
+	struct device *dev = NULL;
 
-	if (tuntap_set_mtu(dev, 1400) == -1) {
-		ret = 1;
-		goto clean;
-	}
+	if ((dev = malloc(sizeof(*dev))) == NULL)
+		return NULL;
 
-	mtu = tuntap_get_mtu(dev);
-	if (mtu != 1400)
-		ret = 1;
+	(void)memset(dev->if_name, '\0', sizeof dev->if_name);
+	(void)memset(dev->hwaddr, '\0', sizeof dev->hwaddr);
+	dev->tun_fd = TUNFD_INVALID_VALUE;
+	dev->ctrl_sock = -1;
+	dev->flags = 0;
 
-clean:
-	tuntap_destroy(dev);
-	return ret;
+	tuntap_log = tuntap_log_default;
+	return dev;
+}
+
+void
+tuntap_destroy(struct device *dev) {
+	tuntap_sys_destroy(dev);
+	tuntap_release(dev);
+}
+
+char *
+tuntap_get_ifname(struct device *dev) {
+	return dev->if_name;
 }
 
