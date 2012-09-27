@@ -30,11 +30,11 @@ Supported Systems
    * OpenBSD
    * Linux
    * NetBSD
+   * Darwin
 
 Current Porting Efforts
 -----------------------
 
-   * Darwin
    * Windows
 
 In the future
