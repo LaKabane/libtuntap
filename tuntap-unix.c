@@ -297,14 +297,16 @@ tuntap_set_nonblocking(struct device *dev, int set) {
 	return 0;
 }
 
-#if !defined Darwin
 int
 tuntap_set_debug(struct device *dev, int set) {
+#if !defined Darwin
 	if (ioctl(dev->tun_fd, TUNSDEBUG, &set) == -1) {
 		tuntap_log(0, "libtuntap (sys): failed to (un)set debug");
 		return -1;
 	}
 	return 0;
-}
+#else
+	return -1;
 #endif
+}
 
