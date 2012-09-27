@@ -14,7 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <windows.h>
+#if defined Windows
+# include <windows.h>
+#endif
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
