@@ -26,6 +26,7 @@
 #include <netinet/in.h>
 
 #include <fcntl.h>
+#include <ifaddrs.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,6 +43,7 @@ tuntap_sys_create_dev(struct device *dev, int tun) {
 int
 tuntap_sys_start(struct device *dev, int mode, int tun) {
 	struct ifreq ifr;
+	struct ifaddrs *ifa;
 	char name[MAXPATHLEN];
 	int fd;
 	char *type;
@@ -109,7 +111,39 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	/* Save flags for tuntap_{up, down} */
 	dev->flags = ifr.ifr_flags;
 
-	/* TODO: Save pre-existing MAC address */
+	/* Save pre-existing MAC address */
+	if (mode == TUNTAP_MODE_ETHERNET && getifaddrs(&ifa) == 0) {
+		struct ifaddrs *pifa;
+
+		for (pifa = ifa; pifa != NULL; pifa = pifa->ifa_next) {
+			if (strcmp(pifa->ifa_name, dev->if_name) == 0) {
+				struct ether_addr eth_addr;
+
+				/*
+				 * The MAC address is from 10 to 15.
+				 *
+				 * And yes, I know, the buffer is supposed
+				 * to have a size of 14 bytes.
+				 */
+				(void)memcpy(dev->hwaddr,
+				  pifa->ifa_addr->sa_data + 10,
+				  ETHER_ADDR_LEN);
+
+				(void)memset(&eth_addr.ether_addr_octet, 0,
+				  ETHER_ADDR_LEN);
+				(void)memcpy(&eth_addr.ether_addr_octet,
+				  pifa->ifa_addr->sa_data + 10,
+				  ETHER_ADDR_LEN);
+
+#if 0
+				fprintf(stderr,
+				  "MAC: %s\n", ether_ntoa(&eth_addr));
+#endif
+				break;
+			}
+		}
+		freeifaddrs(ifa);
+	}
 	return fd;
 }
 
@@ -135,9 +169,10 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 }
 
 int
-tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *sin, uint32_t bits) {
+tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
 	struct ifaliasreq ifa;
 	struct ifreq ifr;
+	struct sockaddr_in addr;
 	struct sockaddr_in mask;
 
 	(void)memset(&ifa, '\0', sizeof ifa);
@@ -153,7 +188,11 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *sin, uint32_t bits) 
 	 * Fill-in the destination address and netmask,
          * but don't care of the broadcast address
 	 */
-	(void)memcpy(&(ifa.ifra_addr), &sin, sizeof ifa.ifra_addr);
+	(void)memset(&addr, '\0', sizeof addr);
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = s4->sin_addr.s_addr;
+	addr.sin_len = sizeof addr;
+	(void)memcpy(&ifa.ifra_addr, &addr, sizeof addr);
 
 	(void)memset(&mask, '\0', sizeof mask);
 	mask.sin_family = AF_INET;
@@ -162,8 +201,8 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *sin, uint32_t bits) 
 	(void)memcpy(&ifa.ifra_mask, &mask, sizeof ifa.ifra_mask);
 
 	/* Simpler than calling SIOCSIFADDR and/or SIOCSIFBRDADDR */
-	if (ioctl(dev->ctrl_sock, SIOCAIFADDR, &ifa) == -1) {
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCAIFADDR\n");
+	if (ioctl(dev->ctrl_sock, SIOCSIFADDR, &ifa) == -1) {
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFADDR");
 		return -1;
 	}
 	return 0;
