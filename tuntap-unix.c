@@ -24,7 +24,9 @@
 # include <netinet/ether.h>
 #else
 # include <net/if.h>
-# include <net/if_tun.h>
+# if !defined Darwin
+#  include <net/if_tun.h>
+# endif
 # include <netinet/in.h>
 # include <netinet/if_ether.h>
 #endif
@@ -323,6 +325,7 @@ tuntap_set_nonblocking(struct device *dev, int set) {
 	return 0;
 }
 
+#if !defined Darwin
 int
 tuntap_set_debug(struct device *dev, int set) {
 	if (ioctl(dev->tun_fd, TUNSDEBUG, &set) == -1) {
@@ -331,4 +334,5 @@ tuntap_set_debug(struct device *dev, int set) {
 	}
 	return 0;
 }
+#endif
 
