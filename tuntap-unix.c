@@ -22,6 +22,7 @@
 #include <arpa/inet.h>
 #if defined Linux
 # include <netinet/ether.h>
+# include <linux/if_tun.h>
 #else
 # include <net/if.h>
 # if !defined Darwin
