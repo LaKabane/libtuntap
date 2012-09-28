@@ -39,6 +39,10 @@
 
 #include "tuntap.h"
 
+#if defined Linux
+# define TUNSDEBUG TUNSETDEBUG
+#endif
+
 int
 tuntap_start(struct device *dev, int mode, int tun) {
 	int sock;
