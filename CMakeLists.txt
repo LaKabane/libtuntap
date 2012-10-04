@@ -4,6 +4,10 @@
 project(libtuntap)
 cmake_minimum_required(VERSION 2.8)
 
+# CMake global options
+# ------------------
+option(ENABLE_REGRESS "Enable the regression tests" OFF)
+
 # CMake Configuration
 # ------------------
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
@@ -92,5 +96,24 @@ if(UNIX)
 	install(TARGETS tuntap-static DESTINATION lib)
 	install(FILES tuntap.h DESTINATION include)
 endif(UNIX)
+
+# Tests rules
+# -----------
+if (ENABLE_REGRESS)
+  enable_testing()
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+  link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+
+  file(GLOB ALL_TESTS regress/test*.c)
+  foreach(SOURCE_FILE ${ALL_TESTS})
+    message(${SOURCE_FILE})
+    string(REPLACE ".c" "" WO_SUFFIX ${SOURCE_FILE})
+    string(REPLACE ${CMAKE_CURRENT_SOURCE_DIR}/ "" SRC_BASENAME ${SOURCE_FILE})
+    string(REPLACE ${CMAKE_CURRENT_SOURCE_DIR}/regress/ "" BIN_BASENAME ${WO_SUFFIX})
+    message(${SRC_BASENAME} ${BIN_BASENAME})
+    add_executable(${BIN_BASENAME} ${SRC_BASENAME})
+    target_link_libraries(${BIN_BASENAME} tuntap)
+  endforeach(SOURCE_FILE)
+endif (ENABLE_REGRESS)
 
 include(CMakeLists.txt.local OPTIONAL)
