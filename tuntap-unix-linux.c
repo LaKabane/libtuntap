@@ -101,18 +101,19 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	dev->flags = ifr.ifr_flags;
 
 	/* Save the interface name */
-	(void)memcpy(dev->if_name, ifr.ifr_name,
-	    sizeof ifr.ifr_name);
+	(void)memcpy(dev->if_name, ifr.ifr_name, sizeof ifr.ifr_name);
 
 	/* Save pre-existing MAC address */
 	if (mode == TUNTAP_MODE_ETHERNET) {
-		struct ether_addr addr;
+		struct ifreq ifr_hw;
 
-		if (ioctl(fd, SIOCGIFHWADDR, &addr) == -1) {
+		(void)memcpy(ifr_hw.ifr_name, dev->if_name,
+		    sizeof(dev->if_name));
+		if (ioctl(fd, SIOCGIFHWADDR, &ifr_hw) == -1) {
 			tuntap_log(0, "libtuntap (sys): ioctl SIOCGIFHWADDR\n");
 			return -1;
 		}
-		(void)memcpy(dev->hwaddr, &addr, 6);
+		(void)memcpy(dev->hwaddr, ifr_hw.ifr_hwaddr.sa_data, ETH_ALEN);
 	}
 	return fd;
 }
