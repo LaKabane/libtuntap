@@ -27,14 +27,44 @@
 # endif
 # include <netinet/in.h>
 # include <netinet/if_ether.h>
-#else /* Windows */
-# define IFNAMSIZ 16 /* IF_NAMESIZE in netioapi.h */
 #endif
 
 #include <stdint.h>
 
 #ifndef LIBTUNTAP_H_
 # define LIBTUNTAP_H_
+
+/*
+ * Uniformize macros
+ * - ETHER_ADDR_LEN: Magic number from IEEE 802.3
+ * - IF_NAMESIZE: Length of interface external name
+ * - TUNSDEBUG: ioctl flag to enable the debug mode of a tun device
+ */
+# if defined ETH_ALEN /* Linux */
+#  define ETHER_ADDR_LEN ETH_ALEN
+# elif defined Windows
+#  define ETHER_ADDR_LEN 6 
+# endif
+
+# if defined IFNAMSIZ
+#  define IF_NAMESIZE IFNAMSIZ /* Historical BSD name */
+# elif !defined IF_NAMESIZE
+#  define IF_NAMSIZE 16
+# endif
+
+#if defined TUNSETDEBUG
+# define TUNSDEBUG TUNSETDEBUG
+#endif
+
+/*
+ * Uniformize types
+ * - t_tun: tun device file descriptor
+ */
+# if defined Unix
+typedef int t_tun;
+# else /* Windows */
+typedef HANDLE t_tun;
+# endif
 
 # define TUNTAP_ID_MAX 256
 # define TUNTAP_ID_ANY 257
@@ -56,15 +86,11 @@ extern "C" {
 # endif
 
 struct device {
-#if defined Unix
-	int		tun_fd;
-#else /* Windows */
-	HANDLE	tun_fd;
-#endif
+	t_tun		tun_fd;
 	int		ctrl_sock;
 	int		flags;     /* ifr.ifr_flags on Unix */
-	unsigned char	hwaddr[6];
-	char		if_name[IFNAMSIZ];
+	unsigned char	hwaddr[ETHER_ADDR_LEN];
+	char		if_name[IF_NAMESIZE];
 };
 
 /* User definable log callback */

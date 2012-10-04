@@ -40,10 +40,6 @@
 
 #include "tuntap.h"
 
-#if defined Linux
-# define TUNSDEBUG TUNSETDEBUG
-#endif
-
 int
 tuntap_start(struct device *dev, int mode, int tun) {
 	int sock;
@@ -123,7 +119,7 @@ tuntap_set_hwaddr(struct device *dev, const char *hwaddr) {
 			return -1;
 		}
 	}
-	(void)memcpy(dev->hwaddr, eth_addr, 6);
+	(void)memcpy(dev->hwaddr, eth_addr, ETHER_ADDR_LEN);
 
 	if (tuntap_sys_set_hwaddr(dev, eth_addr) == -1)
 		return -1;
