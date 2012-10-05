@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# Test: Persistant - Release
+
 TEST=$1
 TARGET=$2
 TYPE=`echo $TARGET | tr -d 0-9`
@@ -10,6 +12,8 @@ if [ `uname` = "OpenBSD" ] && [ $TYPE = "tap" ];then
 	TYPE="tun"
 fi
 
+# The interface should exist
 $TEST && ifconfig $TARGET >/dev/null 2>/dev/null
 	&& ip tuntap del $TARGET mode $TYPE ; return 0
 	|| return 1
+
