@@ -48,7 +48,7 @@ tuntap_sys_create_dev(struct device *dev, int mode, int tun) {
 
 	/* At this point 'tun' can't be TUNTAP_ID_ANY */
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)snprintf(ifr.ifr_name, IFNAMSIZ, name, tun);
+	(void)snprintf(ifr.ifr_name, IF_NAMESIZE, name, tun);
 
 	if (ioctl(dev->ctrl_sock, SIOCIFCREATE, &ifr) == -1) {
 		tuntap_log(0, "libtuntap (sys): ioctl SIOCIFCREATE");
@@ -65,7 +65,7 @@ static int
 tuntap_sys_start_tap(struct device *dev, int tun) {
 	int fd;
 	struct ifreq ifr;
-	char name[IFNAMSIZ + 5]; /* For /dev/IFNAMSIZ */
+	char name[IF_NAMESIZE + 5]; /* For /dev/IFNAMSIZ */
 
 	fd = -1;
 	(void)memset(&ifr, '\0', sizeof ifr);
@@ -84,7 +84,7 @@ tuntap_sys_start_tap(struct device *dev, int tun) {
 	}
 
 	if ((fd = open(name, O_RDWR)) == -1) {
-		char buf[22+IFNAMSIZ+5];
+		char buf[22 + IF_NAMESIZE + 5];
 
 		(void)memset(buf, 0, sizeof buf);
 		snprintf(buf, sizeof buf, "libtuntap (sys): open %s", name);

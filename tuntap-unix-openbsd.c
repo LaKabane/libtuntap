@@ -42,7 +42,7 @@ tuntap_sys_create_dev(struct device *dev, int tun) {
 
 	/* At this point 'tun' can't be TUNTAP_ID_ANY */
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)snprintf(ifr.ifr_name, IFNAMSIZ, "tun%i", tun);
+	(void)snprintf(ifr.ifr_name, IF_NAMESIZE, "tun%i", tun);
 
 	if (ioctl(dev->ctrl_sock, SIOCIFCREATE, &ifr) == -1) {
 		tuntap_log(0, "libtuntap (sys): ioctl SIOCIFCREATE");
@@ -126,7 +126,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 			tuntap_log(0, "libtuntap (sys): ioctl SIOCGIFADDR");
 			return -1;
 		}
-		(void)memcpy(dev->hwaddr, &addr, 6);
+		(void)memcpy(dev->hwaddr, &addr, ETHER_ADDR_LEN);
 	}
 	return fd;
 }
