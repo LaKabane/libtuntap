@@ -5,15 +5,22 @@
 TEST=$1
 TARGET=$2
 TYPE=`echo $TARGET | tr -d 0-9`
+SYSTEM=`uname`
 
 # There is no tap driver on OpenBSD
-if [ `uname` = "OpenBSD" ] && [ $TYPE = "tap" ];then
+if [ "$SYSTEM" = "OpenBSD" ] && [ "$TYPE" = "tap" ];then
 	TARGET=`echo $TARGET | sed s/tap/tun/`
 	TYPE="tun"
 fi
 
+if [ "$SYSTEM" = "Linux" ]; then
+	IFDEL="ip tuntap del $TARGET mode $TYPE"
+else
+	IFDEL="ifconfig $TARGET destroy"
+fi
+
 # The interface should exist
-$TEST && ifconfig $TARGET >/dev/null 2>/dev/null
-	&& ip tuntap del $TARGET mode $TYPE ; return 0
+$TEST && ifconfig $TARGET >/dev/null 2>/dev/null \
+	&& $IFDEL ; return 0 \
 	|| return 1
 
