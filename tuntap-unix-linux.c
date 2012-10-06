@@ -75,8 +75,8 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 
 	/* Set it persistent if needed */
 	if (persist == 1) {
-		if (ioctl(fd, TUNSETPERSIST, &ifr) == -1) {
-        		(void)fprintf(stderr, "libtuntap (sys): "
+		if (ioctl(fd, TUNSETPERSIST, 1) == -1) {
+        		tuntap_log(0, "libtuntap (sys): "
 			    "failed to set persistent\n");
 			return -1;
 		}
@@ -120,8 +120,9 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 
 void
 tuntap_sys_destroy(struct device *dev) {
-	/* Linux automatically remove unused interface */
-	(void)dev;
+	if (ioctl(dev->tun_fd, TUNSETPERSIST, 0) == -1) {
+       		tuntap_log(0, "libtuntap (sys): failed to unset persistent\n");
+	}
 }
 
 int
