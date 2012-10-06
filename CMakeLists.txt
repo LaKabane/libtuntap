@@ -156,7 +156,7 @@ if (ENABLE_REGRESS)
   # test39 tests debug mode, which is not compiled by default
   add_test(test39 ${EXECUTABLE_OUTPUT_PATH}/test39)
   add_test(test40 ${EXECUTABLE_OUTPUT_PATH}/test40)
-  if(!NetBSD)
+  if(NOT NetBSD)
     set_tests_properties(test39 PROPERTIES WILL_FAIL true)
     set_tests_properties(test40 PROPERTIES WILL_FAIL true)
   endif()
