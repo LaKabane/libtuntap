@@ -67,6 +67,15 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	}
 	ifr.ifr_flags |= IFF_NO_PI;
 
+	/* Set the interface name, if any */
+	if (tun != TUNTAP_ID_ANY) {
+		if (fd > TUNTAP_ID_MAX) {
+			return -1;
+		}
+		(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name,
+		    ifname, tun);
+	}
+
 	/* Configure the interface */
 	if (ioctl(fd, TUNSETIFF, &ifr) == -1) {
 		tuntap_log(0, "libtuntap (sys): ioctl TUNSETIFF");
@@ -81,15 +90,6 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 			return -1;
 		}
         }
-
-	/* Set the interface name, if any */
-	if (tun != TUNTAP_ID_ANY) {
-		if (fd > TUNTAP_ID_MAX) {
-			return -1;
-		}
-		(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name,
-		    ifname, tun);
-	}
 
 	/* Get the internal parameters of ifr */
 	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &ifr) == -1) {
