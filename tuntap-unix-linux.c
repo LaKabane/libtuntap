@@ -43,6 +43,11 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 
 	fd = -1;
 	persist = 0;
+
+	/* Force a traditional naming policy */
+	if (tun < 0)
+	    return -1;
+
 	if ((fd = open("/dev/net/tun", O_RDWR)) == -1) {
 		tuntap_log(0, "libtuntap (sys): open /dev/net/tun");
 		return -1;
