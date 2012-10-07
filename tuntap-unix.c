@@ -49,6 +49,7 @@ tuntap_start(struct device *dev, int mode, int tun) {
 	
 	/* Don't re-initialise a previously started device */
 	if (dev->tun_fd != -1) {
+		tuntap_log(TUNTAP_LOG_ERR, "Device is already started");
 		return -1;
 	}
 
@@ -211,13 +212,16 @@ tuntap_get_mtu(struct device *dev) {
 	struct ifreq ifr;
 
 	/* Only accept started device */
-	if (dev->tun_fd == -1)
+	if (dev->tun_fd == -1) {
+		tuntap_log(TUNTAP_LOG_NOTICE, "Device is not started");
 		return 0;
+	}
 
 	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)memcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 
 	if (ioctl(dev->ctrl_sock, SIOCGIFMTU, &ifr) == -1) {
+		tuntap_log(TUNTAP_LOG_ERR, "Can't get MTU");
 		return -1;
 	}
 	return ifr.ifr_mtu;
@@ -228,14 +232,17 @@ tuntap_set_mtu(struct device *dev, int mtu) {
 	struct ifreq ifr;
 
 	/* Only accept started device */
-	if (dev->tun_fd == -1)
+	if (dev->tun_fd == -1) {
+		tuntap_log(TUNTAP_LOG_NOTICE, "Device is not started");
 		return 0;
+	}
 
 	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)memcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 	ifr.ifr_mtu = mtu;
 
 	if (ioctl(dev->ctrl_sock, SIOCSIFMTU, &ifr) == -1) {
+		tuntap_log(TUNTAP_LOG_ERR, "Can't set MTU");
 		return -1;
 	}
 	return 0;
@@ -247,6 +254,12 @@ tuntap_set_ip(struct device *dev, const char *addr, int netmask) {
 	struct sockaddr_in6 sin6;
 	uint32_t mask;
 	int errval;
+
+	/* Only accept started device */
+	if (dev->tun_fd == -1) {
+		tuntap_log(TUNTAP_LOG_NOTICE, "Device is not started");
+		return 0;
+	}
 
 	if (addr == NULL) {
 		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'addr'");
@@ -359,6 +372,12 @@ tuntap_set_nonblocking(struct device *dev, int set) {
 
 int
 tuntap_set_debug(struct device *dev, int set) {
+	/* Only accept started device */
+	if (dev->tun_fd == -1) {
+		tuntap_log(TUNTAP_LOG_NOTICE, "Device is not started");
+		return 0;
+	}
+
 #if !defined Darwin
 	if (ioctl(dev->tun_fd, TUNSDEBUG, &set) == -1) {
 		switch(set) {
