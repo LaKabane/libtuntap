@@ -78,7 +78,7 @@ endif()
 # Library definition
 # ------------------
 add_library(tuntap SHARED ${SOURCES_LIST})
-set_target_properties(tuntap PROPERTIES VERSION 1.0)
+set_target_properties(tuntap PROPERTIES VERSION 2.0)
 
 add_library(tuntap-static STATIC ${SOURCES_LIST})
 set_target_properties(tuntap-static PROPERTIES OUTPUT_NAME "tuntap")
