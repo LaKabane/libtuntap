@@ -25,12 +25,6 @@
 
 #include "tuntap.h"
 
-#ifdef Unix
-# define TUNFD_INVALID_VALUE -1
-#else /* Windows */
-# define TUNFD_INVALID_VALUE INVALID_HANDLE_VALUE
-#endif
-
 struct device *
 tuntap_init(void) {
 	struct device *dev = NULL;

@@ -39,6 +39,7 @@
  * - ETHER_ADDR_LEN: Magic number from IEEE 802.3
  * - IF_NAMESIZE: Length of interface external name
  * - TUNSDEBUG: ioctl flag to enable the debug mode of a tun device
+ * - TUNFD_INVALID_VALUE: Invalid value for tun_fd
  */
 # if defined ETH_ALEN /* Linux */
 #  define ETHER_ADDR_LEN ETH_ALEN
@@ -54,6 +55,12 @@
 
 #if defined TUNSETDEBUG
 # define TUNSDEBUG TUNSETDEBUG
+#endif
+
+#if defined Unix
+# define TUNFD_INVALID_VALUE -1
+#else /* Window */
+# define TUNFD_INVALID_VALUE INVALID_HANDLE_VALUE
 #endif
 
 /*
