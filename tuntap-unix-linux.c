@@ -78,6 +78,12 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 		    ifname, tun);
 		/* And save it */
 		(void)memcpy(dev->if_name, ifr.ifr_name, sizeof ifr.ifr_name);
+	} else {
+		/* Get the interface name */
+		if (ioctl(fd, TUNGETIFF, &ifr) == -1) {
+			tuntap_log(TUNTAP_LOG_ERR, "Can't get interface name");
+			return -1;
+		}
 	}
 
 	/* Configure the interface */
