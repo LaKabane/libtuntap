@@ -53,20 +53,20 @@ tuntap_sys_create_dev(struct device *dev, int tun) {
 
 int
 tuntap_sys_start(struct device *dev, int mode, int tun) {
-	struct ifreq ifr;
-	char name[MAXPATHLEN];
 	int fd;
+	char name[MAXPATHLEN];
+	struct ifreq ifr;
 
-	fd = -1;
-
-	/* Force creation of the driver if needed or let it resilient */
+	/* Get the persistence bit */
 	if (mode & TUNTAP_MODE_PERSIST) {
 		mode &= ~TUNTAP_MODE_PERSIST;
+		/* And force the creation of the driver, if needed */
 		if (tuntap_sys_create_dev(dev, tun) == -1)
 			return -1;
 	}
 
-	/* Try to use the given tun driver or loop throught the avaible ones */
+	/* Try to use the given driver or loop throught the avaible ones */
+	fd = -1;
 	if (tun < TUNTAP_ID_MAX) {
 		(void)snprintf(name, sizeof name, "/dev/tun%i", tun);
 		fd = open(name, O_RDWR);
@@ -78,12 +78,19 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 				break;
 		}
 	} else {
+		tuntap_log(0, "libtuntap (sys): Invalid device unit");
 		return -1;
 	}
-
-	if (fd < 0 || fd == 256) {
+	switch (fd) {
+	case -1:
+		tuntap_log(0, strerror(errno));
+		return -1;
+	case 256:
 		tuntap_log(0, "libtuntap (sys): Can't find a tun entry");
 		return -1;
+	default:
+		/* NOTREACHED */
+		break;
 	}
 
 	/* Set the interface name */
@@ -106,6 +113,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 		ifr.ifr_flags &= ~IFF_LINK0;
 	}
 	else {
+		tuntap_log(0, "libtuntap (sys): invalid mode for tuntap_start");
 		return -1;
 	}
 

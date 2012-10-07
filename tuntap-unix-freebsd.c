@@ -26,6 +26,7 @@
 #include <netinet/if_ether.h>
 #include <netinet/in.h>
 
+#include <errno.h>
 #include <fcntl.h>
 #include <ifaddrs.h>
 #include <stdint.h>
@@ -59,13 +60,11 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	} else if (mode == TUNTAP_MODE_TUNNEL) {
 		ifname = "tun";
 	} else {
-		tuntap_log(0, "Invalid mode for tuntap_start");
+		tuntap_log(0, "libtuntap (sys): Invalid mode");
 		return -1;
 	}
 
-	/*
-	 * Try to use the given driver, or loop throught the avaible ones
-	 */
+	/* Try to use the given driver or loop throught the avaible ones */
 	fd = -1;
 	if (tun < TUNTAP_ID_MAX) {
 		(void)snprintf(name, sizeof name, "/dev/%s%i", ifname, tun);
@@ -79,13 +78,19 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 				break;
 		}
 	} else {
+		tuntap_log(0, "libtuntap (sys): Invalid device unit");
 		return -1;
 	}
-
-	if (fd < 0 || fd == 256) {
-		(void)fprintf(stderr, "libtuntap (sys):"
-		    " Can't find a tun entry\n");
+	switch (fd) {
+	case -1:
+		tuntap_log(0, "libtuntap (sys): Permission denied");
 		return -1;
+	case 256:
+		tuntap_log(0, "libtuntap (sys): Can't find a tun entry");
+		return -1;
+	default:
+		/* NOTREACHED */
+		break;
 	}
 
 	/* Set the interface name */
@@ -96,7 +101,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 
 	/* Get the interface default values */
 	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &ifr) == -1) {
-		(void)fprintf(stderr, "libtuntap (sys): ioctl SIOCGIFFLAGS\n");
+		tuntap_log(0, "libtuntap (sys): ioctl SIOCGIFFLAGS");
 		return -1;
 	}
 
@@ -104,7 +109,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	dev->flags = ifr.ifr_flags;
 
 	/* Save pre-existing MAC address */
-	if (getifaddrs(&ifa) == 0) {
+	if (mode == TUNTAP_MODE_ETHERNET && getifaddrs(&ifa) == 0) {
 		struct ifaddrs *pifa;
 
 		for (pifa = ifa; pifa != NULL; pifa = pifa->ifa_next) {
