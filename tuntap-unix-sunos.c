@@ -65,7 +65,18 @@ tuntap_sys_set_ipv6(struct device *dev, uint32_t *iaddr, uint32_t imask) {
 }
 
 int
-tuntap_sys_set_ifname(struct device *dev, const char *ifname, int len) {
+tuntap_sys_set_ifname(struct device *dev, const char *ifname, size_t len) {
+	(void)dev;
+	(void)ifname;
+	(void)len;
+	return -1;
+}
+
+int
+tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len) {
+	(void)dev;
+	(void)descr;
+	(void)len;
 	return -1;
 }
 

@@ -38,6 +38,7 @@
  * Uniformize macros
  * - ETHER_ADDR_LEN: Magic number from IEEE 802.3
  * - IF_NAMESIZE: Length of interface external name
+ * - IF_DESCRSIZE: Length of interface description
  * - TUNSDEBUG: ioctl flag to enable the debug mode of a tun device
  * - TUNFD_INVALID_VALUE: Invalid value for tun_fd
  */
@@ -53,15 +54,17 @@
 #  define IF_NAMESIZE 16
 # endif
 
-#if defined TUNSETDEBUG
-# define TUNSDEBUG TUNSETDEBUG
-#endif
+# define IF_DESCRSIZE 50 /* XXX: Tests needed on NetBSD and OpenBSD */
 
-#if defined Unix
-# define TUNFD_INVALID_VALUE -1
-#else /* Window */
-# define TUNFD_INVALID_VALUE INVALID_HANDLE_VALUE
-#endif
+# if defined TUNSETDEBUG
+#  define TUNSDEBUG TUNSETDEBUG
+# endif
+
+# if defined Unix
+#  define TUNFD_INVALID_VALUE -1
+# else /* Window */
+#  define TUNFD_INVALID_VALUE INVALID_HANDLE_VALUE
+# endif
 
 /*
  * Uniformize types
@@ -113,6 +116,7 @@ char		*tuntap_get_ifname(struct device *);
 int		 tuntap_set_ifname(struct device *, const char *);
 char		*tuntap_get_hwaddr(struct device *);
 int		 tuntap_set_hwaddr(struct device *, const char *);
+int		 tuntap_set_descr(struct device *, const char *);
 int		 tuntap_up(struct device *);
 int		 tuntap_down(struct device *);
 int		 tuntap_get_mtu(struct device *);
@@ -136,7 +140,8 @@ void		 tuntap_sys_destroy(struct device *);
 int		 tuntap_sys_set_hwaddr(struct device *, struct ether_addr *);
 int		 tuntap_sys_set_ipv4(struct device *, struct sockaddr_in *, uint32_t);
 int		 tuntap_sys_set_ipv6(struct device *, struct sockaddr_in6 *, uint32_t);
-int		 tuntap_sys_set_ifname(struct device *, const char *, int);
+int		 tuntap_sys_set_ifname(struct device *, const char *, size_t);
+int		 tuntap_sys_set_descr(struct device *, const char *, size_t);
 
 # ifdef __cplusplus
 }

@@ -89,8 +89,29 @@ tuntap_release(struct device *dev) {
 }
 
 int
+tuntap_set_descr(struct device *dev, const char *descr) {
+	size_t len;
+
+	if (descr == NULL) {
+		tuntap_log(0, "libtuntap: Invalid parameter 'descr'");
+		return -1;
+	}
+
+	len = strlen(descr);
+	if (len > IF_DESCRSIZE) {
+		/* The value will be troncated */
+		tuntap_log(0, "libtuntap: Parameter 'descr' is too long");
+	}
+
+	if (tuntap_sys_set_descr(dev, descr, len) == -1) {
+		return -1;
+	}
+	return 0;
+}
+
+int
 tuntap_set_ifname(struct device *dev, const char *ifname) {
-	int len;
+	size_t len;
 
 	if (ifname == NULL) {
 		tuntap_log(0, "libtuntap: Invalid parameter 'ifname'");

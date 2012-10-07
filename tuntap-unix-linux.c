@@ -199,3 +199,11 @@ tuntap_sys_set_ifname(struct device *dev, const char *ifname, int len) {
 	return 0;
 }
 
+int
+tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len) {
+	(void)dev;
+	(void)descr;
+	(void)len;
+	return -1;
+}
+
