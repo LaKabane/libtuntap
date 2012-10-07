@@ -64,7 +64,7 @@ tuntap_sys_set_ipv6(struct device *dev, struct sockaddr_in6 *s, uint32_t bits) {
 	(void)dev;
 	(void)s6;
 	(void)bits;
-	tuntap_log(0, "libtuntap (sys): ipv6 not implemented");
+	tuntap_log(TUNTAP_LOG_INFO, "IPv6 is not implemented on your system");
 	return -1;
 }
 
@@ -73,6 +73,8 @@ tuntap_sys_set_ifname(struct device *dev, const char *ifname, size_t len) {
 	(void)dev;
 	(void)ifname;
 	(void)len;
+	tuntap_log(TUNTAP_LOG_ERR,
+	    "Your system does not support tuntap_set_ifname()");
 	return -1;
 }
 
@@ -81,6 +83,8 @@ tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len) {
 	(void)dev;
 	(void)descr;
 	(void)len;
+	tuntap_log(TUNTAP_LOG_ERR,
+	    "Your system does not support tuntap_set_descr()");
 	return -1;
 }
 

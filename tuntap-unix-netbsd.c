@@ -53,7 +53,7 @@ tuntap_sys_create_dev(struct device *dev, int mode, int tun) {
 	(void)snprintf(ifr.ifr_name, IF_NAMESIZE, name, tun);
 
 	if (ioctl(dev->ctrl_sock, SIOCIFCREATE, &ifr) == -1) {
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCIFCREATE");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't set persistent");
 		return -1;
 	}
 	return 0;
@@ -90,21 +90,21 @@ tuntap_sys_start_tap(struct device *dev, int tun) {
 		char buf[22 + IF_NAMESIZE + 5];
 
 		(void)memset(buf, 0, sizeof buf);
-		snprintf(buf, sizeof buf, "libtuntap (sys): open %s", name);
-		tuntap_log(0, buf);
+		snprintf(buf, sizeof buf, "Open %s", name);
+		tuntap_log(TUNTAP_LOG_DEBUG, buf);
 		return -1;
 	}
 
 	/* Get the interface name */
 	if (ioctl(fd, TAPGIFNAME, &ifr) == -1) {
-		tuntap_log(0, "libtuntap (sys): ioctl TAPGIFNAME");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't get interface name");
 		return -1;
 	}
 	(void)strlcpy(dev->if_name, ifr.ifr_name, sizeof ifr.ifr_name);
 
 	/* Get the interface default values */
 	if (ioctl(fd, SIOCGIFFLAGS, &ifr) == -1) {
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCGIFFLAGS");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't get interface values");
 		return -1;
 	}
 
@@ -134,14 +134,12 @@ tuntap_sys_start_tap(struct device *dev, int tun) {
 				(void)memcpy(&eth_addr.ether_addr_octet,
 				  pifa->ifa_addr->sa_data + 10,
 				  ETHER_ADDR_LEN);
-
-#if 0
-				fprintf(stderr,
-				  "MAC: %s\n", ether_ntoa(&eth_addr));
-#endif
 				break;
 			}
 		}
+		if (pifa == NULL)
+			tuntap_log(TUNTAP_LOG_WARN,
+			    "Can't get link-layer address");
 		freeifaddrs(ifa);
 	}
 	return fd;
@@ -170,10 +168,16 @@ tuntap_sys_start_tun(struct device *dev, int tun) {
 	} else {
 		return -1;
 	}
-
-	if (fd < 0 || fd == 256) {
-		tuntap_log(0, "libtuntap (sys): Can't find a tun entry\n");
+	switch (fd) {
+	case -1:
+		tuntap_log(TUNTAP_LOG_ERR, "Permission denied");
 		return -1;
+	case 256:
+		tuntap_log(TUNTAP_LOG_ERR, "Can't find a tun entry");
+		return -1;
+	default:
+		/* NOTREACHED */
+		break;
 	}
 
 	/* Set the interface name */
@@ -184,7 +188,7 @@ tuntap_sys_start_tun(struct device *dev, int tun) {
 
 	/* Get the interface default values */
 	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &ifr) == -1) {
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCGIFFLAGS");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't get interface values");
 		return -1;
 	}
 
@@ -227,7 +231,7 @@ tuntap_sys_destroy(struct device *dev) {
 	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 
 	if (ioctl(dev->ctrl_sock, SIOCIFDESTROY, &ifr) == -1)
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCIFDESTROY\n");
+		tuntap_log(TUNTAP_LOG_WARN, "Can't destroy the interface");
 }
 
 int
@@ -241,7 +245,7 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 	(void)memcpy(ifra.ifra_addr.sa_data, eth_addr, ETHER_ADDR_LEN);
 
 	if (ioctl(dev->ctrl_sock, SIOCSIFPHYADDR, &ifra) == -1) {
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFPHYADDR");
+	        tuntap_log(TUNTAP_LOG_ERR, "Can't set link-layer address");
 		return -1;
 	}
 	return 0;
@@ -281,7 +285,7 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s, uint32_t bits) {
 
 	/* Simpler than calling SIOCSIFADDR and/or SIOCSIFBRDADDR */
 	if (ioctl(dev->ctrl_sock, SIOCAIFADDR, &ifa) == -1) {
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCAIFADDR");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't set IP/netmask");
 		return -1;
 	}
 	return 0;

@@ -65,7 +65,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	/* Open the clonable interface */
 	fd = -1;
 	if ((fd = open("/dev/net/tun", O_RDWR)) == -1) {
-		tuntap_log(0, "libtuntap (sys): open /dev/net/tun");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't open /dev/net/tun");
 		return -1;
 	}
 
@@ -82,22 +82,21 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 
 	/* Configure the interface */
 	if (ioctl(fd, TUNSETIFF, &ifr) == -1) {
-		tuntap_log(0, "libtuntap (sys): ioctl TUNSETIFF");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't set interface name");
 		return -1;
 	}
 
 	/* Set it persistent if needed */
 	if (persist == 1) {
 		if (ioctl(fd, TUNSETPERSIST, 1) == -1) {
-        		tuntap_log(0, "libtuntap (sys): "
-			    "failed to set persistent\n");
+			tuntap_log(TUNTAP_LOG_ERR, "Can't set persistent");
 			return -1;
 		}
         }
 
 	/* Get the interface default values */
 	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &ifr) == -1) {
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCGIFFLAGS");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't get interface values");
 	    	return -1;
 	}
 
@@ -111,19 +110,19 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 		(void)memcpy(ifr_hw.ifr_name, dev->if_name,
 		    sizeof(dev->if_name));
 		if (ioctl(fd, SIOCGIFHWADDR, &ifr_hw) == -1) {
-			tuntap_log(0, "libtuntap (sys): ioctl SIOCGIFHWADDR\n");
-			return -1;
+			tuntap_log(TUNTAP_LOG_WARN,
+			    "Can't get link-layer address");
+			return fd;
 		}
 		(void)memcpy(dev->hwaddr, ifr_hw.ifr_hwaddr.sa_data, ETH_ALEN);
 	}
-
 	return fd;
 }
 
 void
 tuntap_sys_destroy(struct device *dev) {
 	if (ioctl(dev->tun_fd, TUNSETPERSIST, 0) == -1) {
-       		tuntap_log(0, "libtuntap (sys): failed to unset persistent\n");
+       		tuntap_log(TUNTAP_LOG_WARN, "Can't destroy the interface");
 	}
 }
 
@@ -139,7 +138,7 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 
 	/* Linux has a special flag for setting the MAC address */
 	if (ioctl(dev->ctrl_sock, SIOCSIFHWADDR, &ifr) == -1) {
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFHWADDR");
+	        tuntap_log(TUNTAP_LOG_ERR, "Can't set link-layer address");
 		return -1;
 	}
 	return 0;
@@ -156,7 +155,7 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
 	/* Set the IP address first */
 	(void)memcpy(&ifr.ifr_addr, s4, sizeof ifr.ifr_addr);
 	if (ioctl(dev->ctrl_sock, SIOCSIFADDR, &ifr) == -1) {
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFADDR");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't set IP address");
 		return -1;
 	}
 	
@@ -169,7 +168,7 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
 	mask.sin_addr.s_addr = bits;
 	(void)memcpy(&ifr.ifr_netmask, &mask, sizeof ifr.ifr_netmask);
 	if (ioctl(dev->ctrl_sock, SIOCSIFNETMASK, &ifr) == -1) {
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFNETMASK");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't set netmask");
 		return -1;
 	}
 
@@ -181,7 +180,7 @@ tuntap_sys_set_ipv6(struct device *dev, struct sockaddr_in6 *s6, uint32_t bits) 
 	(void)dev;
 	(void)s6;
 	(void)bits;
-	tuntap_log(0, "libtuntap (sys): ipv6 not implemented");
+	tuntap_log(TUNTAP_LOG_INFO, "IPv6 is not implemented on your system");
 	return -1;
 }
 
@@ -193,7 +192,7 @@ tuntap_sys_set_ifname(struct device *dev, const char *ifname, int len) {
 	(void)strncpy(ifr.ifr_newname, ifname, len);
 
 	if (ioctl(dev->fd, TUNSETIFF, &ifr) == -1) {
-		tuntap_log(0, "libtuntap (sys): Can't set the interface name");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't set interface name");
 		return -1;
 	}
 	return 0;
@@ -204,6 +203,8 @@ tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len) {
 	(void)dev;
 	(void)descr;
 	(void)len;
+	tuntap_log(TUNTAP_LOG_ERR,
+	    "Your system does not support tuntap_set_descr()");
 	return -1;
 }
 

@@ -93,14 +93,14 @@ tuntap_set_descr(struct device *dev, const char *descr) {
 	size_t len;
 
 	if (descr == NULL) {
-		tuntap_log(0, "libtuntap: Invalid parameter 'descr'");
+		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'descr'");
 		return -1;
 	}
 
 	len = strlen(descr);
 	if (len > IF_DESCRSIZE) {
 		/* The value will be troncated */
-		tuntap_log(0, "libtuntap: Parameter 'descr' is too long");
+		tuntap_log(TUNTAP_LOG_WARN, "Parameter 'descr' is too long");
 	}
 
 	if (tuntap_sys_set_descr(dev, descr, len) == -1) {
@@ -114,13 +114,13 @@ tuntap_set_ifname(struct device *dev, const char *ifname) {
 	size_t len;
 
 	if (ifname == NULL) {
-		tuntap_log(0, "libtuntap: Invalid parameter 'ifname'");
+		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'ifname'");
 		return -1;
 	}
 
 	len = strlen(ifname);
 	if (len > IF_NAMESIZE) {
-		tuntap_log(0, "libtuntap: Parameter 'ifname' is too long");
+		tuntap_log(TUNTAP_LOG_ERR, "Parameter 'ifname' is too long");
 		return -1;
 	}
 
@@ -242,25 +242,25 @@ tuntap_set_mtu(struct device *dev, int mtu) {
 }
 
 int
-tuntap_set_ip(struct device *dev, const char *saddr, int bits) {
+tuntap_set_ip(struct device *dev, const char *addr, int netmask) {
 	struct sockaddr_in sin;
 	struct sockaddr_in6 sin6;
 	uint32_t mask;
 	int errval;
 
-	if (saddr == NULL) {
-		tuntap_log(0, "libtuntap: tuntap_set_ip invalid address");
+	if (addr == NULL) {
+		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'addr'");
 		return -1;
 	}
 
-	if (bits < 0 || bits > 128) {
-		tuntap_log(0, "libtuntap: tuntap_set_ip invalid netmask");
+	if (netmask < 0 || netmask > 128) {
+		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'netmask'");
 		return -1;
 	}
 
 	/* Netmask */
 	mask = ~0;
-	mask = ~(mask >> bits);
+	mask = ~(mask >> netmask);
 	mask = htonl(mask);
 
 	/*
@@ -270,19 +270,19 @@ tuntap_set_ip(struct device *dev, const char *saddr, int bits) {
 	(void)memset(&sin, '\0', sizeof sin);
 	(void)memset(&sin6, '\0', sizeof sin6);
 
-	errval = inet_pton(AF_INET, saddr, &(sin.sin_addr));
+	errval = inet_pton(AF_INET, addr, &(sin.sin_addr));
 	if (errval == 1) {
 		sin.sin_family = AF_INET;
 		return tuntap_sys_set_ipv4(dev, &sin, mask);
 	} else if (errval == 0) {
-		if (inet_pton(AF_INET6, saddr, &(sin6.sin6_addr)) == -1) {
-			tuntap_log(0, "libtuntap: tuntap_set_ip bad address");
+		if (inet_pton(AF_INET6, addr, &(sin6.sin6_addr)) == -1) {
+			tuntap_log(TUNTAP_LOG_ERR, "Invalid parameters");
 			return -1;
 		}
 		sin.sin_family = AF_INET6;
 		return tuntap_sys_set_ipv6(dev, &sin6, mask);
 	} else if (errval == -1) {
-		tuntap_log(0, "libtuntap: tuntap_set_ip bad address");
+		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameters");
 		return -1;
 	}
 
@@ -295,12 +295,14 @@ tuntap_read(struct device *dev, void *buf, size_t size) {
 	int n;
 
 	/* Only accept started device */
-	if (dev->tun_fd == -1)
+	if (dev->tun_fd == -1) {
+		tuntap_log(TUNTAP_LOG_NOTICE, "Device is not started");
 		return 0;
+	}
 
 	n = read(dev->tun_fd, buf, size);
 	if (n == -1) {
-		tuntap_log(0, "libtuntap: enable to read from device");
+		tuntap_log(TUNTAP_LOG_WARN, "Can't to read from device");
 		return -1;
 	}
 	return n;
@@ -311,12 +313,14 @@ tuntap_write(struct device *dev, void *buf, size_t size) {
 	int n;
 
 	/* Only accept started device */
-	if (dev->tun_fd == -1)
+	if (dev->tun_fd == -1) {
+		tuntap_log(TUNTAP_LOG_NOTICE, "Device is not started");
 		return 0;
+	}
 
 	n = write(dev->tun_fd, buf, size);
 	if (n == -1) {
-		tuntap_log(0, "libtuntap: enable to write to device");
+		tuntap_log(TUNTAP_LOG_WARN, "Can't to write from device");
 		return -1;
 	}
 	return n;
@@ -328,8 +332,8 @@ tuntap_get_readable(struct device *dev) {
 
 	n = 0;
 	if (ioctl(dev->tun_fd, FIONREAD, &n) == -1) {
-		tuntap_log(0, "libtuntap (sys): "
-		    "your system does not support FIONREAD, fallback to MTU");
+		tuntap_log(TUNTAP_LOG_INFO, "Your system does not support"
+		    " FIONREAD, fallback to MTU");
 		return tuntap_get_mtu(dev);
 	}
 	return n;
@@ -338,7 +342,16 @@ tuntap_get_readable(struct device *dev) {
 int
 tuntap_set_nonblocking(struct device *dev, int set) {
 	if (ioctl(dev->tun_fd, FIONBIO, &set) == -1) {
-		tuntap_log(0, "libtuntap (sys): failed to (un)set nonblocking");
+		switch(set) {
+		case 0:
+			tuntap_log(TUNTAP_LOG_ERR, "Can't unset nonblocking");
+			break;
+		case 1:
+			tuntap_log(TUNTAP_LOG_ERR, "Can't set nonblocking");
+			break;
+		default:
+			tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'set'");
+		}
 		return -1;
 	}
 	return 0;
@@ -348,7 +361,16 @@ int
 tuntap_set_debug(struct device *dev, int set) {
 #if !defined Darwin
 	if (ioctl(dev->tun_fd, TUNSDEBUG, &set) == -1) {
-		tuntap_log(0, "libtuntap (sys): failed to (un)set debug");
+		switch(set) {
+		case 0:
+			tuntap_log(TUNTAP_LOG_ERR, "Can't unset debug");
+			break;
+		case 1:
+			tuntap_log(TUNTAP_LOG_ERR, "Can't set debug");
+			break;
+		default:
+			tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'set'");
+		}
 		return -1;
 	}
 	return 0;
