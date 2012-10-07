@@ -16,6 +16,7 @@
 
 #include <sys/types.h>
 #include <sys/ioctl.h>
+#include <sys/sockio.h>
 #include <sys/socket.h>
 #include <sys/param.h> /* For MAXPATHLEN */
 
@@ -28,6 +29,7 @@
 #include <netinet/if_ether.h>
 
 #include <fcntl.h>
+#include <ifaddrs.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -65,6 +67,7 @@ static int
 tuntap_sys_start_tap(struct device *dev, int tun) {
 	int fd;
 	struct ifreq ifr;
+	struct ifaddrs *ifa;
 	char name[IF_NAMESIZE + 5]; /* For /dev/IFNAMSIZ */
 
 	fd = -1;
@@ -108,6 +111,39 @@ tuntap_sys_start_tap(struct device *dev, int tun) {
 	/* Save flags for tuntap_{up, down} */
 	dev->flags = ifr.ifr_flags;
 
+	/* Save pre-existing MAC address */
+	if (getifaddrs(&ifa) == 0) {
+		struct ifaddrs *pifa;
+
+		for (pifa = ifa; pifa != NULL; pifa = pifa->ifa_next) {
+			if (strcmp(pifa->ifa_name, dev->if_name) == 0) {
+				struct ether_addr eth_addr;
+
+				/*
+				 * The MAC address is from 10 to 15.
+				 *
+				 * And yes, I know, the buffer is supposed
+				 * to have a size of 14 bytes.
+				 */
+				(void)memcpy(dev->hwaddr,
+				  pifa->ifa_addr->sa_data + 10,
+				  ETHER_ADDR_LEN);
+
+				(void)memset(&eth_addr.ether_addr_octet, 0,
+				  ETHER_ADDR_LEN);
+				(void)memcpy(&eth_addr.ether_addr_octet,
+				  pifa->ifa_addr->sa_data + 10,
+				  ETHER_ADDR_LEN);
+
+#if 0
+				fprintf(stderr,
+				  "MAC: %s\n", ether_ntoa(&eth_addr));
+#endif
+				break;
+			}
+		}
+		freeifaddrs(ifa);
+	}
 	return fd;
 }
 
