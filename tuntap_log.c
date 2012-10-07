@@ -37,8 +37,34 @@ tuntap_log_set_cb(t_tuntap_log cb) {
 
 void
 tuntap_log_default(int level, const char *errmsg) {
-	(void)level;
-	fprintf(stderr, "%s\n", errmsg);
+	char *name;
+
+	switch(level) {
+	case TUNTAP_LOG_DEBUG:
+		name = "Debug";
+		break;
+	case TUNTAP_LOG_INFO:
+		name = "Info";
+		break;
+	case TUNTAP_LOG_NOTICE:
+		name = "Notice";
+		break;
+	case TUNTAP_LOG_WARN:
+		name = "Warning";
+		break;
+	case TUNTAP_LOG_ERR:
+		name = "Error";
+		break;
+	case TUNTAP_LOG_NONE:
+	default:
+		name = NULL;
+		break;
+	}
+	if (name == NULL) {
+		(void)fprintf(stderr, "%s\n", errmsg);
+	} else {
+		(void)fprintf(stderr, "%s: %s\n", name, errmsg);
+	}
 }
 
 void
@@ -77,7 +103,7 @@ tuntap_log_hexdump(void *data, size_t size) {
 			(void)memset(buf, 0, sizeof buf);
 			(void)snprintf(buf, sizeof buf,
 			    "[%4.4s]   %-50.50s  %s", addrstr, hexstr, charstr);
-			tuntap_log(0, buf);
+			tuntap_log(TUNTAP_LOG_NONE, buf);
 			hexstr[0] = 0;
 			charstr[0] = 0;
 		} else if (n % 8 == 0) {
@@ -93,7 +119,7 @@ tuntap_log_hexdump(void *data, size_t size) {
 		(void)memset(buf, 0, sizeof buf);
 		(void)snprintf(buf, sizeof buf, "[%4.4s]   %-50.50s  %s",
 				addrstr, hexstr, charstr);
-		tuntap_log(0, buf);
+		tuntap_log(TUNTAP_LOG_NONE, buf);
 	}
 }
 
@@ -119,6 +145,6 @@ tuntap_log_chksum(void *addr, int count) {
 
 	(void)memset(buf, 0, sizeof buf);
 	(void)snprintf(buf, sizeof buf, "Checksum of this block: %0#4x", sum);
-	tuntap_log(0, buf);
+	tuntap_log(TUNTAP_LOG_NONE, buf);
 }
 

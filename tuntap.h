@@ -38,7 +38,9 @@
  * Uniformize macros
  * - ETHER_ADDR_LEN: Magic number from IEEE 802.3
  * - IF_NAMESIZE: Length of interface external name
+ * - IF_DESCRSIZE: Length of interface description
  * - TUNSDEBUG: ioctl flag to enable the debug mode of a tun device
+ * - TUNFD_INVALID_VALUE: Invalid value for tun_fd
  */
 # if defined ETH_ALEN /* Linux */
 #  define ETHER_ADDR_LEN ETH_ALEN
@@ -52,9 +54,17 @@
 #  define IF_NAMESIZE 16
 # endif
 
-#if defined TUNSETDEBUG
-# define TUNSDEBUG TUNSETDEBUG
-#endif
+# define IF_DESCRSIZE 50 /* XXX: Tests needed on NetBSD and OpenBSD */
+
+# if defined TUNSETDEBUG
+#  define TUNSDEBUG TUNSETDEBUG
+# endif
+
+# if defined Unix
+#  define TUNFD_INVALID_VALUE -1
+# else /* Window */
+#  define TUNFD_INVALID_VALUE INVALID_HANDLE_VALUE
+# endif
 
 /*
  * Uniformize types
@@ -73,6 +83,7 @@ typedef HANDLE t_tun;
 # define TUNTAP_MODE_TUNNEL   0x0002
 # define TUNTAP_MODE_PERSIST  0x0004
 
+# define TUNTAP_LOG_NONE      0x0000
 # define TUNTAP_LOG_DEBUG     0x0001
 # define TUNTAP_LOG_INFO      0x0002
 # define TUNTAP_LOG_NOTICE    0x0004
@@ -103,8 +114,10 @@ void		 tuntap_destroy(struct device *);
 void		 tuntap_release(struct device *);
 int		 tuntap_start(struct device *, int, int);
 char		*tuntap_get_ifname(struct device *);
+int		 tuntap_set_ifname(struct device *, const char *);
 char		*tuntap_get_hwaddr(struct device *);
 int		 tuntap_set_hwaddr(struct device *, const char *);
+int		 tuntap_set_descr(struct device *, const char *);
 int		 tuntap_up(struct device *);
 int		 tuntap_down(struct device *);
 int		 tuntap_get_mtu(struct device *);
@@ -128,6 +141,8 @@ void		 tuntap_sys_destroy(struct device *);
 int		 tuntap_sys_set_hwaddr(struct device *, struct ether_addr *);
 int		 tuntap_sys_set_ipv4(struct device *, struct sockaddr_in *, uint32_t);
 int		 tuntap_sys_set_ipv6(struct device *, struct sockaddr_in6 *, uint32_t);
+int		 tuntap_sys_set_ifname(struct device *, const char *, size_t);
+int		 tuntap_sys_set_descr(struct device *, const char *, size_t);
 
 # ifdef __cplusplus
 }

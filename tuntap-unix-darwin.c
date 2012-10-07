@@ -66,10 +66,11 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 		ifr.ifr_flags &= ~IFF_LINK0;
 	}
 	else {
+		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'mode'");
 		return -1;
 	}
 
-	/* Try to use the given tun/tap driver or loop throught the avaible ones */
+	/* Try to use the given driver or loop throught the avaible ones */
 	if (tun < TUNTAP_ID_MAX) {
 		(void)snprintf(name, sizeof name, "/dev/%s%i", type, tun);
 		fd = open(name, O_RDWR);
@@ -82,12 +83,19 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 				break;
 		}
 	} else {
+		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'tun'");
 		return -1;
 	}
-
-	if (fd < 0 || fd == 256) {
-		tuntap_log(0, "libtuntap (sys): Can't find a tun entry");
+	switch (fd) {
+	case -1:
+		tuntap_log(TUNTAP_LOG_ERR, "Permission denied");
 		return -1;
+	case 256:
+		tuntap_log(TUNTAP_LOG_ERR, "Can't find a tun entry");
+		return -1;
+	default:
+		/* NOTREACHED */
+		break;
 	}
 
 	/* Set the interface name */
@@ -98,13 +106,13 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 
 	/* Get the interface default values */
 	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &ifr) == -1) {
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCGIFFLAGS");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't get interface values");
 		return -1;
 	}
 
 	/* Set our modifications */
 	if (ioctl(dev->ctrl_sock, SIOCSIFFLAGS, &ifr) == -1) {
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFFLAGS");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't set interface values");
 		return -1;
 	}
 
@@ -134,14 +142,12 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 				(void)memcpy(&eth_addr.ether_addr_octet,
 				  pifa->ifa_addr->sa_data + 10,
 				  ETHER_ADDR_LEN);
-
-#if 0
-				fprintf(stderr,
-				  "MAC: %s\n", ether_ntoa(&eth_addr));
-#endif
 				break;
 			}
 		}
+		if (pifa == NULL)
+			tuntap_log(TUNTAP_LOG_WARN,
+			    "Can't get link-layer address");
 		freeifaddrs(ifa);
 	}
 	return fd;
@@ -162,7 +168,7 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 	ifr.ifr_addr.sa_family = AF_LINK;
 	(void)memcpy(ifr.ifr_addr.sa_data, eth_addr, ETHER_ADDR_LEN);
 	if (ioctl(dev->ctrl_sock, SIOCSIFLLADDR, &ifr) < 0) {
-	        tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFLLADDR");
+	        tuntap_log(TUNTAP_LOG_ERR, "Can't set link-layer address");
 		return -1;
 	}
 	return 0;
@@ -202,17 +208,9 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
 
 	/* Simpler than calling SIOCSIFADDR and/or SIOCSIFBRDADDR */
 	if (ioctl(dev->ctrl_sock, SIOCSIFADDR, &ifa) == -1) {
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFADDR");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't set IP/netmask");
 		return -1;
 	}
 	return 0;
 }
 
-int
-tuntap_sys_set_ipv6(struct device *dev, struct sockaddr_in6 *s, uint32_t bits) {
-	(void)dev;
-	(void)s;
-	(void)bits;
-	tuntap_log(0, "libtuntap (sys): ipv6 not implemented");
-	return -1;
-}

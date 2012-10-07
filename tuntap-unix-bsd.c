@@ -18,51 +18,16 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 
-#include <arpa/inet.h>
 #include <net/if.h>
-#include <net/if_tun.h>
-#include <net/if_types.h>
-#include <netinet/if_ether.h>
-#include <netinet/in.h>
 
-#include <fcntl.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 #include "tuntap.h"
-
-static int
-tuntap_sys_create_dev(struct device *dev, int tun) {
-	return -1;
-}
-
-int
-tuntap_sys_start(struct device *dev, int mode, int tun) {
-	return -1;
-}
-
-void
-tuntap_sys_destroy(struct device *dev) {
-	return;
-}
-
-int
-tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
-	return -1;
-}
-
-int
-tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
-	return -1;
-}
 
 int
 tuntap_sys_set_ipv6(struct device *dev, struct sockaddr_in6 *s, uint32_t bits) {
 	(void)dev;
-	(void)s6;
+	(void)s;
 	(void)bits;
 	tuntap_log(TUNTAP_LOG_INFO, "IPv6 is not implemented on your system");
 	return -1;
@@ -80,11 +45,25 @@ tuntap_sys_set_ifname(struct device *dev, const char *ifname, size_t len) {
 
 int
 tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len) {
-	(void)dev;
-	(void)descr;
-	(void)len;
-	tuntap_log(TUNTAP_LOG_ERR,
-	    "Your system does not support tuntap_set_descr()");
+#if !defined Darwin && !defined NetBSD
+	struct ifreq ifr;
+	struct ifreq_buffer ifrbuf;
+
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
+
+	ifrbuf.buffer = (void *)descr;
+	ifrbuf.length = len;
+	ifr.ifr_buffer = ifrbuf;
+
+	if (ioctl(dev->ctrl_sock, SIOCSIFDESCR, &ifr) == -1) {
+		tuntap_log(TUNTAP_LOG_ERR,
+		    "Can't set the interface description");
+		return -1;
+	}
+	return 0;
+#else
 	return -1;
+#endif
 }
 

@@ -45,7 +45,7 @@ tuntap_sys_create_dev(struct device *dev, int tun) {
 	(void)snprintf(ifr.ifr_name, IF_NAMESIZE, "tun%i", tun);
 
 	if (ioctl(dev->ctrl_sock, SIOCIFCREATE, &ifr) == -1) {
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCIFCREATE");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't set persistent");
 		return -1;
 	}
 	return 0;
@@ -53,20 +53,20 @@ tuntap_sys_create_dev(struct device *dev, int tun) {
 
 int
 tuntap_sys_start(struct device *dev, int mode, int tun) {
-	struct ifreq ifr;
-	char name[MAXPATHLEN];
 	int fd;
+	char name[MAXPATHLEN];
+	struct ifreq ifr;
 
-	fd = -1;
-
-	/* Force creation of the driver if needed or let it resilient */
+	/* Get the persistence bit */
 	if (mode & TUNTAP_MODE_PERSIST) {
 		mode &= ~TUNTAP_MODE_PERSIST;
+		/* And force the creation of the driver, if needed */
 		if (tuntap_sys_create_dev(dev, tun) == -1)
 			return -1;
 	}
 
-	/* Try to use the given tun driver or loop throught the avaible ones */
+	/* Try to use the given driver or loop throught the avaible ones */
+	fd = -1;
 	if (tun < TUNTAP_ID_MAX) {
 		(void)snprintf(name, sizeof name, "/dev/tun%i", tun);
 		fd = open(name, O_RDWR);
@@ -78,12 +78,19 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 				break;
 		}
 	} else {
+		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'tun'");
 		return -1;
 	}
-
-	if (fd < 0 || fd == 256) {
-		tuntap_log(0, "libtuntap (sys): Can't find a tun entry");
+	switch (fd) {
+	case -1:
+		tuntap_log(TUNTAP_LOG_ERR, "Permission denied");
 		return -1;
+	case 256:
+		tuntap_log(TUNTAP_LOG_ERR, "Can't find a tun entry");
+		return -1;
+	default:
+		/* NOTREACHED */
+		break;
 	}
 
 	/* Set the interface name */
@@ -94,7 +101,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 
 	/* Get the interface default values */
 	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &ifr) == -1) {
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCGIFFLAGS");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't get interface values");
 		return -1;
 	}
 
@@ -106,12 +113,13 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 		ifr.ifr_flags &= ~IFF_LINK0;
 	}
 	else {
+		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'mode'");
 		return -1;
 	}
 
 	/* Set back our modifications */
 	if (ioctl(dev->ctrl_sock, SIOCSIFFLAGS, &ifr) == -1) {
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFFLAGS");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't set interface values");
 		return -1;
 	}
 
@@ -123,8 +131,9 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 		struct ether_addr addr;
 
 		if (ioctl(fd, SIOCGIFADDR, &addr) == -1) {
-			tuntap_log(0, "libtuntap (sys): ioctl SIOCGIFADDR");
-			return -1;
+			tuntap_log(TUNTAP_LOG_WARN,
+			    "Can't get link-layer address");
+			return fd;
 		}
 		(void)memcpy(dev->hwaddr, &addr, ETHER_ADDR_LEN);
 	}
@@ -139,7 +148,7 @@ tuntap_sys_destroy(struct device *dev) {
 	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 
 	if (ioctl(dev->ctrl_sock, SIOCIFDESTROY, &ifr) == -1)
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCIFDESTROY");
+		tuntap_log(TUNTAP_LOG_WARN, "Can't destroy the interface");
 }
 
 int
@@ -153,7 +162,7 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 	(void)memcpy(ifr.ifr_addr.sa_data, eth_addr, ETHER_ADDR_LEN);
 
 	if (ioctl(dev->ctrl_sock, SIOCSIFLLADDR, (caddr_t)&ifr) < 0) {
-	        tuntap_log(0, "libtuntap (sys): ioctl SIOCSIFLLADDR");
+	        tuntap_log(TUNTAP_LOG_ERR, "Can't set link-layer address");
 		return -1;
 	}
 	return 0;
@@ -193,18 +202,9 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
 
 	/* Simpler than calling SIOCSIFADDR and/or SIOCSIFBRDADDR */
 	if (ioctl(dev->ctrl_sock, SIOCAIFADDR, &ifa) == -1) {
-		tuntap_log(0, "libtuntap (sys): ioctl SIOCAIFADDR");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't set IP/netmask");
 		return -1;
 	}
 	return 0;
-}
-
-int
-tuntap_sys_set_ipv6(struct device *dev, struct sockaddr_in6 *s, uint32_t bits) {
-	(void)dev;
-	(void)s;
-	(void)bits;
-	tuntap_log(0, "libtuntap (sys): ipv6 not implemented");
-	return -1;
 }
 
