@@ -36,11 +36,11 @@ Current Porting Efforts
 -----------------------
 
    * Windows
+   * FreeBSD
 
 In the future
 -------------
 
-   * FreeBSD
    * AIX
    * Solaris
 
