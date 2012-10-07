@@ -88,6 +88,30 @@ tuntap_release(struct device *dev) {
 	free(dev);
 }
 
+int
+tuntap_set_ifname(struct device *dev, const char *ifname) {
+	int len;
+
+	if (ifname == NULL) {
+		tuntap_log(0, "libtuntap: Invalid parameter 'ifname'");
+		return -1;
+	}
+
+	len = strlen(ifname);
+	if (len > IF_NAMESIZE) {
+		tuntap_log(0, "libtuntap: Parameter 'ifname' is too long");
+		return -1;
+	}
+
+	if (tuntap_sys_set_ifname(dev, ifname, len) == -1) {
+		return -1;
+	}
+
+	(void)memset(dev->if_name, 0, IF_NAMESIZE);
+	(void)strncpy(dev->if_name, ifname, len);
+	return 0;
+}
+
 char *
 tuntap_get_hwaddr(struct device *dev) {
 	struct ether_addr eth_attr;

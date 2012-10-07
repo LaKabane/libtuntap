@@ -185,3 +185,17 @@ tuntap_sys_set_ipv6(struct device *dev, struct sockaddr_in6 *s6, uint32_t bits) 
 	return -1;
 }
 
+int
+tuntap_sys_set_ifname(struct device *dev, const char *ifname, int len) {
+	struct ifreq ifr;
+
+	(void)strncpy(ifr.ifr_name, dev->if_name, IF_NAMESIZE);
+	(void)strncpy(ifr.ifr_newname, ifname, len);
+
+	if (ioctl(dev->fd, TUNSETIFF, &ifr) == -1) {
+		tuntap_log(0, "libtuntap (sys): Can't set the interface name");
+		return -1;
+	}
+	return 0;
+}
+

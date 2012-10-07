@@ -216,3 +216,8 @@ tuntap_sys_set_ipv6(struct device *dev, struct sockaddr_in6 *s, uint32_t bits) {
 	return -1;
 }
 
+int
+tuntap_sys_set_ifname(struct device *dev, const char *ifname, int len) {
+	return -1;
+}
+
