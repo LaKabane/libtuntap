@@ -43,27 +43,3 @@ tuntap_sys_set_ifname(struct device *dev, const char *ifname, size_t len) {
 	return -1;
 }
 
-int
-tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len) {
-#if !defined Darwin && !defined NetBSD
-	struct ifreq ifr;
-	struct ifreq_buffer ifrbuf;
-
-	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
-
-	ifrbuf.buffer = (void *)descr;
-	ifrbuf.length = len;
-	ifr.ifr_buffer = ifrbuf;
-
-	if (ioctl(dev->ctrl_sock, SIOCSIFDESCR, &ifr) == -1) {
-		tuntap_log(TUNTAP_LOG_ERR,
-		    "Can't set the interface description");
-		return -1;
-	}
-	return 0;
-#else
-	return -1;
-#endif
-}
-

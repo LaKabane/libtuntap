@@ -208,3 +208,21 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
 	return 0;
 }
 
+int
+tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len) {
+	struct ifreq ifr;
+	(void)len;
+
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
+
+	ifr.ifr_data = (void *)descr;
+
+	if (ioctl(dev->ctrl_sock, SIOCSIFDESCR, &ifr) == -1) {
+		tuntap_log(TUNTAP_LOG_ERR,
+		    "Can't set the interface description");
+		return -1;
+	}
+	return 0;
+}
+
