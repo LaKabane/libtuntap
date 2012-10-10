@@ -58,6 +58,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 		ifr.ifr_flags = IFF_TUN;
 		ifname = "tun%i";
 	} else {
+		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'mode'");
 		return -1;
 	}
 	ifr.ifr_flags |= IFF_NO_PI;
@@ -72,6 +73,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	/* Set the interface name */
 	if (tun != TUNTAP_ID_ANY) {
 		if (fd > TUNTAP_ID_MAX) {
+			tuntap_log(TUNTAP_LOG_ERR, "Can't find a tun entry");
 			return -1;
 		}
 		(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name,
