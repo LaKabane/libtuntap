@@ -14,10 +14,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <sys/types.h>
+
 #if defined Windows
 # include <winsock2.h>
 # include <ws2tcpip.h>
+#else
+# include <netinet/in.h>
+# include <arpa/inet.h>
 #endif
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>

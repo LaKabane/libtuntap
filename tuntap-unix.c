@@ -25,7 +25,9 @@
 # include <linux/if_tun.h>
 #else
 # include <net/if.h>
-# if !defined Darwin
+# if defined DragonFly
+#  include <net/tun/if_tun.h>
+# elif !defined Darwin
 #  include <net/if_tun.h>
 # endif
 # include <netinet/in.h>
