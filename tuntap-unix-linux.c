@@ -70,24 +70,6 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 		return -1;
 	}
 
-	/* Set the interface name */
-	if (tun != TUNTAP_ID_ANY) {
-		if (fd > TUNTAP_ID_MAX) {
-			tuntap_log(TUNTAP_LOG_ERR, "Can't find a tun entry");
-			return -1;
-		}
-		(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name,
-		    ifname, tun);
-		/* And save it */
-		(void)memcpy(dev->if_name, ifr.ifr_name, sizeof ifr.ifr_name);
-	} else {
-		/* Get the interface name */
-		if (ioctl(fd, TUNGETIFF, &ifr) == -1) {
-			tuntap_log(TUNTAP_LOG_ERR, "Can't get interface name");
-			return -1;
-		}
-	}
-
 	/* Configure the interface */
 	if (ioctl(fd, TUNSETIFF, &ifr) == -1) {
 		tuntap_log(TUNTAP_LOG_ERR, "Can't set interface name");
@@ -102,6 +84,16 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 		}
         }
 
+	/* Set the interface name, if any */
+	if (tun != TUNTAP_ID_ANY) {
+		if (fd > TUNTAP_ID_MAX) {
+			return -1;
+		}
+		(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name,
+		    ifname, tun);
+		/* Save interface name *after* SIOCGIFFLAGS */
+	}
+
 	/* Get the interface default values */
 	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &ifr) == -1) {
 		tuntap_log(TUNTAP_LOG_ERR, "Can't get interface values");
@@ -110,6 +102,9 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 
 	/* Save flags for tuntap_{up, down} */
 	dev->flags = ifr.ifr_flags;
+
+	/* Save interface name */
+	(void)memcpy(dev->if_name, ifr.ifr_name, sizeof ifr.ifr_name);
 
 	/* Save pre-existing MAC address */
 	if (mode == TUNTAP_MODE_ETHERNET) {
