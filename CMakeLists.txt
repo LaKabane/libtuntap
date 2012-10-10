@@ -173,16 +173,17 @@ if (ENABLE_REGRESS)
   add_test(test44 ${EXECUTABLE_OUTPUT_PATH}/test44)
   add_test(test45 ${EXECUTABLE_OUTPUT_PATH}/test45)
 
-  # NetBSD and FreeBSD have the debug mode compiled by default
-  if(NOT NetBSD AND NOT FreeBSD)
+  # Only NetBSD, FreeBSD and DragonFlyBSD have the debug mode compiled
+  # by default
+  if(NOT NetBSD AND NOT FreeBSD AND NOT DragonFly)
     set_tests_properties(test39 PROPERTIES WILL_FAIL true)
     set_tests_properties(test40 PROPERTIES WILL_FAIL true)
   endif()
-  # Linux has a working tuntap_set_ifname()
+  # Only Linux has a working tuntap_set_ifname()
   if(NOT Linux)
     set_tests_properties(test41 PROPERTIES WILL_FAIL true)
   endif()
-  # FreeBSD and OpenBSD have a working tuntap_set_descr()
+  # Only FreeBSD and OpenBSD have a working tuntap_set_descr()
   if(NOT FreeBSD AND NOT OpenBSD)
     set_tests_properties(test44 PROPERTIES WILL_FAIL true)
   endif()
