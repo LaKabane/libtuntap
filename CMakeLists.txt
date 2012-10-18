@@ -81,7 +81,7 @@ endif()
 
 # Library definition
 # ------------------
-add_library(tuntap SHARED ${SOURCES_LIST})
+add_library(tuntap SHARED ${SOURCES_LIST} tuntap.h)
 set_target_properties(tuntap PROPERTIES VERSION 2.0)
 
 add_library(tuntap-static STATIC ${SOURCES_LIST})

@@ -38,6 +38,28 @@
 #define TAP_IOCTL_CONFIG_DHCP_SET_OPT   TAP_CONTROL_CODE (9, METHOD_BUFFERED)
 #define TAP_IOCTL_CONFIG_TUN            TAP_CONTROL_CODE (10, METHOD_BUFFERED)
 
+/* This one is from Fabien Pichot, in the tNETacle source code */
+static LPWSTR
+formated_error(LPWSTR pMessage, DWORD m, ...) {
+    LPWSTR pBuffer = NULL;
+
+    va_list args = NULL;
+    va_start(args, pMessage);
+
+    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
+                  FORMAT_MESSAGE_ALLOCATE_BUFFER,
+                  pMessage, 
+                  m,
+                  0,
+                  (LPSTR)&pBuffer, 
+                  0, 
+                  &args);
+
+    va_end(args);
+
+    return pBuffer;
+}
+
 void
 tuntap_sys_destroy(struct device *dev) {
 	(void)dev;
@@ -47,36 +69,70 @@ tuntap_sys_destroy(struct device *dev) {
 int
 tuntap_start(struct device *dev, int mode, int tun) {
 	HANDLE tun_fd;
-	char vers[3];
+	unsigned char hwaddr[ETHER_ADDR_LEN];
+	DWORD len;
 
 	/* Don't re-initialise a previously started device */
-	if (dev->tun_fd != INVALID_HANDLE_VALUE) {
+	if (dev->tun_fd != TUNFD_INVALID_VALUE) {
 		return -1;
 	}
 
-	/* TODO: Get the tap device name */
-	tun_fd = CreateFile("blah", GENERIC_WRITE | GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM|FILE_FLAG_OVERLAPPED, 0);
-	if (tun_fd == INVALID_HANDLE_VALUE) {
+	/* Shift the persistence bit */
+	if (mode & TUNTAP_MODE_PERSIST) {
+		mode &= ~TUNTAP_MODE_PERSIST; 
+	}
+
+	if (mode == TUNTAP_MODE_TUNNEL) {
+		tuntap_log(TUNTAP_LOG_NOTICE, "Layer 3 tunneling is not implemented");
+		return -1;
+	}
+	else if (mode != TUNTAP_MODE_ETHERNET) {
+		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'mode'");
 		return -1;
 	}
 
-	if (DeviceIoControl(tun_fd, TAP_IOCTL_GET_VERSION, NULL, 0, &vers, sizeof(vers), NULL, NULL) == 0) {
+	/* TODO: Get the tap device path */
+	tun_fd = CreateFile("\\\\.\\Global\\{0002BBf1-857F-46C2-BFEB-A8E9019F6388}.tap", GENERIC_WRITE | GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM|FILE_FLAG_OVERLAPPED, 0);
+	if (tun_fd == TUNFD_INVALID_VALUE) {
+		int errcode = GetLastError();
+
+		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
 		return -1;
 	}
+
+	/* Save pre-existing MAC address */
+    if (DeviceIoControl(tun_fd, TAP_IOCTL_GET_MAC, &hwaddr, sizeof(hwaddr), &hwaddr, sizeof(hwaddr), &len, NULL) == 0) {
+		int errcode = GetLastError();
+
+		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
+		CloseHandle(tun_fd);
+		return -1;
+    } else {
+		char buf[1024];
+
+		(void)_snprintf_s(buf, sizeof buf, sizeof buf, "MAC address: %x:%x:%x:%x:%x:%x",
+			hwaddr[0],hwaddr[1],hwaddr[2],hwaddr[3],hwaddr[4],hwaddr[5]);
+		tuntap_log(TUNTAP_LOG_DEBUG, buf);
+		(void)memcpy(dev->hwaddr, &hwaddr, ETHER_ADDR_LEN);
+	}
+
 	dev->tun_fd = tun_fd;
 	return 0;
 }
 
 void
 tuntap_release(struct device *dev) {
-	(void)CloseHandle(dev->tun_fd); /* XXX: Really? */
+	(void)CloseHandle(dev->tun_fd);
 	free(dev);
 }
 
 char *
 tuntap_get_hwaddr(struct device *dev) {
-	/* TAP_IOCTL_GET_MAC */
-	return NULL;
+	char buf[1024];
+
+	(void)_snprintf_s(buf, sizeof buf, sizeof buf, "MAC address: %x:%x:%x:%x:%x:%x",
+		dev->hwaddr[0], dev->hwaddr[1], dev->hwaddr[2], dev->hwaddr[3], dev->hwaddr[4], dev->hwaddr[5]);
+	return buf;
 }
 
 int
@@ -137,3 +193,16 @@ tuntap_set_debug(struct device *dev, int set) {
 	return -1;
 }
 
+int
+tuntap_set_descr(struct device *dev, const char *descr) {
+	(void)dev;
+	(void)descr;
+	return -1;
+}
+
+int
+tuntap_set_ifname(struct device *dev, const char *name) {
+	(void)dev;
+	(void)name;
+	return -1;
+}
