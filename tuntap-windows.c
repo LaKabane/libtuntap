@@ -38,6 +38,9 @@
 #define TAP_IOCTL_CONFIG_DHCP_SET_OPT   TAP_CONTROL_CODE (9, METHOD_BUFFERED)
 #define TAP_IOCTL_CONFIG_TUN            TAP_CONTROL_CODE (10, METHOD_BUFFERED)
 
+/* From OpenVPN tap driver, proto.h */
+typedef unsigned long IPADDR;
+
 /* This one is from Fabien Pichot, in the tNETacle source code */
 static LPWSTR
 formated_error(LPWSTR pMessage, DWORD m, ...) {
@@ -189,9 +192,26 @@ tuntap_set_mtu(struct device *dev, int mtu) {
 }
 
 int
-tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s, uint32_t mask) {
-	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_sys_set_ipv4()");
-	return -1;
+tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *addr, uint32_t mask) {
+	IPADDR psock[4];
+	DWORD len;
+
+	/* Address + Netmask*/
+	psock[0] = (IPADDR)addr;
+	psock[1] = htonl(mask);
+	/* DHCP server address */
+	psock[2] = 0; /* WTF? */
+	/* DHCP lease time */
+	psock[3] = 86400; /* 24h */
+
+	if (DeviceIoControl(dev->tun_fd, TAP_IOCTL_CONFIG_DHCP_MASQ, &psock, sizeof(psock), &psock, sizeof(psock), &len, NULL) == 0) {
+		int errcode = GetLastError();
+
+		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
+		return -1;
+    }
+
+	return 0;
 }
 
 int
