@@ -69,8 +69,6 @@ tuntap_sys_destroy(struct device *dev) {
 int
 tuntap_start(struct device *dev, int mode, int tun) {
 	HANDLE tun_fd;
-	unsigned char hwaddr[ETHER_ADDR_LEN];
-	DWORD len;
 
 	/* Don't re-initialise a previously started device */
 	if (dev->tun_fd != TUNFD_INVALID_VALUE) {
@@ -100,22 +98,6 @@ tuntap_start(struct device *dev, int mode, int tun) {
 		return -1;
 	}
 
-	/* Save pre-existing MAC address */
-    if (DeviceIoControl(tun_fd, TAP_IOCTL_GET_MAC, &hwaddr, sizeof(hwaddr), &hwaddr, sizeof(hwaddr), &len, NULL) == 0) {
-		int errcode = GetLastError();
-
-		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
-		CloseHandle(tun_fd);
-		return -1;
-    } else {
-		char buf[1024];
-
-		(void)_snprintf_s(buf, sizeof buf, sizeof buf, "MAC address: %x:%x:%x:%x:%x:%x",
-			hwaddr[0],hwaddr[1],hwaddr[2],hwaddr[3],hwaddr[4],hwaddr[5]);
-		tuntap_log(TUNTAP_LOG_DEBUG, buf);
-		(void)memcpy(dev->hwaddr, &hwaddr, ETHER_ADDR_LEN);
-	}
-
 	dev->tun_fd = tun_fd;
 	return 0;
 }
@@ -128,68 +110,144 @@ tuntap_release(struct device *dev) {
 
 char *
 tuntap_get_hwaddr(struct device *dev) {
-	char buf[1024];
+	unsigned char hwaddr[ETHER_ADDR_LEN];
+	DWORD len;
 
-	(void)_snprintf_s(buf, sizeof buf, sizeof buf, "MAC address: %x:%x:%x:%x:%x:%x",
-		dev->hwaddr[0], dev->hwaddr[1], dev->hwaddr[2], dev->hwaddr[3], dev->hwaddr[4], dev->hwaddr[5]);
-	return buf;
+    if (DeviceIoControl(dev->tun_fd, TAP_IOCTL_GET_MAC, &hwaddr, sizeof(hwaddr), &hwaddr, sizeof(hwaddr), &len, NULL) == 0) {
+		int errcode = GetLastError();
+
+		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
+		return NULL;
+    } else {
+		char buf[128];
+	
+		(void)_snprintf_s(buf, sizeof buf, sizeof buf, "MAC address: %.2x:%.2x:%.2x:%.2x:%.2x:%.2x",
+			hwaddr[0],hwaddr[1],hwaddr[2],hwaddr[3],hwaddr[4],hwaddr[5]);
+		tuntap_log(TUNTAP_LOG_DEBUG, buf);
+	}
+	return hwaddr;
 }
 
 int
 tuntap_set_hwaddr(struct device *dev, const char *hwaddr) {
+	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_set_hwaddr()");
 	return -1;
+}
+
+static int
+tuntap_sys_set_updown(struct device *dev, ULONG flag) {
+	DWORD len;
+
+	if (DeviceIoControl(dev->tun_fd, TAP_IOCTL_SET_MEDIA_STATUS, &flag, sizeof(flag), &flag, sizeof(flag), &len, NULL) == 0) {
+		int errcode = GetLastError();
+
+		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
+		return -1;
+    } else {
+		char buf[32];
+
+		(void)_snprintf_s(buf, sizeof buf, sizeof buf, "Status: %s", flag ? "Up" : "Down");
+		tuntap_log(TUNTAP_LOG_DEBUG, buf);
+	return 0;
+	}
 }
 
 int
 tuntap_up(struct device *dev) {
-	/* TAP_IOCTL_SET_MEDIA_STATUS */
-	return -1;
+	ULONG flag;
+
+	flag = 1;
+	return tuntap_sys_set_updown(dev, flag);
 }
 
 int
 tuntap_down(struct device *dev) {
-	/* TAP_IOCTL_SET_MEDIA_STATUS */
-	return -1;
+	ULONG flag;
+
+	flag = 0;
+	return tuntap_sys_set_updown(dev, flag);
 }
 
 int
 tuntap_get_mtu(struct device *dev) {
-	/* TAP_IOCTL_GET_MTU */
-	return -1;
+	ULONG mtu;
+	DWORD len;
+
+	if (DeviceIoControl(dev->tun_fd, TAP_IOCTL_GET_MTU, &mtu, sizeof(mtu), &mtu, sizeof(mtu), &len, NULL) == 0) {
+		int errcode = GetLastError();
+
+		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
+		return -1;
+    }
+	return 0;
 }
 
 int
 tuntap_set_mtu(struct device *dev, int mtu) {
+	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_set_mtu()");
 	return -1;
 }
 
 int
-tuntap_set_ip(struct device *dev, const char *saddr, int bits) {
+tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s, uint32_t mask) {
+	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_sys_set_ipv4()");
+	return -1;
+}
+
+int
+tuntap_sys_set_ipv6(struct device *dev, struct sockaddr_in6 *s, uint32_t mask) {
+	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_sys_set_ipv6()");
 	return -1;
 }
 
 int
 tuntap_read(struct device *dev, void *buf, size_t size) {
-	return -1;
+	DWORD len;
+
+	if (ReadFile(dev->tun_fd, buf, (DWORD)size, &len, NULL) == 0) {
+		int errcode = GetLastError();
+
+		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
+		return -1;
+	}
+
+	return 0;
 }
 
 int
 tuntap_write(struct device *dev, void *buf, size_t size) {
-	return -1;
+	DWORD len;
+
+	if (WriteFile(dev->tun_fd, buf, (DWORD)size, &len, NULL) == 0) {
+		int errcode = GetLastError();
+
+		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
+		return -1;
+	}
+
+	return 0;
 }
 
 int
 tuntap_get_readable(struct device *dev) {
+	(void)dev;
+	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_get_readable()");
 	return -1;
 }
 
 int
 tuntap_set_nonblocking(struct device *dev, int set) {
+	(void)dev;
+	(void)set;
+	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_set_debug()");
 	return -1;
 }
 
 int
 tuntap_set_debug(struct device *dev, int set) {
+	(void)dev;
+	(void)set;
+	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_set_nonblocking()");
 	return -1;
 }
 
@@ -197,12 +255,15 @@ int
 tuntap_set_descr(struct device *dev, const char *descr) {
 	(void)dev;
 	(void)descr;
+	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_set_descr()");
 	return -1;
 }
 
 int
 tuntap_set_ifname(struct device *dev, const char *name) {
+	/* TODO: Check Windows API to know how to rename an interface */
 	(void)dev;
 	(void)name;
+	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_set_ifname()");
 	return -1;
 }
