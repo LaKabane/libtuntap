@@ -293,7 +293,7 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s, uint32_t bits) {
 
 int
 tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len) {
-	tuntap_log(TUNTAP_LOG_ERR,
+	tuntap_log(TUNTAP_LOG_NOTICE,
 	    "Your system does not support tuntap_set_descr()");
 	return -1;
 }
