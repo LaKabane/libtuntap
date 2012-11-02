@@ -148,7 +148,7 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 }
 
 int
-tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
+tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s4, uint32_t bits) {
 	struct ifreq ifr;
 	struct sockaddr_in mask;
 
@@ -156,7 +156,7 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
 	(void)memcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 
 	/* Set the IP address first */
-	(void)memcpy(&ifr.ifr_addr, s4, sizeof ifr.ifr_addr);
+	(void)memcpy(&(((struct sockaddr_in)ifr.ifr_addr).sin_addr), *s4, sizeof(struct in_addr));
 	if (ioctl(dev->ctrl_sock, SIOCSIFADDR, &ifr) == -1) {
 		tuntap_log(TUNTAP_LOG_ERR, "Can't set IP address");
 		return -1;
@@ -179,7 +179,7 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
 }
 
 int
-tuntap_sys_set_ipv6(struct device *dev, struct sockaddr_in6 *s6, uint32_t bits) {
+tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s6, uint32_t bits) {
 	(void)dev;
 	(void)s6;
 	(void)bits;

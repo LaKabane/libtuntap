@@ -192,17 +192,17 @@ tuntap_set_mtu(struct device *dev, int mtu) {
 }
 
 int
-tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *addr, uint32_t mask) {
+tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s, uint32_t mask) {
 	IPADDR psock[4];
 	DWORD len;
 
 	/* Address + Netmask*/
-	psock[0] = (IPADDR)addr;
-	psock[1] = htonl(mask);
-	/* DHCP server address */
-	psock[2] = 0; /* WTF? */
+	psock[0] = s->S_un.S_addr; 
+	psock[1] = mask;
+	/* DHCP server address (We don't want it) */
+	psock[2] = 0;
 	/* DHCP lease time */
-	psock[3] = 86400; /* 24h */
+	psock[3] = 0;
 
 	if (DeviceIoControl(dev->tun_fd, TAP_IOCTL_CONFIG_DHCP_MASQ, &psock, sizeof(psock), &psock, sizeof(psock), &len, NULL) == 0) {
 		int errcode = GetLastError();
@@ -210,12 +210,14 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *addr, uint32_t mask)
 		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
 		return -1;
     }
-
 	return 0;
 }
 
 int
-tuntap_sys_set_ipv6(struct device *dev, struct sockaddr_in6 *s, uint32_t mask) {
+tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s, uint32_t mask) {
+	(void)dev;
+	(void)s;
+	(void)mask;
 	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_sys_set_ipv6()");
 	return -1;
 }
