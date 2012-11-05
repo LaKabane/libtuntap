@@ -156,7 +156,9 @@ tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s4, uint32_t bits) {
 	(void)memcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 
 	/* Set the IP address first */
-	(void)memcpy(&(((struct sockaddr_in)ifr.ifr_addr).sin_addr), *s4, sizeof(struct in_addr));
+	(void)memcpy(&(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr),
+      s4, sizeof(struct in_addr));
+    ifr.ifr_addr.sa_family = AF_INET;
 	if (ioctl(dev->ctrl_sock, SIOCSIFADDR, &ifr) == -1) {
 		tuntap_log(TUNTAP_LOG_ERR, "Can't set IP address");
 		return -1;
