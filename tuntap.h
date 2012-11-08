@@ -17,6 +17,8 @@
 #include <sys/types.h>
 #if defined Unix
 # include <sys/socket.h>
+#else /* Windows */
+#include <In6addr.h>
 #endif
 
 #if defined Unix
@@ -69,11 +71,17 @@
 /*
  * Uniformize types
  * - t_tun: tun device file descriptor
+ * - t_tun_in_addr: struct in_addr/IN_ADDR
+ * - t_tun_in6_addr: struct in6_addr/IN6_ADDR
  */
 # if defined Unix
 typedef int t_tun;
+typedef struct in_addr t_tun_in_addr;
+typedef struct in6_addr t_tun_in6_addr;
 # else /* Windows */
 typedef HANDLE t_tun;
+typedef IN_ADDR t_tun_in_addr;
+typedef IN6_ADDR t_tun_in6_addr;
 # endif
 
 # define TUNTAP_ID_MAX 256
@@ -149,8 +157,8 @@ void		 tuntap_log_chksum(void *, int);
 int		 tuntap_sys_start(struct device *, int, int);
 void		 tuntap_sys_destroy(struct device *);
 int		 tuntap_sys_set_hwaddr(struct device *, struct ether_addr *);
-int		 tuntap_sys_set_ipv4(struct device *, struct sockaddr_in *, uint32_t);
-int		 tuntap_sys_set_ipv6(struct device *, struct sockaddr_in6 *, uint32_t);
+int		 tuntap_sys_set_ipv4(struct device *, t_tun_in_addr *, uint32_t);
+int		 tuntap_sys_set_ipv6(struct device *, t_tun_in6_addr *, uint32_t);
 int		 tuntap_sys_set_ifname(struct device *, const char *, size_t);
 int		 tuntap_sys_set_descr(struct device *, const char *, size_t);
 

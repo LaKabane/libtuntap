@@ -169,7 +169,7 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 }
 
 int
-tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s, uint32_t bits) {
+tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s4, uint32_t bits) {
 	struct ifreq ifr;
 	struct sockaddr_in mask;
 	struct sockaddr_in addr;
@@ -183,7 +183,7 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s, uint32_t bits) {
 	/* Set the address */
 	(void)memset(&addr, '\0', sizeof addr);
 	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = s->sin_addr.s_addr;
+	addr.sin_addr.s_addr = s4.s_addr;
 	addr.sin_len = sizeof addr;
 	(void)memcpy(&ifr.ifr_addr, &addr, sizeof addr);
 
