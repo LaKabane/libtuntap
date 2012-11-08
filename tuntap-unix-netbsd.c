@@ -87,10 +87,10 @@ tuntap_sys_start_tap(struct device *dev, int tun) {
 	}
 
 	if ((fd = open(name, O_RDWR)) == -1) {
-		char buf[22 + IF_NAMESIZE + 5];
+		char buf[11 + MAXPATHLEN];
 
 		(void)memset(buf, 0, sizeof buf);
-		snprintf(buf, sizeof buf, "Open %s", name);
+		snprintf(buf, sizeof buf, "Can't open %s", name);
 		tuntap_log(TUNTAP_LOG_DEBUG, buf);
 		return -1;
 	}
@@ -100,7 +100,7 @@ tuntap_sys_start_tap(struct device *dev, int tun) {
 		tuntap_log(TUNTAP_LOG_ERR, "Can't get interface name");
 		return -1;
 	}
-	(void)strlcpy(dev->if_name, ifr.ifr_name, sizeof ifr.ifr_name);
+	(void)strlcpy(dev->if_name, ifr.ifr_name, sizeof dev->if_name);
 
 	/* Get the interface default values */
 	if (ioctl(fd, SIOCGIFFLAGS, &ifr) == -1) {
@@ -184,7 +184,7 @@ tuntap_sys_start_tun(struct device *dev, int tun) {
 	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name, "tun%i", tun);
 	/* And save it */
-	(void)strlcpy(dev->if_name, ifr.ifr_name, sizeof ifr.ifr_name);
+	(void)strlcpy(dev->if_name, ifr.ifr_name, sizeof dev->if_name);
 
 	/* Get the interface default values */
 	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &ifr) == -1) {
@@ -228,7 +228,7 @@ tuntap_sys_destroy(struct device *dev) {
 	struct ifreq ifr;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof ifr.ifr_name);
 
 	if (ioctl(dev->ctrl_sock, SIOCIFDESTROY, &ifr) == -1)
 		tuntap_log(TUNTAP_LOG_WARN, "Can't destroy the interface");
@@ -259,10 +259,10 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s, uint32_t bits) {
 	struct sockaddr_in addr;
 
 	(void)memset(&ifa, '\0', sizeof ifa);
-	(void)strlcpy(ifa.ifra_name, dev->if_name, sizeof dev->if_name);
+	(void)strlcpy(ifa.ifra_name, dev->if_name, sizeof ifa.ifra_name);
 
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof ifr.ifr_name);
 
 	/* Delete previously assigned address */
 	(void)ioctl(dev->ctrl_sock, SIOCDIFADDR, &ifr);

@@ -102,7 +102,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name, "%s%i", type, tun);
 	/* And save it */
-	(void)strlcpy(dev->if_name, ifr.ifr_name, sizeof ifr.ifr_name);
+	(void)strlcpy(dev->if_name, ifr.ifr_name, sizeof dev->if_name);
 
 	/* Get the interface default values */
 	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &ifr) == -1) {
@@ -163,7 +163,7 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 	struct ifreq ifr;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof ifr.ifr_name);
 	ifr.ifr_addr.sa_len = ETHER_ADDR_LEN;
 	ifr.ifr_addr.sa_family = AF_LINK;
 	(void)memcpy(ifr.ifr_addr.sa_data, eth_addr, ETHER_ADDR_LEN);
@@ -182,10 +182,10 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
 	struct sockaddr_in mask;
 
 	(void)memset(&ifa, '\0', sizeof ifa);
-	(void)strlcpy(ifa.ifra_name, dev->if_name, sizeof dev->if_name);
+	(void)strlcpy(ifa.ifra_name, dev->if_name, sizeof ifa.ifra_name);
 
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof ifr.ifr_name);
 
 	/* Delete previously assigned address */
 	(void)ioctl(dev->ctrl_sock, SIOCDIFADDR, &ifr);
