@@ -59,6 +59,7 @@ endif(Windows)
 
 # OS specific things
 # ------------------
+if(UNIX)
 if(Linux)
 	set(CMAKE_INSTALL_PREFIX "/usr/")
 	add_definitions(-D_GNU_SOURCE)
@@ -81,6 +82,7 @@ elseif (DragonFly)
 else()
 	message(FATAL_ERROR "Your operating system is not supported yet")
 endif()
+endif(UNIX)
 
 # Library definition
 # ------------------
