@@ -128,7 +128,7 @@ tuntap_get_hwaddr(struct device *dev) {
 			hwaddr[0],hwaddr[1],hwaddr[2],hwaddr[3],hwaddr[4],hwaddr[5]);
 		tuntap_log(TUNTAP_LOG_DEBUG, buf);
 	}
-	return hwaddr;
+	return (char *)hwaddr;
 }
 
 int
@@ -261,7 +261,7 @@ int
 tuntap_set_nonblocking(struct device *dev, int set) {
 	(void)dev;
 	(void)set;
-	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_set_debug()");
+	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_set_nonblocking()");
 	return -1;
 }
 
@@ -269,7 +269,7 @@ int
 tuntap_set_debug(struct device *dev, int set) {
 	(void)dev;
 	(void)set;
-	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_set_nonblocking()");
+	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_set_debug()");
 	return -1;
 }
 
