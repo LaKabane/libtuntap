@@ -16,18 +16,17 @@ fi
 OK=0
 $TEST && OK=1
 
-# The $TEST is successful
+# If the $TEST was a success, check if the interface still exist
 if [ $OK -eq 1 ]; then
 	ifconfig $TARGET && OK=2
 else
 	return 1
 fi
 
-# The $TARGET still exists
+# The $TARGET still exists, clean it and return success
 if [ $OK -eq 2 ]; then
 	$IFDEL
 	return 0
-else
-	return 1
 fi
 
+return 1

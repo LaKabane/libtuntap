@@ -49,7 +49,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 		persist = 0;
 	}
 
-        /* Set the mode: tun or tap */
+	/* Set the mode: tun or tap */
 	(void)memset(&ifr, '\0', sizeof ifr);
 	if (mode == TUNTAP_MODE_ETHERNET) {
 		ifr.ifr_flags = IFF_TAP;
@@ -63,11 +63,26 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	}
 	ifr.ifr_flags |= IFF_NO_PI;
 
+    if (tun < 0) {
+		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'tun'");
+        return -1;
+    }
+
 	/* Open the clonable interface */
 	fd = -1;
 	if ((fd = open("/dev/net/tun", O_RDWR)) == -1) {
 		tuntap_log(TUNTAP_LOG_ERR, "Can't open /dev/net/tun");
 		return -1;
+	}
+
+	/* Set the interface name, if any */
+	if (tun != TUNTAP_ID_ANY) {
+		if (fd > TUNTAP_ID_MAX) {
+			return -1;
+		}
+		(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name,
+		    ifname, tun);
+		/* Save interface name *after* SIOCGIFFLAGS */
 	}
 
 	/* Configure the interface */
@@ -82,16 +97,6 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 			tuntap_log(TUNTAP_LOG_ERR, "Can't set persistent");
 			return -1;
 		}
-        }
-
-	/* Set the interface name, if any */
-	if (tun != TUNTAP_ID_ANY) {
-		if (fd > TUNTAP_ID_MAX) {
-			return -1;
-		}
-		(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name,
-		    ifname, tun);
-		/* Save interface name *after* SIOCGIFFLAGS */
 	}
 
 	/* Get the interface default values */
