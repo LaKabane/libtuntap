@@ -30,13 +30,19 @@ Supported Systems
    * OpenBSD
    * Linux
    * NetBSD
-
-Soon Supported Systems
-----------------------
-
-   * FreeBSD
    * Darwin
+
+Current Porting Efforts
+-----------------------
+
    * Windows
+   * FreeBSD
+
+In the future
+-------------
+
+   * AIX
+   * Solaris
 
 License
 -------

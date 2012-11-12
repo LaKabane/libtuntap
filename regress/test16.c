@@ -17,7 +17,9 @@
 #include <sys/types.h>
 
 #include <stdio.h>
-#include <unistd.h>
+#if defined Windows
+# include <windows.h>
+#endif
 
 #include "tuntap.h"
 
@@ -37,7 +39,7 @@ main(void) {
 	if (tuntap_set_ip(dev, "::1", 24) == -1) {
 		return 1;
 	}
-	sleep(5);
+
 	tuntap_destroy(dev);
 	return 0;
 }

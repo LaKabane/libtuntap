@@ -26,25 +26,19 @@
 int
 main(void) {
 	int ret;
-	int mtu;
 	struct device *dev;
 
 	ret = 0;
 	dev = tuntap_init();
-	if (tuntap_start(dev, TUNTAP_MODE_ETHERNET, TUNTAP_ID_ANY)
-	    == -1) {
+	if (tuntap_start(dev, TUNTAP_MODE_ETHERNET, TUNTAP_ID_ANY) == -1) {
 		ret = 1;
 		goto clean;
 	}
 
-	if (tuntap_set_mtu(dev, 1400) == -1) {
+	if (tuntap_set_debug(dev, 1) == -1) {
 		ret = 1;
 		goto clean;
 	}
-
-	mtu = tuntap_get_mtu(dev);
-	if (mtu != 1400)
-		ret = 1;
 
 clean:
 	tuntap_destroy(dev);

@@ -15,12 +15,20 @@
  * PERFORMANCE OF THIS SOFTWARE.
 **/
 
+#if defined Windows
+# include <windows.h>
+#endif
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <stdint.h>
 
 #include "tuntap.h"
+
+#if defined Windows
+# define snprintf(x, y, z, ...) _snprintf_s((x), (y), (y), (z), __VA_ARGS__);
+# define strncat(x, y, z) strncat_s((x), _countof(x), (y), (z))
+#endif
 
 void
 tuntap_log_set_cb(t_tuntap_log cb) {
@@ -29,13 +37,39 @@ tuntap_log_set_cb(t_tuntap_log cb) {
 
 void
 tuntap_log_default(int level, const char *errmsg) {
-	(void)level;
-	fprintf(stderr, "%s\n", errmsg);
+	char *name;
+
+	switch(level) {
+	case TUNTAP_LOG_DEBUG:
+		name = "Debug";
+		break;
+	case TUNTAP_LOG_INFO:
+		name = "Info";
+		break;
+	case TUNTAP_LOG_NOTICE:
+		name = "Notice";
+		break;
+	case TUNTAP_LOG_WARN:
+		name = "Warning";
+		break;
+	case TUNTAP_LOG_ERR:
+		name = "Error";
+		break;
+	case TUNTAP_LOG_NONE:
+	default:
+		name = NULL;
+		break;
+	}
+	if (name == NULL) {
+		(void)fprintf(stderr, "%s\n", errmsg);
+	} else {
+		(void)fprintf(stderr, "%s: %s\n", name, errmsg);
+	}
 }
 
 void
 tuntap_log_hexdump(void *data, size_t size) {
-	intptr_t p = (intptr_t)data;
+	unsigned char *p = (unsigned char *)data;
 	unsigned int c;
 	size_t n;
 	char bytestr[4] = {0};
@@ -48,16 +82,16 @@ tuntap_log_hexdump(void *data, size_t size) {
 		if (n % 16 == 1) {
 			/* store address for this line */
 			snprintf(addrstr, sizeof(addrstr), "%.4lx",
-			    (p-(intptr_t)data) );
+			    ((uintptr_t)p - (uintptr_t)data) );
 		}
 
-		c = p;
+		c = *p;
 		if (isalnum(c) == 0) {
 			c = '.';
 		}
 
 		/* store hex str (for left side) */
-		snprintf(bytestr, sizeof(bytestr), "%02lX ", p);
+		snprintf(bytestr, sizeof(bytestr), "%02X ", *p);
 		strncat(hexstr, bytestr, sizeof(hexstr)-strlen(hexstr)-1);
 
 		/* store char str (for right side) */
@@ -69,7 +103,7 @@ tuntap_log_hexdump(void *data, size_t size) {
 			(void)memset(buf, 0, sizeof buf);
 			(void)snprintf(buf, sizeof buf,
 			    "[%4.4s]   %-50.50s  %s", addrstr, hexstr, charstr);
-			tuntap_log(0, buf);
+			tuntap_log(TUNTAP_LOG_NONE, buf);
 			hexstr[0] = 0;
 			charstr[0] = 0;
 		} else if (n % 8 == 0) {
@@ -85,7 +119,7 @@ tuntap_log_hexdump(void *data, size_t size) {
 		(void)memset(buf, 0, sizeof buf);
 		(void)snprintf(buf, sizeof buf, "[%4.4s]   %-50.50s  %s",
 				addrstr, hexstr, charstr);
-		tuntap_log(0, buf);
+		tuntap_log(TUNTAP_LOG_NONE, buf);
 	}
 }
 
@@ -111,6 +145,6 @@ tuntap_log_chksum(void *addr, int count) {
 
 	(void)memset(buf, 0, sizeof buf);
 	(void)snprintf(buf, sizeof buf, "Checksum of this block: %0#4x", sum);
-	tuntap_log(0, buf);
+	tuntap_log(TUNTAP_LOG_NONE, buf);
 }
 

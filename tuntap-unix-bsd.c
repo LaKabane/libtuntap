@@ -15,39 +15,31 @@
  */
 
 #include <sys/types.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
 
-#include <stdio.h>
-#if defined Windows
-# include <windows.h>
-#endif
+#include <net/if.h>
+
+#include <string.h>
 
 #include "tuntap.h"
 
 int
-main(void) {
-	int ret;
-	int mtu;
-	struct device *dev;
+tuntap_sys_set_ipv6(struct device *dev, struct sockaddr_in6 *s, uint32_t bits) {
+	(void)dev;
+	(void)s;
+	(void)bits;
+	tuntap_log(TUNTAP_LOG_NOTICE, "IPv6 is not implemented on your system");
+	return -1;
+}
 
-	ret = 0;
-	dev = tuntap_init();
-	if (tuntap_start(dev, TUNTAP_MODE_ETHERNET, TUNTAP_ID_ANY)
-	    == -1) {
-		ret = 1;
-		goto clean;
-	}
-
-	if (tuntap_set_mtu(dev, 1400) == -1) {
-		ret = 1;
-		goto clean;
-	}
-
-	mtu = tuntap_get_mtu(dev);
-	if (mtu != 1400)
-		ret = 1;
-
-clean:
-	tuntap_destroy(dev);
-	return ret;
+int
+tuntap_sys_set_ifname(struct device *dev, const char *ifname, size_t len) {
+	(void)dev;
+	(void)ifname;
+	(void)len;
+	tuntap_log(TUNTAP_LOG_NOTICE,
+	    "Your system does not support tuntap_set_ifname()");
+	return -1;
 }
 

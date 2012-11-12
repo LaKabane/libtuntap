@@ -17,7 +17,10 @@
 #include <sys/types.h>
 
 #include <stdio.h>
-#include <unistd.h>
+#include <string.h>
+#if defined Windows
+# include <windows.h>
+#endif
 
 #include "tuntap.h"
 

@@ -17,7 +17,9 @@
 #include <sys/types.h>
 
 #include <stdio.h>
-#include <unistd.h>
+#if defined Windows
+# include <windows.h>
+#endif
 
 #include "tuntap.h"
 
@@ -26,6 +28,7 @@ int exit_value;
 void
 test_cb(int level, const char *errmsg) {
 	(void)level;
+	(void)errmsg;
 	fprintf(stderr, "successfully set a callback\n");
 	exit_value = 0;
 }

@@ -15,52 +15,29 @@
  */
 
 #include <sys/types.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
 
-#include <arpa/inet.h>
-#include <net/if.h>
-#include <net/if_tun.h>
-#include <net/if_types.h>
-#include <netinet/if_ether.h>
-#include <netinet/in.h>
-
-#include <fcntl.h>
-#include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#if defined Windows
+# include <windows.h>
+#endif
 
 #include "tuntap.h"
 
-static int
-tuntap_sys_create_dev(struct device *dev, int tun) {
-	return -1;
-}
-
 int
-tuntap_sys_start(struct device *dev, int mode, int tun) {
-	return -1;
-}
+main(void) {
+	int ret;
+	struct device *dev;
 
-void
-tuntap_sys_destroy(struct device *dev) {
-	return -1;
-}
+	ret = 0;
+	dev = tuntap_init();
+	if (tuntap_start(dev, TUNTAP_MODE_ETHERNET, TUNTAP_ID_ANY) == -1)
+		ret = 1;
 
-int
-tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
-	return -1;
-}
+	if (tuntap_set_ifname(dev, "jelly0") == -1) {
+		ret = 1;
+	}
 
-int
-tuntap_sys_set_ipv4(struct device *dev, uint32_t iaddr, uint32_t imask) {
-	return -1;
-}
-
-int
-tuntap_sys_set_ipv6(struct device *dev, uint32_t *iaddr, uint32_t imask) {
-	return -1;
+	tuntap_destroy(dev);
+	return ret;
 }
 

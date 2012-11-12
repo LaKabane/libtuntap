@@ -39,3 +39,11 @@ test35: Create a tap0 persistent device and release it
 test36: Create a tun1 persistent device and release it
 test37: Set a log callback and generate an error
 test38: Set a log callback and generate all possible error levels
+test39: Enable debug for a tap device
+test40: Enable debug for a tun device
+test41: Set a new name to an interface
+test42: Set a NULL name to an interface
+test43: Set a name of more than IF_NAMESIZE to an interface
+test44: Set a description to an interface
+test45: Set a NULL description to an interface
+

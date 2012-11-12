@@ -17,8 +17,12 @@
 #include <sys/types.h>
 
 #include <stdio.h>
-#include <strings.h>
-#include <unistd.h>
+#if defined Windows
+# include <windows.h>
+# define strcasecmp(x, y) _stricmp((x), (y))
+#else
+# include <strings.h>
+#endif
 
 #include "tuntap.h"
 
