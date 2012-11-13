@@ -32,6 +32,7 @@ if(UNIX)
 	# Unix specific include directories
 	# ------------------
 	include_directories(
+		"${CMAKE_CURRENT_SOURCE_DIR}"
 		/usr/include/
 		/usr/local/include
 	)
