@@ -32,6 +32,7 @@ if(UNIX)
 	# Unix specific include directories
 	# ------------------
 	include_directories(
+		"${CMAKE_CURRENT_SOURCE_DIR}"
 		/usr/include/
 		/usr/local/include
 	)
@@ -112,7 +113,7 @@ include(CMakeLists.txt.local OPTIONAL)
 # -----------
 if (ENABLE_REGRESS)
   enable_testing()
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+  include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
   link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
   file(GLOB ALL_TESTS regress/test*.c)
