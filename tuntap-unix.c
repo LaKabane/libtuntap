@@ -280,7 +280,7 @@ tuntap_write(struct device *dev, void *buf, size_t size) {
 
 	n = write(dev->tun_fd, buf, size);
 	if (n == -1) {
-		tuntap_log(TUNTAP_LOG_WARN, "Can't to write from device");
+		tuntap_log(TUNTAP_LOG_WARN, "Can't write to device");
 		return -1;
 	}
 	return n;
