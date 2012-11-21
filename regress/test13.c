@@ -23,6 +23,12 @@
 
 #include "tuntap.h"
 
+/*
+ * This test seems to pass on Windows, but it's not true.
+ * tuntap_up() should be call _after_ tuntap_set_ip(), as in test17.c
+ *
+ * Fuck.
+ */
 int
 main(void) {
 	int ret;
