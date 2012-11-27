@@ -16,7 +16,7 @@ t_tuntap_log
 
     typedef void (*t_tuntap_log)(int level, const char *msg);
 
-This type is a pointer to a log function. It allows to override the default behaviour, which is printing every messages on the error output prefixed with it's error level.
+This type is a pointer to a log function. It allows to override the default behaviour, which is printing every messages on the error output prefixed with its error level.
 
 Error levels are described later, they are macros in the form `TUNTAP_LOG_*`.
 
