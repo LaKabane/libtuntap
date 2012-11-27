@@ -129,6 +129,20 @@ tuntap_init
 
 This function will allocate and initialise a `struct device`.
 
+tuntap_version
+--------------
+
+    int tuntap_version(void);
+
+This function returns the version number of libtuntap.
+You can extract the major and the minor like this:
+
+    int version = tuntap_version();
+    int major = version >> 8;
+    int minor = version & major;
+
+Note that this version number is not the same as the shared library version.
+
 tuntap_destroy
 --------------
 

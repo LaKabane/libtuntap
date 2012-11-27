@@ -107,6 +107,11 @@ typedef struct in6_addr t_tun_in6_addr;
 # define TUNTAP_LOG_WARN      0x0008
 # define TUNTAP_LOG_ERR       0x0016
 
+/* Versioning: 0xMMmm, with 'M' for major and 'm' for minor */
+# define TUNTAP_VERSION_MAJOR 0
+# define TUNTAP_VERSION_MINOR 3
+# define TUNTAP_VERSION ((TUNTAP_VERSION_MAJOR<<8)|TUNTAP_VERSION_MINOR)
+
 # define TUNTAP_GET_FD(x) (x)->tun_fd
 
 /* Handle Windows symbols export */
@@ -138,6 +143,7 @@ t_tuntap_log tuntap_log;
 
 /* Portable "public" functions */
 TUNTAP_EXPORT struct device	*tuntap_init(void);
+TUNTAP_EXPORT int		 tuntap_version(void);
 TUNTAP_EXPORT void		 tuntap_destroy(struct device *);
 TUNTAP_EXPORT void		 tuntap_release(struct device *);
 TUNTAP_EXPORT int		 tuntap_start(struct device *, int, int);

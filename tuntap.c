@@ -61,6 +61,11 @@ tuntap_get_ifname(struct device *dev) {
 }
 
 int
+tuntap_version(void) {
+    return TUNTAP_VERSION;
+}
+
+int
 tuntap_set_ip(struct device *dev, const char *addr, int netmask) {
 	t_tun_in_addr baddr4;
 	t_tun_in6_addr baddr6;
