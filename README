@@ -18,11 +18,13 @@ Supported Features
 
    * Creation of TUN _and_ TAP devices;
    * Autodetection of available TUN or TAP devices;
-   * Getting and setting the MAC address of the device;
-   * Getting and setting the MTU of the device;
-   * Setting the device to up and down status;
+   * Setting and getting the MAC address of the device;
+   * Setting and getting the MTU of the device;
+   * Setting the status of the device (up/down);
    * Setting the IPv4 address and netmask of the device;
-   * Setting the device transient or persistent;
+   * Setting the persistence mode of the device;
+   * Setting the name of the device (Linux only);
+   * Setting the description of the device (OpenBSD and FreeBSD only);
 
 Supported Systems
 -----------------
