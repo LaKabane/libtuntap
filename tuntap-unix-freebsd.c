@@ -40,6 +40,7 @@
 #include <unistd.h>
 
 #include "tuntap.h"
+#include "tuntap_private.h"
 
 int
 tuntap_sys_start(struct device *dev, int mode, int tun) {

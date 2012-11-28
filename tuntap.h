@@ -37,38 +37,6 @@
 # define LIBTUNTAP_H_
 
 /*
- * Uniformize macros
- * - ETHER_ADDR_LEN: Magic number from IEEE 802.3
- * - IF_NAMESIZE: Length of interface external name
- * - IF_DESCRSIZE: Length of interface description
- * - TUNSDEBUG: ioctl flag to enable the debug mode of a tun device
- * - TUNFD_INVALID_VALUE: Invalid value for tun_fd
- */
-# if defined ETH_ALEN /* Linux */
-#  define ETHER_ADDR_LEN ETH_ALEN
-# elif defined Windows
-#  define ETHER_ADDR_LEN 6 
-# endif
-
-# if defined IFNAMSIZ && !defined IF_NAMESIZE
-#  define IF_NAMESIZE IFNAMSIZ /* Historical BSD name */
-# elif !defined IF_NAMESIZE
-#  define IF_NAMESIZE 16
-# endif
-
-# define IF_DESCRSIZE 50 /* XXX: Tests needed on NetBSD and OpenBSD */
-
-# if defined TUNSETDEBUG
-#  define TUNSDEBUG TUNSETDEBUG
-# endif
-
-# if defined Windows
-#  define TUNFD_INVALID_VALUE INVALID_HANDLE_VALUE
-# else /* Unix */
-#  define TUNFD_INVALID_VALUE -1
-# endif
-
-/*
  * Uniformize types
  * - t_tun: tun device file descriptor
  * - t_tun_in_addr: struct in_addr/IN_ADDR
@@ -84,15 +52,6 @@ typedef struct in_addr t_tun_in_addr;
 typedef struct in6_addr t_tun_in6_addr;
 # endif
 
-/*
- * Windows helpers
- */
-# if defined Windows
-#  define snprintf(x, y, z, ...) _snprintf_s((x), (y), (y), (z), __VA_ARGS__);
-#  define strncat(x, y, z) strncat_s((x), _countof(x), (y), (z));
-#  define strdup(x) _strdup(x)
-# endif
-
 # define TUNTAP_ID_MAX 256
 # define TUNTAP_ID_ANY 257
 
@@ -100,6 +59,7 @@ typedef struct in6_addr t_tun_in6_addr;
 # define TUNTAP_MODE_TUNNEL   0x0002
 # define TUNTAP_MODE_PERSIST  0x0004
 
+/* Needed for people who redefine the log callback */
 # define TUNTAP_LOG_NONE      0x0000
 # define TUNTAP_LOG_DEBUG     0x0001
 # define TUNTAP_LOG_INFO      0x0002
@@ -107,6 +67,7 @@ typedef struct in6_addr t_tun_in6_addr;
 # define TUNTAP_LOG_WARN      0x0008
 # define TUNTAP_LOG_ERR       0x0016
 
+/* XXX: Why not as a function? */
 # define TUNTAP_GET_FD(x) (x)->tun_fd
 
 /* Handle Windows symbols export */
@@ -125,11 +86,11 @@ extern "C" {
 # endif
 
 struct device {
-	t_tun			tun_fd;
-	int				ctrl_sock;
-	int				flags;     /* ifr.ifr_flags on Unix */
-	unsigned char	hwaddr[ETHER_ADDR_LEN];
-	char			if_name[IF_NAMESIZE];
+	t_tun           tun_fd;
+	int             ctrl_sock;
+	int             flags;     /* ifr.ifr_flags on Unix */
+	unsigned char   hwaddr[ETHER_ADDR_LEN];
+	char            if_name[IF_NAMESIZE];
 };
 
 /* User definable log callback */
@@ -159,18 +120,8 @@ TUNTAP_EXPORT int		 tuntap_set_debug(struct device *dev, int);
 
 /* Logging functions */
 TUNTAP_EXPORT void		 tuntap_log_set_cb(t_tuntap_log cb);
-void		 tuntap_log_default(int, const char *);
-void		 tuntap_log_hexdump(void *, size_t);
-void		 tuntap_log_chksum(void *, int);
-
-/* OS specific functions */
-int		 tuntap_sys_start(struct device *, int, int);
-void	 tuntap_sys_destroy(struct device *);
-int		 tuntap_sys_set_hwaddr(struct device *, struct ether_addr *);
-int		 tuntap_sys_set_ipv4(struct device *, t_tun_in_addr *, uint32_t);
-int		 tuntap_sys_set_ipv6(struct device *, t_tun_in6_addr *, uint32_t);
-int		 tuntap_sys_set_ifname(struct device *, const char *, size_t);
-int		 tuntap_sys_set_descr(struct device *, const char *, size_t);
+TUNTAP_EXPORT void		 tuntap_log_hexdump(void *, size_t);
+TUNTAP_EXPORT void		 tuntap_log_chksum(void *, int);
 
 # ifdef __cplusplus
 }

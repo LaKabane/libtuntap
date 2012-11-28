@@ -24,6 +24,7 @@
 #include <stdint.h>
 
 #include "tuntap.h"
+#include "tuntap_private.h"
 
 void
 tuntap_log_set_cb(t_tuntap_log cb) {
