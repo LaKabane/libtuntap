@@ -116,8 +116,8 @@ TUNFD_INVALID_VALUE
 -------------------
 
 `TUNFD_INVALID_VALUE` is the invalid value of the t_tun type.
-On UNIXes systems its value is `-1`.
-On Windows systems its value is `INVALID_HANDLE_VALUE`.
+On UNIXes systems it is `-1`.
+On Windows systems it is `INVALID_HANDLE_VALUE`.
 
 Functions
 =========
@@ -136,13 +136,15 @@ tuntap_destroy
 
 This function will free allocated memory, close file descriptors and destroy the interface.
 
-=== tuntap_release
+tuntap_release
+--------------
 
     void tuntap_release(struct device *dev);
 
 This function will free allocated memory and close file descriptors. leaving the interface.
 
-=== tuntap_start
+tuntap_start
+------------
 
     int tuntap_start(struct device dev*, int mode, int unit);
 
