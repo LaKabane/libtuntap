@@ -129,6 +129,11 @@ tuntap_init
 
 This function will allocate and initialise a `struct device`.
 
+_Return value_:
+
+`tuntap_init` returns the allocated `struct device` object, or `NULL` in case
+of error.
+
 tuntap_version
 --------------
 
@@ -143,12 +148,17 @@ You can extract the major and the minor like this:
 
 Note that this version number is not the same as the shared library version.
 
+_Return value_:
+
+`tuntap_version` returns the libtuntap version number, as described above. It
+cans never fail.
+
 tuntap_destroy
 --------------
 
     void tuntap_destroy(struct device *dev);
 
-This function will free allocated memory, close file descriptors and destroy the interface.
+This function will free allocated memory, close file descriptors and destroy the interface described with `dev`.
 
 tuntap_release
 --------------
@@ -175,14 +185,22 @@ Examples:
 
     tuntap_start(dev, TUNTAP_MODE_TUNNEL, 2)
 
-    tuntap_start(dev, TUNTAP_MODE_TUNNEL | TUNTAP_MODE_PERSIST, TUNTAP_ID_ANY)
+    tuntap_start(dev, TUNTAP_MODE_TUNNEL | TUNTAP_MODE_PERSIST, 1)
+
+_Return value_:
+
+`tuntap_start` returns 0 on success and -1 on error.
 
 tuntap_get_ifname
 -----------------
 
     char     *tuntap_get_ifname(struct device *dev);
 
-This function fetch and return the name of the interface described by `dev`.
+This function fetches and returns the name of the interface described by `dev`.
+
+_Return value_:
+
+`tuntap_get_ifname` returns a non-`NULL` string. It cans never fail.
 
 tuntap_set_ifname
 -----------------
@@ -191,18 +209,24 @@ tuntap_set_ifname
 
 This function replaces the name of the interface described by `dev` with the given name `ifname`.
 
-It returns -1 on error.
+_Return value_:
 
-Compatibility: Linux.
+`tuntap_set_ifname` returns 0 on success and -1 on error.
+
+_Compatibility_:
+
+  * Linux
 
 tuntap_get_hwaddr
 -----------------
 
     char	 *tuntap_get_hwaddr(struct device *dev);
 
-This function fetch and returns the link-layer address (MAC) of the interface described by `dev`.
+This function fetches and returns the link-layer address (MAC) of the interface described by `dev`.
 
-The returned string come from a statically allocated buffer, ans thus should be saved if needed for later use.
+_Return value_:
+
+`tuntap_get_hwaddr` returns a statically allocated buffer, and thus should be saved if needed for later use.
 
 tuntap_set_hwaddr
 -----------------
@@ -211,7 +235,9 @@ tuntap_set_hwaddr
 
 This function replaces the link-layer address of the interface described by `dev` with the given address `mac_addr`.
 
-It returns -1 on error.
+_Return value_:
+
+`tuntap_set_hwaddr` returns 0 on success and -1 on error.
 
 tuntap_set_descr
 ----------------
@@ -220,7 +246,14 @@ tuntap_set_descr
 
 This function replaces the description of the interface described by `dev` with the given string `desc`.
 
-Compatibility: OpenBSD, FreeBSD.
+_Return value_:
+
+`tuntap_set_descr` returns 0 on success and -1 on error.
+
+_Compatibility_:
+
+  * OpenBSD
+  * FreeBSD.
 
 tuntap_up
 ---------
@@ -229,6 +262,10 @@ tuntap_up
 
 This function set interface to the UP state, just like `ifconfig eth0 up` would do.
 
+_Return value_:
+
+`tuntap_up` returns 0 on success and -1 on error.
+
 tuntap_down
 -----------
 
@@ -236,12 +273,21 @@ tuntap_down
 
 This function set interface to the DOWN state, just like `ifconfig eth0 down` would do.
 
+_Return value_:
+
+`tuntap_down` returns 0 on success and -1 on error.
+
 tuntap_get_mtu
 --------------
 
     int tuntap_get_mtu(struct device *dev);
 
-This function fetch and returns the Maximum Transfer Unit (MTU) of the interface described by `dev`.
+This function fetches and returns the Maximum Transfer Unit (MTU) of the
+interface described by `dev`.
+
+_Return value_:
+
+`tuntap_get_mtu` returns > 0 on success, -1 on error and 0 if the `struct device` object `dev` is not started.
 
 tuntap_set_mtu
 --------------
@@ -250,12 +296,20 @@ tuntap_set_mtu
 
 This function replaces the MTU of the interface described by `dev` with the given value `mtu`.
 
+_Return value_:
+
+`tuntap_set_mtu` returns 0 on success, -1 on error and 0 if the `struct device` object `dev` is not started.
+
 tuntap_set_ip
 -------------
 
     int tuntap_set_ip(struct device *dev, const char *, int ip_addr);
 
 This function replaces the IP address of the interface described by `dev` with the given address `ip_addr`.
+
+_Return value_:
+
+`tuntap_set_ip` returns 0 on success, -1 on error and 0 if the `struct device` object `dev` is not started.
 
 tuntap_read
 -----------
@@ -264,6 +318,10 @@ tuntap_read
 
 This function will read one packet from the interface descibed by `dev` and will store it in the buffer `buf` of size `buf_len`. This value can be retrieved with a call to `tuntap_get_readable()`.
 
+_Return value_:
+
+`tuntap_read` returns the number of byte read on success and -1 on error.
+
 tuntap_write
 ------------
 
@@ -271,13 +329,21 @@ tuntap_write
 
 This function will write the packet stored in the buffer `buf` of size `buf_len` to the interface descibed by `dev`.
 
+_Return value_:
+
+`tuntap_write` returns the number of byte wrote on success and -1 on error.
+
 tuntap_get_readable
 -------------------
 
     int tuntap_get_readable(struct device *dev);
 
 This function will return the size of the next packet waiting in the buffer queue of the interface described by `dev`.
-On Linux this function is the same as `tuntap_get_mtu()`, because the ioctl call `FIONREAD` is not supported on caracter devices.
+
+_Return value_:
+
+`tuntap_get_readable` returns the size of the next packet. On systems with
+no support for this feature, the returned value is the one from `tuntap_get_mtu`.
 
 tuntap_set_nonblocking
 ----------------------
@@ -285,6 +351,10 @@ tuntap_set_nonblocking
     int tuntap_set_nonblocking(struct device *dev, int set);
 
 This function will set the socket of the interface described by `dev` to a non-blocking state.
+
+_Return value_:
+
+`tuntap_set_nonblocking` returns 0 on success and -1 on error.
 
 tuntap_set_debug
 ----------------
@@ -299,26 +369,16 @@ The debug mode will add more output regarding the interface on the console.
 
 This functionality depend on your operating system. It is enable by default on FreeBSD and NetBSD, but you might have to recompile your tun and tap drivers on Linux and OpenBSD to enable it.
 
+_Return value_:
+
+`tuntap_set_debug` returns 0 on success and -1 on error.
+
 tuntap_log_set_cb
 -----------------
 
     void tuntap_log_set_cb(t_tuntap_log cb);
 
 This function allow to set an external printing function, in order to erase the default behaviour.
-
-tuntap_log_hexdump
-------------------
-
-    void tuntap_log_hexdump(void *, size_t);
-
-This function is actualy not documented.
-
-tuntap_log_chksum
------------------
-
-    void tuntap_log_chksum(void *, int);
-
-This function is actualy not documented.
 
 TUNTAP_GET_FD
 -------------
