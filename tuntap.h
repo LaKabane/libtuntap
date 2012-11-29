@@ -139,7 +139,7 @@ struct device {
 
 /* User definable log callback */
 typedef void (*t_tuntap_log)(int, const char *);
-t_tuntap_log tuntap_log;
+TUNTAP_EXPORT t_tuntap_log tuntap_log;
 
 /* Portable "public" functions */
 TUNTAP_EXPORT struct device	*tuntap_init(void);
