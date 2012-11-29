@@ -194,7 +194,7 @@ tuntap_release(struct device *dev) {
 
 char *
 tuntap_get_hwaddr(struct device *dev) {
-	unsigned char hwaddr[ETHER_ADDR_LEN];
+	static unsigned char hwaddr[ETHER_ADDR_LEN];
 	DWORD len;
 
     if (DeviceIoControl(dev->tun_fd, TAP_IOCTL_GET_MAC, &hwaddr, sizeof(hwaddr), &hwaddr, sizeof(hwaddr), &len, NULL) == 0) {
