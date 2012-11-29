@@ -27,7 +27,7 @@ int debug, info, notice, warn, err;
 
 void
 test_cb(int level, const char *errmsg) {
-	const char *prefix;
+	const char *prefix = NULL;
 
 	switch (level) {
 	case TUNTAP_LOG_DEBUG:

@@ -38,6 +38,11 @@
 #define TAP_IOCTL_CONFIG_DHCP_SET_OPT   TAP_CONTROL_CODE (9, METHOD_BUFFERED)
 #define TAP_IOCTL_CONFIG_TUN            TAP_CONTROL_CODE (10, METHOD_BUFFERED)
 
+/* Windows registry crap */
+#define MAX_KEY_LENGTH 255
+#define MAX_VALUE_NAME 16383
+#define NETWORK_ADAPTERS "SYSTEM\\CurrentControlSet\\Control\\Class\\{4D36E972-E325-11CE-BFC1-08002BE10318}"
+
 /* From OpenVPN tap driver, proto.h */
 typedef unsigned long IPADDR;
 
@@ -63,6 +68,78 @@ formated_error(LPWSTR pMessage, DWORD m, ...) {
     return pBuffer;
 }
 
+/* TODO: Rework to be more generic and allow arbitrary key modification (MTU and stuff) */
+static char *
+reg_query(char *key_name) {
+	HKEY adapters, adapter;
+	DWORD i, ret, len;
+	char *deviceid = NULL;
+	DWORD sub_keys = 0;
+
+	ret = RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT(key_name), 0, KEY_READ, &adapters);
+	if (ret != ERROR_SUCCESS) {
+		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", ret));
+		return NULL;
+	}
+
+	ret = RegQueryInfoKey(adapters,	NULL, NULL, NULL, &sub_keys, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+	if (ret != ERROR_SUCCESS) {
+		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", ret));
+		return NULL;
+	}
+
+	if (sub_keys <= 0) {
+		tuntap_log(TUNTAP_LOG_DEBUG, "Wrong registry key");
+		return NULL;
+	}
+
+	/* Walk througt all adapters */
+    for (i = 0; i < sub_keys; i++) {
+		char new_key[MAX_KEY_LENGTH];
+		char data[256];
+		TCHAR key[MAX_KEY_LENGTH];
+		DWORD keylen = MAX_KEY_LENGTH;
+
+		/* Get the adapter key name */
+		ret = RegEnumKeyEx(adapters, i, key, &keylen, NULL, NULL, NULL, NULL);
+		if (ret != ERROR_SUCCESS) {
+			continue;
+		}
+		
+		/* Append it to NETWORK_ADAPTERS and open it */
+		snprintf(new_key, sizeof new_key, "%s\\%s", key_name, key);
+		ret = RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT(new_key), 0, KEY_READ, &adapter);
+		if (ret != ERROR_SUCCESS) {
+			continue;
+		}
+
+		/* Check its values */
+		len = sizeof data;
+		ret = RegQueryValueEx(adapter, "ComponentId", NULL, NULL, (LPBYTE)data, &len);
+		if (ret != ERROR_SUCCESS) {
+			/* This value doesn't exist in this adaptater tree */
+			goto clean;
+		}
+		/* If its a tap adapter, its all good */
+		if (strncmp(data, "tap", 3) == 0) {
+			DWORD type;
+
+			len = sizeof data;
+			ret = RegQueryValueEx(adapter, "NetCfgInstanceId", NULL, &type, (LPBYTE)data, &len);
+			if (ret != ERROR_SUCCESS) {
+				tuntap_log(TUNTAP_LOG_INFO, (const char *)formated_error(L"%1", ret));
+				goto clean;
+			}
+			deviceid = strdup(data);
+			break;
+		}
+clean:
+		RegCloseKey(adapter);
+	}
+	RegCloseKey(adapters);
+	return deviceid;
+}
+
 void
 tuntap_sys_destroy(struct device *dev) {
 	(void)dev;
@@ -72,6 +149,8 @@ tuntap_sys_destroy(struct device *dev) {
 int
 tuntap_start(struct device *dev, int mode, int tun) {
 	HANDLE tun_fd;
+	char *deviceid;
+	char buf[60];
 
 	/* Don't re-initialise a previously started device */
 	if (dev->tun_fd != TUNFD_INVALID_VALUE) {
@@ -92,8 +171,9 @@ tuntap_start(struct device *dev, int mode, int tun) {
 		return -1;
 	}
 
-	/* TODO: Get the tap device path */
-	tun_fd = CreateFile("\\\\.\\Global\\{0002BBf1-857F-46C2-BFEB-A8E9019F6388}.tap", GENERIC_WRITE | GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM|FILE_FLAG_OVERLAPPED, 0);
+	deviceid = reg_query(NETWORK_ADAPTERS);
+	snprintf(buf, sizeof buf, "\\\\.\\Global\\%s.tap", deviceid);
+	tun_fd = CreateFile(buf, GENERIC_WRITE | GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM|FILE_FLAG_OVERLAPPED, 0);
 	if (tun_fd == TUNFD_INVALID_VALUE) {
 		int errcode = GetLastError();
 
@@ -113,7 +193,7 @@ tuntap_release(struct device *dev) {
 
 char *
 tuntap_get_hwaddr(struct device *dev) {
-	unsigned char hwaddr[ETHER_ADDR_LEN];
+	static unsigned char hwaddr[ETHER_ADDR_LEN];
 	DWORD len;
 
     if (DeviceIoControl(dev->tun_fd, TAP_IOCTL_GET_MAC, &hwaddr, sizeof(hwaddr), &hwaddr, sizeof(hwaddr), &len, NULL) == 0) {
@@ -128,7 +208,7 @@ tuntap_get_hwaddr(struct device *dev) {
 			hwaddr[0],hwaddr[1],hwaddr[2],hwaddr[3],hwaddr[4],hwaddr[5]);
 		tuntap_log(TUNTAP_LOG_DEBUG, buf);
 	}
-	return hwaddr;
+	return (char *)hwaddr;
 }
 
 int
@@ -187,22 +267,24 @@ tuntap_get_mtu(struct device *dev) {
 
 int
 tuntap_set_mtu(struct device *dev, int mtu) {
+	(void)dev;
+	(void)mtu;
 	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_set_mtu()");
 	return -1;
 }
 
 int
-tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *addr, uint32_t mask) {
+tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s, uint32_t mask) {
 	IPADDR psock[4];
 	DWORD len;
 
-	/* Address + Netmask*/
-	psock[0] = (IPADDR)addr;
-	psock[1] = htonl(mask);
-	/* DHCP server address */
-	psock[2] = 0; /* WTF? */
+	/* Address + Netmask */
+	psock[0] = s->S_un.S_addr; 
+	psock[1] = mask;
+	/* DHCP server address (We don't want it) */
+	psock[2] = 0;
 	/* DHCP lease time */
-	psock[3] = 86400; /* 24h */
+	psock[3] = 0;
 
 	if (DeviceIoControl(dev->tun_fd, TAP_IOCTL_CONFIG_DHCP_MASQ, &psock, sizeof(psock), &psock, sizeof(psock), &len, NULL) == 0) {
 		int errcode = GetLastError();
@@ -210,12 +292,14 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *addr, uint32_t mask)
 		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
 		return -1;
     }
-
 	return 0;
 }
 
 int
-tuntap_sys_set_ipv6(struct device *dev, struct sockaddr_in6 *s, uint32_t mask) {
+tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s, uint32_t mask) {
+	(void)dev;
+	(void)s;
+	(void)mask;
 	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_sys_set_ipv6()");
 	return -1;
 }
@@ -259,7 +343,7 @@ int
 tuntap_set_nonblocking(struct device *dev, int set) {
 	(void)dev;
 	(void)set;
-	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_set_debug()");
+	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_set_nonblocking()");
 	return -1;
 }
 
@@ -267,7 +351,7 @@ int
 tuntap_set_debug(struct device *dev, int set) {
 	(void)dev;
 	(void)set;
-	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_set_nonblocking()");
+	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_set_debug()");
 	return -1;
 }
 

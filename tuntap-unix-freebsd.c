@@ -101,7 +101,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name, "%s%i", ifname, tun);
 	/* And save it */
-	(void)strlcpy(dev->if_name, ifr.ifr_name, sizeof ifr.ifr_name);
+	(void)strlcpy(dev->if_name, ifr.ifr_name, sizeof dev->if_name);
 
 	/* Get the interface default values */
 	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &ifr) == -1) {
@@ -157,7 +157,7 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 	struct ifreq ifr;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof ifr.ifr_name);
 	ifr.ifr_addr.sa_len = ETHER_ADDR_LEN;
 	ifr.ifr_addr.sa_family = AF_LINK;
 	(void)memcpy(ifr.ifr_addr.sa_data, eth_addr, ETHER_ADDR_LEN);
@@ -169,13 +169,13 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 }
 
 int
-tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s, uint32_t bits) {
+tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s4, uint32_t bits) {
 	struct ifreq ifr;
 	struct sockaddr_in mask;
 	struct sockaddr_in addr;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof ifr.ifr_name);
 
 	/* Delete previously assigned address */
 	(void)ioctl(dev->ctrl_sock, SIOCDIFADDR, &ifr);
@@ -183,7 +183,7 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s, uint32_t bits) {
 	/* Set the address */
 	(void)memset(&addr, '\0', sizeof addr);
 	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = s->sin_addr.s_addr;
+	addr.sin_addr.s_addr = s4.s_addr;
 	addr.sin_len = sizeof addr;
 	(void)memcpy(&ifr.ifr_addr, &addr, sizeof addr);
 
@@ -213,7 +213,7 @@ tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len) {
 	struct ifreq_buffer ifrbuf;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof ifr.ifr_name);
 
 	ifrbuf.buffer = (void *)descr;
 	ifrbuf.length = len;

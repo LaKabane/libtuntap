@@ -25,13 +25,10 @@
 
 #include "tuntap.h"
 
-#if defined Windows
-# define snprintf(x, y, z, ...) _snprintf_s((x), (y), (y), (z), __VA_ARGS__);
-# define strncat(x, y, z) strncat_s((x), _countof(x), (y), (z))
-#endif
-
 void
 tuntap_log_set_cb(t_tuntap_log cb) {
+    if (cb == NULL)
+        tuntap_log = tuntap_log_default;
 	tuntap_log = cb;
 }
 

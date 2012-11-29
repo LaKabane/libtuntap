@@ -55,12 +55,12 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 }
 
 int
-tuntap_sys_set_ipv4(struct device *dev, uint32_t iaddr, uint32_t imask) {
+tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s4, uint32_t imask) {
 	return -1;
 }
 
 int
-tuntap_sys_set_ipv6(struct device *dev, uint32_t *iaddr, uint32_t imask) {
+tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s6, uint32_t imask) {
 	return -1;
 }
 

@@ -25,9 +25,9 @@
 #include "tuntap.h"
 
 int
-tuntap_sys_set_ipv6(struct device *dev, struct sockaddr_in6 *s, uint32_t bits) {
+tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s6, uint32_t bits) {
 	(void)dev;
-	(void)s;
+	(void)s6;
 	(void)bits;
 	tuntap_log(TUNTAP_LOG_NOTICE, "IPv6 is not implemented on your system");
 	return -1;

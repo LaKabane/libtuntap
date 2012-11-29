@@ -49,7 +49,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 		persist = 0;
 	}
 
-        /* Set the mode: tun or tap */
+	/* Set the mode: tun or tap */
 	(void)memset(&ifr, '\0', sizeof ifr);
 	if (mode == TUNTAP_MODE_ETHERNET) {
 		ifr.ifr_flags = IFF_TAP;
@@ -63,11 +63,26 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	}
 	ifr.ifr_flags |= IFF_NO_PI;
 
+    if (tun < 0) {
+		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'tun'");
+        return -1;
+    }
+
 	/* Open the clonable interface */
 	fd = -1;
 	if ((fd = open("/dev/net/tun", O_RDWR)) == -1) {
 		tuntap_log(TUNTAP_LOG_ERR, "Can't open /dev/net/tun");
 		return -1;
+	}
+
+	/* Set the interface name, if any */
+	if (tun != TUNTAP_ID_ANY) {
+		if (fd > TUNTAP_ID_MAX) {
+			return -1;
+		}
+		(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name,
+		    ifname, tun);
+		/* Save interface name *after* SIOCGIFFLAGS */
 	}
 
 	/* Configure the interface */
@@ -82,16 +97,6 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 			tuntap_log(TUNTAP_LOG_ERR, "Can't set persistent");
 			return -1;
 		}
-        }
-
-	/* Set the interface name, if any */
-	if (tun != TUNTAP_ID_ANY) {
-		if (fd > TUNTAP_ID_MAX) {
-			return -1;
-		}
-		(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name,
-		    ifname, tun);
-		/* Save interface name *after* SIOCGIFFLAGS */
 	}
 
 	/* Get the interface default values */
@@ -148,7 +153,7 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 }
 
 int
-tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
+tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s4, uint32_t bits) {
 	struct ifreq ifr;
 	struct sockaddr_in mask;
 
@@ -156,7 +161,9 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
 	(void)memcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 
 	/* Set the IP address first */
-	(void)memcpy(&ifr.ifr_addr, s4, sizeof ifr.ifr_addr);
+	(void)memcpy(&(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr),
+      s4, sizeof(struct in_addr));
+    ifr.ifr_addr.sa_family = AF_INET;
 	if (ioctl(dev->ctrl_sock, SIOCSIFADDR, &ifr) == -1) {
 		tuntap_log(TUNTAP_LOG_ERR, "Can't set IP address");
 		return -1;
@@ -179,7 +186,7 @@ tuntap_sys_set_ipv4(struct device *dev, struct sockaddr_in *s4, uint32_t bits) {
 }
 
 int
-tuntap_sys_set_ipv6(struct device *dev, struct sockaddr_in6 *s6, uint32_t bits) {
+tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s6, uint32_t bits) {
 	(void)dev;
 	(void)s6;
 	(void)bits;

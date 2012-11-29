@@ -15,11 +15,13 @@
  */
 
 #include <sys/types.h>
-#if defined Unix
+#if defined Windows
+# include <In6addr.h>
+#else /* Unix */
 # include <sys/socket.h>
 #endif
 
-#if defined Unix
+#if !defined Windows /* Unix :) */
 # if defined Linux
 #  include <linux/if.h>
 # else
@@ -60,20 +62,35 @@
 #  define TUNSDEBUG TUNSETDEBUG
 # endif
 
-# if defined Unix
-#  define TUNFD_INVALID_VALUE -1
-# else /* Window */
+# if defined Windows
 #  define TUNFD_INVALID_VALUE INVALID_HANDLE_VALUE
+# else /* Unix */
+#  define TUNFD_INVALID_VALUE -1
 # endif
 
 /*
  * Uniformize types
  * - t_tun: tun device file descriptor
+ * - t_tun_in_addr: struct in_addr/IN_ADDR
+ * - t_tun_in6_addr: struct in6_addr/IN6_ADDR
  */
-# if defined Unix
-typedef int t_tun;
-# else /* Windows */
+# if defined Windows
 typedef HANDLE t_tun;
+typedef IN_ADDR t_tun_in_addr;
+typedef IN6_ADDR t_tun_in6_addr;
+# else /* Unix */
+typedef int t_tun;
+typedef struct in_addr t_tun_in_addr;
+typedef struct in6_addr t_tun_in6_addr;
+# endif
+
+/*
+ * Windows helpers
+ */
+# if defined Windows
+#  define snprintf(x, y, z, ...) _snprintf_s((x), (y), (y), (z), __VA_ARGS__);
+#  define strncat(x, y, z) strncat_s((x), _countof(x), (y), (z));
+#  define strdup(x) _strdup(x)
 # endif
 
 # define TUNTAP_ID_MAX 256
@@ -90,36 +107,43 @@ typedef HANDLE t_tun;
 # define TUNTAP_LOG_WARN      0x0008
 # define TUNTAP_LOG_ERR       0x0016
 
+/* Versioning: 0xMMmm, with 'M' for major and 'm' for minor */
+# define TUNTAP_VERSION_MAJOR 0
+# define TUNTAP_VERSION_MINOR 3
+# define TUNTAP_VERSION ((TUNTAP_VERSION_MAJOR<<8)|TUNTAP_VERSION_MINOR)
+
 # define TUNTAP_GET_FD(x) (x)->tun_fd
 
-#if defined (_WIN32) 
-  #if defined(tuntap_EXPORTS) /* CMake generated goo */
-    #define  TUNTAP_EXPORT __declspec(dllexport)
-  #else
-    #define  TUNTAP_EXPORT __declspec(dllimport)
-  #endif
-#else /* Unix */
- #define TUNTAP_EXPORT
-#endif
+/* Handle Windows symbols export */
+# if defined Windows 
+#  if defined(tuntap_EXPORTS) /* CMake generated goo */
+#   define  TUNTAP_EXPORT __declspec(dllexport)
+#  else
+#   define  TUNTAP_EXPORT __declspec(dllimport)
+#  endif
+# else /* Unix */
+#  define TUNTAP_EXPORT
+# endif
 
 # ifdef __cplusplus
 extern "C" {
 # endif
 
 struct device {
-	t_tun		tun_fd;
-	int		ctrl_sock;
-	int		flags;     /* ifr.ifr_flags on Unix */
+	t_tun			tun_fd;
+	int				ctrl_sock;
+	int				flags;     /* ifr.ifr_flags on Unix */
 	unsigned char	hwaddr[ETHER_ADDR_LEN];
-	char		if_name[IF_NAMESIZE];
+	char			if_name[IF_NAMESIZE];
 };
 
 /* User definable log callback */
 typedef void (*t_tuntap_log)(int, const char *);
-t_tuntap_log tuntap_log;
+TUNTAP_EXPORT t_tuntap_log tuntap_log;
 
 /* Portable "public" functions */
 TUNTAP_EXPORT struct device	*tuntap_init(void);
+TUNTAP_EXPORT int		 tuntap_version(void);
 TUNTAP_EXPORT void		 tuntap_destroy(struct device *);
 TUNTAP_EXPORT void		 tuntap_release(struct device *);
 TUNTAP_EXPORT int		 tuntap_start(struct device *, int, int);
@@ -147,10 +171,10 @@ void		 tuntap_log_chksum(void *, int);
 
 /* OS specific functions */
 int		 tuntap_sys_start(struct device *, int, int);
-void		 tuntap_sys_destroy(struct device *);
+void	 tuntap_sys_destroy(struct device *);
 int		 tuntap_sys_set_hwaddr(struct device *, struct ether_addr *);
-int		 tuntap_sys_set_ipv4(struct device *, struct sockaddr_in *, uint32_t);
-int		 tuntap_sys_set_ipv6(struct device *, struct sockaddr_in6 *, uint32_t);
+int		 tuntap_sys_set_ipv4(struct device *, t_tun_in_addr *, uint32_t);
+int		 tuntap_sys_set_ipv6(struct device *, t_tun_in6_addr *, uint32_t);
 int		 tuntap_sys_set_ifname(struct device *, const char *, size_t);
 int		 tuntap_sys_set_descr(struct device *, const char *, size_t);
 

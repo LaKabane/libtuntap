@@ -61,9 +61,14 @@ tuntap_get_ifname(struct device *dev) {
 }
 
 int
+tuntap_version(void) {
+    return TUNTAP_VERSION;
+}
+
+int
 tuntap_set_ip(struct device *dev, const char *addr, int netmask) {
-	struct sockaddr_in sin;
-	struct sockaddr_in6 sin6;
+	t_tun_in_addr baddr4;
+	t_tun_in6_addr baddr6;
 	uint32_t mask;
 	int errval;
 
@@ -92,20 +97,18 @@ tuntap_set_ip(struct device *dev, const char *addr, int netmask) {
 	 * Destination address parsing: we try IPv4 first and fall back to
 	 * IPv6 if inet_pton return 0
 	 */
-	(void)memset(&sin, '\0', sizeof sin);
-	(void)memset(&sin6, '\0', sizeof sin6);
+	(void)memset(&baddr4, '\0', sizeof baddr4);
+	(void)memset(&baddr6, '\0', sizeof baddr6);
 
-	errval = inet_pton(AF_INET, addr, &(sin.sin_addr));
+	errval = inet_pton(AF_INET, addr, &(baddr4));
 	if (errval == 1) {
-		sin.sin_family = AF_INET;
-		return tuntap_sys_set_ipv4(dev, &sin, mask);
+		return tuntap_sys_set_ipv4(dev, &baddr4, mask);
 	} else if (errval == 0) {
-		if (inet_pton(AF_INET6, addr, &(sin6.sin6_addr)) == -1) {
+		if (inet_pton(AF_INET6, addr, &(baddr6)) == -1) {
 			tuntap_log(TUNTAP_LOG_ERR, "Invalid parameters");
 			return -1;
 		}
-		sin.sin_family = AF_INET6;
-		return tuntap_sys_set_ipv6(dev, &sin6, mask);
+		return tuntap_sys_set_ipv6(dev, &baddr6, mask);
 	} else if (errval == -1) {
 		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameters");
 		return -1;
