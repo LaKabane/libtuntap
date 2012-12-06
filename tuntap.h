@@ -52,6 +52,12 @@ typedef struct in_addr t_tun_in_addr;
 typedef struct in6_addr t_tun_in6_addr;
 # endif
 
+# if defined IFNAMSIZ && !defined IF_NAMESIZE
+#  define IF_NAMESIZE IFNAMSIZ /* Historical BSD name */
+# elif !defined IF_NAMESIZE
+#  define IF_NAMESIZE 16
+# endif
+
 # define TUNTAP_ID_MAX 256
 # define TUNTAP_ID_ANY 257
 

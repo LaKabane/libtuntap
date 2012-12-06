@@ -36,12 +36,6 @@
 
 # define IF_DESCRSIZE 50 /* XXX: Tests needed on NetBSD and OpenBSD */
 
-# if defined IFNAMSIZ && !defined IF_NAMESIZE
-#  define IF_NAMESIZE IFNAMSIZ /* Historical BSD name */
-# elif !defined IF_NAMESIZE
-#  define IF_NAMESIZE 16
-# endif
-
 # if defined TUNSETDEBUG
 #  define TUNSDEBUG TUNSETDEBUG
 # endif
