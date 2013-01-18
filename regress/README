@@ -15,12 +15,12 @@ test11: Create a tapN device and turn it up
 test12: Create a tunN device and turn it up
 test13: Create a tapN device, turn it up and set its IPv4 address
 test14: Create a tunN device, turn it up and set its IPv4 address
-#test15: Create a tapN device, turn it up and set its IPv6 address
-#test16: Create a tunN device, turn it up and set its IPv6 address
+test15: Create a tapN device, turn it up and set its IPv6 address
+test16: Create a tunN device, turn it up and set its IPv6 address
 test17: Create a tapN device, set its IPv4 address and turn it up
 test18: Create a tunN device, set its IPv4 address and turn it up
-#test19: Create a tapN device, set its IPv6 address and turn it up
-#test20: Create a tunN device, set its IPv6 address and turn it up
+test19: Create a tapN device, set its IPv6 address and turn it up
+test20: Create a tunN device, set its IPv6 address and turn it up
 test21: Create a tapN device and set its IP address to NULL
 test22: Create a tunN device and set its IP address to NULL
 test23: Create a tapN device and set its netmask to a negative value

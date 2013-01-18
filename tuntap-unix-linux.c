@@ -35,6 +35,12 @@
 #include "tuntap.h"
 #include "tuntap_private.h"
 
+struct in6_ifreq {
+	struct in6_addr	ifr6_addr;
+	__u32	ifr6_prefixlen;
+	int	ifr6_ifindex;
+};
+
 int
 tuntap_sys_start(struct device *dev, int mode, int tun) {
 	int fd;
@@ -163,8 +169,8 @@ tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s4, uint32_t bits) {
 
 	/* Set the IP address first */
 	(void)memcpy(&(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr),
-      s4, sizeof(struct in_addr));
-    ifr.ifr_addr.sa_family = AF_INET;
+	    s4, sizeof(struct in_addr));
+	ifr.ifr_addr.sa_family = AF_INET;
 	if (ioctl(dev->ctrl_sock, SIOCSIFADDR, &ifr) == -1) {
 		tuntap_log(TUNTAP_LOG_ERR, "Can't set IP address");
 		return -1;
@@ -188,11 +194,35 @@ tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s4, uint32_t bits) {
 
 int
 tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s6, uint32_t bits) {
-	(void)dev;
-	(void)s6;
-	(void)bits;
-	tuntap_log(TUNTAP_LOG_NOTICE, "IPv6 is not implemented on your system");
-	return -1;
+	struct ifreq ifr;
+	struct in6_ifreq ifr6;
+	int fd;
+
+	fd = socket(AF_INET6, SOCK_DGRAM, 0);
+	if (fd == -1) {
+		tuntap_log(TUNTAP_LOG_ERR, "Your system does not support IPv6");
+		return -1;
+	}
+
+	/* There is no ifr_name for ifr6, so get the interface index */
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)memcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
+	if (ioctl(dev->ctrl_sock, SIOGIFINDEX, &ifr) < 0) {
+		tuntap_log(TUNTAP_LOG_ERR, "Can't get interface index");
+		(void)close(fd);
+		return -1;
+	}
+
+	ifr6.ifr6_ifindex = ifr.ifr_ifindex;
+	ifr6.ifr6_prefixlen = bits;
+	(void)memcpy(&ifr6.ifr6_addr, s6, sizeof(struct in6_addr));
+	if (ioctl(fd, SIOCSIFADDR, &ifr6) < 0) {
+		tuntap_log(TUNTAP_LOG_ERR, "Can't set IP address");
+		(void)close(fd);
+		return -1;
+	}
+	(void)close(fd);
+	return 0;
 }
 
 int
