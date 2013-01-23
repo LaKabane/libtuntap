@@ -24,8 +24,10 @@
 #elif defined DragonFly
 # include <net/tun/if_tun.h>
 #elif !defined Darwin
-# include <sys/if_tun.h>
+# include <net/if_tun.h>
 #endif
+
+#include <string.h>
 
 static void
 tuntap_sys_destroy(struct device *dev) {
