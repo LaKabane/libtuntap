@@ -22,8 +22,10 @@ add_definitions(-D${CMAKE_SYSTEM_NAME})
 # Portable source files
 # ------------------
 set(SOURCES_LIST
-	tuntap.c
+	tuntap_destroy.c
 	tuntap_log.c
+	tuntap_init.c
+	tuntap_version.c
 )
 
 # OS families specific things
@@ -41,21 +43,38 @@ if(UNIX)
 	# ------------------
   	add_definitions(-DUnix)
 
-	# Unix specific source files
-	# ------------------
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix.c )
-
+	# Unix source files
+	# -----------------
+	set(SOURCES_LIST ${SOURCES_LIST}
+		tuntap_down.c
+		tuntap_get_hwaddr.c
+		tuntap_get_ifname.c
+		tuntap_get_mtu.c
+		tuntap_get_readable.c
+		tuntap_read.c
+		tuntap_release.c
+		tuntap_set_debug.c
+		tuntap_set_descr.c
+		tuntap_set_hwaddr.c
+		tuntap_set_ifname.c
+		tuntap_set_ip.c
+		tuntap_set_mtu.c
+		tuntap_set_nonblocking.c
+		tuntap_start.c
+		tuntap_up.c
+		tuntap_write.c
+	)
 endif(UNIX)
 
 if(Windows)
  	# Windows specific definitions
 	# ------------------
  	add_definitions(-DWindows)
-
-	# Windows specific source files
-	# ------------------
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-windows.c )
-
+	# Windows source files
+	# --------------------
+	set(SOURCES_LIST ${SOURCES_LIST}
+		tuntap-sys-windows.c
+	)
 endif(Windows)
 
 # OS specific things
@@ -64,22 +83,17 @@ if(UNIX)
 if(Linux)
 	set(CMAKE_INSTALL_PREFIX "/usr/")
 	add_definitions(-D_GNU_SOURCE)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-linux.c)
+	set(SOURCES_LIST ${SOURCES_LIST} tuntap-sys-linux.c)
 elseif (OpenBSD)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-openbsd.c)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-bsd.c)
+	set(SOURCES_LIST ${SOURCES_LIST} tuntap-sys-openbsd.c)
 elseif (NetBSD)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-netbsd.c)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-bsd.c)
+	set(SOURCES_LIST ${SOURCES_LIST} tuntap-sys-netbsd.c)
 elseif (FreeBSD)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-freebsd.c)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-bsd.c)
+	set(SOURCES_LIST ${SOURCES_LIST} tuntap-sys-freebsd.c)
 elseif (Darwin)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-darwin.c)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-bsd.c)
+	set(SOURCES_LIST ${SOURCES_LIST} tuntap-sys-darwin.c)
 elseif (DragonFly)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-freebsd.c)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-bsd.c)
+	set(SOURCES_LIST ${SOURCES_LIST} tuntap-sys-freebsd.c)
 else()
 	message(FATAL_ERROR "Your operating system is not supported yet")
 endif()

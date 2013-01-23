@@ -141,12 +141,6 @@ clean:
 	return deviceid;
 }
 
-void
-tuntap_sys_destroy(struct device *dev) {
-	(void)dev;
-	return;
-}
-
 int
 tuntap_start(struct device *dev, int mode, int tun) {
 	HANDLE tun_fd;

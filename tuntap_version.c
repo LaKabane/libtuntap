@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Tristan Le Guern <leguern AT medu DOT se>
+ * Copyright (c) 2012-2013 Tristan Le Guern <leguern AT medu DOT se>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,32 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
-
-#include <net/if.h>
-
-#include <string.h>
-
 #include "tuntap.h"
+#include "tuntap_private.h"
 
 int
-tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s6, uint32_t bits) {
-	(void)dev;
-	(void)s6;
-	(void)bits;
-	tuntap_log(TUNTAP_LOG_NOTICE, "IPv6 is not implemented on your system");
-	return -1;
-}
-
-int
-tuntap_sys_set_ifname(struct device *dev, const char *ifname, size_t len) {
-	(void)dev;
-	(void)ifname;
-	(void)len;
-	tuntap_log(TUNTAP_LOG_NOTICE,
-	    "Your system does not support tuntap_set_ifname()");
-	return -1;
+tuntap_version(void) {
+    return TUNTAP_VERSION;
 }
 

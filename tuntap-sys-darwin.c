@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Tristan Le Guern <leguern AT medu DOT se>
+ * Copyright (c) 2012-2013 Tristan Le Guern <leguern AT medu DOT se>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,21 +16,15 @@
 
 #include <sys/types.h>
 #include <sys/ioctl.h>
-#include <sys/param.h> /* For MAXPATHLEN */
 #include <sys/socket.h>
+#include <sys/param.h>
 
 #include <arpa/inet.h>
 #include <net/if.h>
-#if defined FreeBSD
-# include <net/if_tun.h>
-#elif defined DragonFly
-# include <net/tun/if_tun.h>
-#endif
 #include <net/if_types.h>
 #include <netinet/if_ether.h>
 #include <netinet/in.h>
 
-#include <errno.h>
 #include <fcntl.h>
 #include <ifaddrs.h>
 #include <stdint.h>
@@ -42,43 +36,50 @@
 #include "tuntap.h"
 #include "tuntap_private.h"
 
+static int
+tuntap_sys_create_dev(struct device *dev, int tun) {
+	return -1;
+}
+
 int
 tuntap_sys_start(struct device *dev, int mode, int tun) {
-	int fd;
-	int persist;
-	char *ifname;
-	char name[MAXPATHLEN];
-	struct ifaddrs *ifa;
 	struct ifreq ifr;
+	struct ifaddrs *ifa;
+	char name[MAXPATHLEN];
+	int fd;
+	char *type;
 
-	/* Get the persistence bit */
+	fd = -1;
+
+	/* Force creation of the driver if needed or let it resilient */
 	if (mode & TUNTAP_MODE_PERSIST) {
 		mode &= ~TUNTAP_MODE_PERSIST;
-		persist = 1;
-	} else {
-		persist = 0;
+		/* TODO: Call tuntap_sys_create_dev() */
 	}
 
         /* Set the mode: tun or tap */
 	if (mode == TUNTAP_MODE_ETHERNET) {
-		ifname = "tap";
-	} else if (mode == TUNTAP_MODE_TUNNEL) {
-		ifname = "tun";
-	} else {
+		type = "tap";
+		ifr.ifr_flags |= IFF_LINK0;
+	}
+	else if (mode == TUNTAP_MODE_TUNNEL) {
+		type = "tun";
+		ifr.ifr_flags &= ~IFF_LINK0;
+	}
+	else {
 		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'mode'");
 		return -1;
 	}
 
 	/* Try to use the given driver or loop throught the avaible ones */
-	fd = -1;
 	if (tun < TUNTAP_ID_MAX) {
-		(void)snprintf(name, sizeof name, "/dev/%s%i", ifname, tun);
+		(void)snprintf(name, sizeof name, "/dev/%s%i", type, tun);
 		fd = open(name, O_RDWR);
 	} else if (tun == TUNTAP_ID_ANY) {
 		for (tun = 0; tun < TUNTAP_ID_MAX; ++tun) {
 			(void)memset(name, '\0', sizeof name);
 			(void)snprintf(name, sizeof name, "/dev/%s%i",
-			    ifname, tun);
+			    type, tun);
 			if ((fd = open(name, O_RDWR)) > 0)
 				break;
 		}
@@ -100,13 +101,19 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 
 	/* Set the interface name */
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name, "%s%i", ifname, tun);
+	(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name, "%s%i", type, tun);
 	/* And save it */
 	(void)strlcpy(dev->if_name, ifr.ifr_name, sizeof dev->if_name);
 
 	/* Get the interface default values */
 	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &ifr) == -1) {
 		tuntap_log(TUNTAP_LOG_ERR, "Can't get interface values");
+		return -1;
+	}
+
+	/* Set our modifications */
+	if (ioctl(dev->ctrl_sock, SIOCSIFFLAGS, &ifr) == -1) {
+		tuntap_log(TUNTAP_LOG_ERR, "Can't set interface values");
 		return -1;
 	}
 
@@ -131,12 +138,11 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 				  pifa->ifa_addr->sa_data + 10,
 				  ETHER_ADDR_LEN);
 
-				(void)memset(&eth_addr.octet, 0,
+				(void)memset(&eth_addr.ether_addr_octet, 0,
 				  ETHER_ADDR_LEN);
-				(void)memcpy(&eth_addr.octet,
+				(void)memcpy(&eth_addr.ether_addr_octet,
 				  pifa->ifa_addr->sa_data + 10,
 				  ETHER_ADDR_LEN);
-
 				break;
 			}
 		}
@@ -146,90 +152,5 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 		freeifaddrs(ifa);
 	}
 	return fd;
-}
-
-void
-tuntap_sys_destroy(struct device *dev) {
-	return;
-}
-
-int
-tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
-	struct ifreq ifr;
-
-	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof ifr.ifr_name);
-	ifr.ifr_addr.sa_len = ETHER_ADDR_LEN;
-	ifr.ifr_addr.sa_family = AF_LINK;
-	(void)memcpy(ifr.ifr_addr.sa_data, eth_addr, ETHER_ADDR_LEN);
-	if (ioctl(dev->ctrl_sock, SIOCSIFLLADDR, &ifr) < 0) {
-	        tuntap_log(TUNTAP_LOG_ERR, "Can't set link-layer address");
-		return -1;
-	}
-	return 0;
-}
-
-int
-tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s4, uint32_t bits) {
-	struct ifreq ifr;
-	struct sockaddr_in mask;
-	struct sockaddr_in addr;
-
-	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof ifr.ifr_name);
-
-	/* Delete previously assigned address */
-	(void)ioctl(dev->ctrl_sock, SIOCDIFADDR, &ifr);
-
-	/* Set the address */
-	(void)memset(&addr, '\0', sizeof addr);
-	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = s4.s_addr;
-	addr.sin_len = sizeof addr;
-	(void)memcpy(&ifr.ifr_addr, &addr, sizeof addr);
-
-	if (ioctl(dev->ctrl_sock, SIOCSIFADDR, &ifr) == -1) {
-		tuntap_log(TUNTAP_LOG_ERR, "Can't set IP address");
-		return -1;
-	}
-
-	/* Then set the netmask */
-	(void)memset(&mask, '\0', sizeof mask);
-	mask.sin_family = AF_INET;
-	mask.sin_addr.s_addr = bits;
-	mask.sin_len = sizeof mask;
-	(void)memcpy(&ifr.ifr_addr, &mask, sizeof ifr.ifr_addr);
-
-	if (ioctl(dev->ctrl_sock, SIOCSIFNETMASK, &ifr) == -1) {
-		tuntap_log(TUNTAP_LOG_ERR, "Can't set netmask");
-		return -1;
-	}
-	return 0;
-}
-
-int
-tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len) {
-#if defined FreeBSD
-	struct ifreq ifr;
-	struct ifreq_buffer ifrbuf;
-
-	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof ifr.ifr_name);
-
-	ifrbuf.buffer = (void *)descr;
-	ifrbuf.length = len;
-	ifr.ifr_buffer = ifrbuf;
-
-	if (ioctl(dev->ctrl_sock, SIOCSIFDESCR, &ifr) == -1) {
-		tuntap_log(TUNTAP_LOG_ERR,
-		    "Can't set the interface description");
-		return -1;
-	}
-	return 0;
-#elif defined DragonFly
-	tuntap_log(TUNTAP_LOG_NOTICE,
-	    "Your system does not support tuntap_set_descr()");
-	return -1;
-#endif
 }
 

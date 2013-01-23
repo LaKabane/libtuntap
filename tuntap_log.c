@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2012, PICHOT Fabien Paul Leonard <pichot.fabienATgmail.com>
- * Copyright (c) 2012, Tristan Le Guern <leguern AT medu DOT se>
+ * Copyright (c) 2012-2013, Tristan Le Guern <leguern AT medu DOT se>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,6 +15,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
 **/
 
+#include "tuntap.h"
+#include "tuntap_private.h"
+
 #if defined Windows
 # include <windows.h>
 #endif
@@ -22,9 +25,6 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdint.h>
-
-#include "tuntap.h"
-#include "tuntap_private.h"
 
 void
 tuntap_log_set_cb(t_tuntap_log cb) {

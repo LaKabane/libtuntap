@@ -55,14 +55,16 @@
 #  define strdup(x) _strdup(x)
 # endif
 
+#if __GNUC__ >= 4
+  #define TUNTAP_PRI __attribute__ ((visibility ("hidden")))
+#elif __SUNPRO_C
+  #define TUNTAP_PRI __hidden
+#else
+  #define TUNTAP_PRI
+#endif
+
 /* OS specific functions */
-void	tuntap_log_default(int, const char *);
-int	tuntap_sys_start(struct device *, int, int);
-void	tuntap_sys_destroy(struct device *);
-int	tuntap_sys_set_hwaddr(struct device *, struct ether_addr *);
-int	tuntap_sys_set_ipv4(struct device *, t_tun_in_addr *, uint32_t);
-int	tuntap_sys_set_ipv6(struct device *, t_tun_in6_addr *, uint32_t);
-int	tuntap_sys_set_ifname(struct device *, const char *, size_t);
-int	tuntap_sys_set_descr(struct device *, const char *, size_t);
+TUNTAP_PRI void	tuntap_log_default(int, const char *);
+TUNTAP_PRI int	tuntap_sys_start(struct device *, int, int);
 
 #endif

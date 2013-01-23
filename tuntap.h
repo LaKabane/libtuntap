@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 Tristan Le Guern <leguern AT medu DOT se>
+ * Copyright (c) 2012-2013 Tristan Le Guern <leguern AT medu DOT se>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -84,12 +84,12 @@ typedef struct in6_addr t_tun_in6_addr;
 /* Handle Windows symbols export */
 # if defined Windows 
 #  if defined(tuntap_EXPORTS) /* CMake generated goo */
-#   define  TUNTAP_EXPORT __declspec(dllexport)
+#   define  TUNTAP_PUB __declspec(dllexport)
 #  else
-#   define  TUNTAP_EXPORT __declspec(dllimport)
+#   define  TUNTAP_PUB __declspec(dllimport)
 #  endif
 # else /* Unix */
-#  define TUNTAP_EXPORT
+#  define TUNTAP_PUB
 # endif
 
 # ifdef __cplusplus
@@ -106,34 +106,34 @@ struct device {
 
 /* User definable log callback */
 typedef void (*t_tuntap_log)(int, const char *);
-TUNTAP_EXPORT t_tuntap_log tuntap_log;
+TUNTAP_PUB t_tuntap_log tuntap_log;
 
 /* Portable "public" functions */
-TUNTAP_EXPORT struct device	*tuntap_init(void);
-TUNTAP_EXPORT int		 tuntap_version(void);
-TUNTAP_EXPORT void		 tuntap_destroy(struct device *);
-TUNTAP_EXPORT void		 tuntap_release(struct device *);
-TUNTAP_EXPORT int		 tuntap_start(struct device *, int, int);
-TUNTAP_EXPORT char		*tuntap_get_ifname(struct device *);
-TUNTAP_EXPORT int		 tuntap_set_ifname(struct device *, const char *);
-TUNTAP_EXPORT char		*tuntap_get_hwaddr(struct device *);
-TUNTAP_EXPORT int		 tuntap_set_hwaddr(struct device *, const char *);
-TUNTAP_EXPORT int		 tuntap_set_descr(struct device *, const char *);
-TUNTAP_EXPORT int		 tuntap_up(struct device *);
-TUNTAP_EXPORT int		 tuntap_down(struct device *);
-TUNTAP_EXPORT int		 tuntap_get_mtu(struct device *);
-TUNTAP_EXPORT int		 tuntap_set_mtu(struct device *, int);
-TUNTAP_EXPORT int		 tuntap_set_ip(struct device *, const char *, int);
-TUNTAP_EXPORT int		 tuntap_read(struct device *, void *, size_t);
-TUNTAP_EXPORT int		 tuntap_write(struct device *, void *, size_t);
-TUNTAP_EXPORT int		 tuntap_get_readable(struct device *);
-TUNTAP_EXPORT int		 tuntap_set_nonblocking(struct device *dev, int);
-TUNTAP_EXPORT int		 tuntap_set_debug(struct device *dev, int);
+TUNTAP_PUB struct device*tuntap_init(void);
+TUNTAP_PUB int		 tuntap_version(void);
+TUNTAP_PUB void		 tuntap_destroy(struct device *);
+TUNTAP_PUB void		 tuntap_release(struct device *);
+TUNTAP_PUB int		 tuntap_start(struct device *, int, int);
+TUNTAP_PUB char		*tuntap_get_ifname(struct device *);
+TUNTAP_PUB int		 tuntap_set_ifname(struct device *, const char *);
+TUNTAP_PUB char		*tuntap_get_hwaddr(struct device *);
+TUNTAP_PUB int		 tuntap_set_hwaddr(struct device *, const char *);
+TUNTAP_PUB int		 tuntap_set_descr(struct device *, const char *);
+TUNTAP_PUB int		 tuntap_up(struct device *);
+TUNTAP_PUB int		 tuntap_down(struct device *);
+TUNTAP_PUB int		 tuntap_get_mtu(struct device *);
+TUNTAP_PUB int		 tuntap_set_mtu(struct device *, int);
+TUNTAP_PUB int		 tuntap_set_ip(struct device *, const char *, int);
+TUNTAP_PUB int		 tuntap_read(struct device *, void *, size_t);
+TUNTAP_PUB int		 tuntap_write(struct device *, void *, size_t);
+TUNTAP_PUB int		 tuntap_get_readable(struct device *);
+TUNTAP_PUB int		 tuntap_set_nonblocking(struct device *dev, int);
+TUNTAP_PUB int		 tuntap_set_debug(struct device *dev, int);
 
 /* Logging functions */
-TUNTAP_EXPORT void		 tuntap_log_set_cb(t_tuntap_log cb);
-TUNTAP_EXPORT void		 tuntap_log_hexdump(void *, size_t);
-TUNTAP_EXPORT void		 tuntap_log_chksum(void *, int);
+TUNTAP_PUB void		 tuntap_log_set_cb(t_tuntap_log cb);
+TUNTAP_PUB void		 tuntap_log_hexdump(void *, size_t);
+TUNTAP_PUB void		 tuntap_log_chksum(void *, int);
 
 # ifdef __cplusplus
 }
