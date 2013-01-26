@@ -235,6 +235,8 @@ tuntap_set_hwaddr
 
 This function replaces the link-layer address of the interface described by `dev` with the given address `mac_addr`.
 
+The value of `mac_addr` can be either a valid MAC address or the string "random". In the later case, a random locally administered MAC address will be assigned.
+
 _Return value_:
 
 `tuntap_set_hwaddr` returns 0 on success and -1 on error.

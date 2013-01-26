@@ -91,15 +91,16 @@ tuntap_set_hwaddr(struct device *dev, const char *hwaddr) {
 		unsigned int i;
 		unsigned char *ptr;
 
-		i = 0;
 		ptr = (unsigned char *)&eth_rand;
 		srandom((unsigned int)time(NULL));
-		for (; i < sizeof eth_rand; ++i) {
+		for (i = 0; i < sizeof eth_rand; ++i) {
 			*ptr = (unsigned char)random();
 			ptr++;
 		}
 		ptr = (unsigned char *)&eth_rand;
-		*ptr &= 0xfc;
+		ptr[0] <<= 1;
+		ptr[0] |= 1;
+		ptr[0] <<= 1;
 		eth_addr = &eth_rand;
 	} else {
 		eth_addr = ether_aton(hwaddr);
