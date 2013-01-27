@@ -228,7 +228,7 @@ tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s4, uint32_t bits) {
 #endif
 }
 
-int
+static int
 tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s6, uint32_t bits) {
 #if defined Linux
 	struct ifreq ifr;
