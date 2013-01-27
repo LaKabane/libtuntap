@@ -69,6 +69,14 @@ if(NOT FreeBSD AND NOT OpenBSD)
   set_tests_properties(test44 PROPERTIES WILL_FAIL true)
 endif()
 
+# IPv6 test
+if(NOT Linux)
+  set_tests_properties(test15 PROPERTIES WILL_FAIL true)
+  set_tests_properties(test16 PROPERTIES WILL_FAIL true)
+  set_tests_properties(test19 PROPERTIES WILL_FAIL true)
+  set_tests_properties(test20 PROPERTIES WILL_FAIL true)
+endif()
+
 # Windows work-in-progress (tap)
 if (Windows)
   set_tests_properties(test05 PROPERTIES WILL_FAIL true)
