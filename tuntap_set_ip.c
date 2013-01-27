@@ -154,16 +154,16 @@ tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s4, uint32_t bits) {
 	struct sockaddr_in mask;
 	struct sockaddr_in addr;
 
-	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)memset(&ifr, 0, sizeof ifr);
 	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof ifr.ifr_name);
 
 	/* Delete previously assigned address */
 	(void)ioctl(dev->ctrl_sock, SIOCDIFADDR, &ifr);
 
 	/* Set the address */
-	(void)memset(&addr, '\0', sizeof addr);
+	(void)memset(&addr, 0, sizeof addr);
 	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = s4.s_addr;
+	addr.sin_addr.s_addr = s4->s_addr;
 	addr.sin_len = sizeof addr;
 	(void)memcpy(&ifr.ifr_addr, &addr, sizeof addr);
 
