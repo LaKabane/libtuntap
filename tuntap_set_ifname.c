@@ -25,7 +25,7 @@
 
 static int
 tuntap_sys_set_ifname(struct device *dev, const char *ifname, size_t len) {
-#if defined SIOCSIFNAME /* Linux */
+#if defined Linux
 	struct ifreq ifr;
 
 	(void)strncpy(ifr.ifr_name, dev->if_name, IF_NAMESIZE);
@@ -33,6 +33,18 @@ tuntap_sys_set_ifname(struct device *dev, const char *ifname, size_t len) {
 
 	if (ioctl(dev->ctrl_sock, SIOCSIFNAME, &ifr) == -1) {
 		tuntap_log(TUNTAP_LOG_ERR, "Can't set interface name");
+		return -1;
+	}
+	return 0;
+#elif defined FreeBSD
+	struct ifreq ifr;
+
+	(void)strncpy(ifr.ifr_name, dev->if_name, IF_NAMESIZE);
+	(void)strncpy(ifr.ifr_data, ifname, len);
+
+	if (ioctl(dev->ctrl_sock, SIOCSIFNAME, &ifr) == -1) {
+		tuntap_log(TUNTAP_LOG_ERR, "Can't set interface name");
+		perror(NULL);
 		return -1;
 	}
 	return 0;
