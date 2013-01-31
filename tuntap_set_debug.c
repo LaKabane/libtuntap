@@ -41,10 +41,7 @@ tuntap_sys_set_debug(struct device *dev, int set) {
 	if (ioctl(dev->tun_fd, TUNSDEBUG, &set) == -1) {
 		switch(set) {
 		case 0:
-			tuntap_log(TUNTAP_LOG_WARN, "Can't unset debug");
-			break;
 		case 1:
-			tuntap_log(TUNTAP_LOG_WARN, "Can't set debug");
 			break;
 		default:
 			tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'set'");

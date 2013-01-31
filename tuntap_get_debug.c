@@ -42,7 +42,6 @@ tuntap_sys_get_debug(struct device *dev) {
 
 	get = 0;
 	if (ioctl(dev->tun_fd, TUNGDEBUG, &get) == -1) {
-		tuntap_log(TUNTAP_LOG_ERR, "Can't get debug status");
 		return -1;
 	}
 	return get;
