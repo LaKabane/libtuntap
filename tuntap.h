@@ -127,6 +127,7 @@ TUNTAP_PUB char		*tuntap_get_descr(struct device *);
 TUNTAP_PUB int		 tuntap_set_descr(struct device *, const char *);
 TUNTAP_PUB int		 tuntap_get_mtu(struct device *);
 TUNTAP_PUB int		 tuntap_set_mtu(struct device *, int);
+TUNTAP_PUB int		 tuntap_get_debug(struct device *dev);
 TUNTAP_PUB int		 tuntap_set_debug(struct device *dev, int);
 TUNTAP_PUB int		 tuntap_set_ip(struct device *, const char *, int);
 TUNTAP_PUB int		 tuntap_get_readable(struct device *);
