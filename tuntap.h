@@ -114,21 +114,23 @@ TUNTAP_PUB int		 tuntap_version(void);
 TUNTAP_PUB void		 tuntap_destroy(struct device *);
 TUNTAP_PUB void		 tuntap_release(struct device *);
 TUNTAP_PUB int		 tuntap_start(struct device *, int, int);
+TUNTAP_PUB int		 tuntap_up(struct device *);
+TUNTAP_PUB int		 tuntap_down(struct device *);
+TUNTAP_PUB int		 tuntap_read(struct device *, void *, size_t);
+TUNTAP_PUB int		 tuntap_write(struct device *, void *, size_t);
+
 TUNTAP_PUB char		*tuntap_get_ifname(struct device *);
 TUNTAP_PUB int		 tuntap_set_ifname(struct device *, const char *);
 TUNTAP_PUB char		*tuntap_get_hwaddr(struct device *);
 TUNTAP_PUB int		 tuntap_set_hwaddr(struct device *, const char *);
+TUNTAP_PUB char		*tuntap_get_descr(struct device *);
 TUNTAP_PUB int		 tuntap_set_descr(struct device *, const char *);
-TUNTAP_PUB int		 tuntap_up(struct device *);
-TUNTAP_PUB int		 tuntap_down(struct device *);
 TUNTAP_PUB int		 tuntap_get_mtu(struct device *);
 TUNTAP_PUB int		 tuntap_set_mtu(struct device *, int);
+TUNTAP_PUB int		 tuntap_set_debug(struct device *dev, int);
 TUNTAP_PUB int		 tuntap_set_ip(struct device *, const char *, int);
-TUNTAP_PUB int		 tuntap_read(struct device *, void *, size_t);
-TUNTAP_PUB int		 tuntap_write(struct device *, void *, size_t);
 TUNTAP_PUB int		 tuntap_get_readable(struct device *);
 TUNTAP_PUB int		 tuntap_set_nonblocking(struct device *dev, int);
-TUNTAP_PUB int		 tuntap_set_debug(struct device *dev, int);
 
 /* Logging functions */
 TUNTAP_PUB void		 tuntap_log_set_cb(t_tuntap_log cb);

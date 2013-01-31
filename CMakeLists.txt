@@ -47,6 +47,7 @@ if(UNIX)
 	# -----------------
 	set(SOURCES_LIST ${SOURCES_LIST}
 		tuntap_down.c
+		tuntap_get_descr.c
 		tuntap_get_hwaddr.c
 		tuntap_get_ifname.c
 		tuntap_get_mtu.c
