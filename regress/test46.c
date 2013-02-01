@@ -33,21 +33,26 @@ main(void) {
 
 	ret = 0;
 	dev = tuntap_init();
-	if (tuntap_start(dev, TUNTAP_MODE_ETHERNET, TUNTAP_ID_ANY) == -1)
+	if (tuntap_start(dev, TUNTAP_MODE_ETHERNET, TUNTAP_ID_ANY) == -1) {
 		ret = 1;
+		goto clean;
+	}
 
 	if (tuntap_set_descr(dev, s) == -1) {
 		ret = 1;
+		goto clean;
 	}
 
 	if ((check_s = tuntap_get_descr(dev)) == NULL) {
 		ret = 1;
+		goto clean;
 	}
 
 	if (strcmp(s, check_s) != 0) {
 		ret = 1;
 	}
 
+clean:
 	tuntap_destroy(dev);
 	return ret;
 }

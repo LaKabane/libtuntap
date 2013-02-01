@@ -47,8 +47,6 @@ tuntap_sys_get_descr(struct device *dev) {
 	return (char *)descr;
 #else /* For now: DragonFlyBSD, Linux and Darwin */
 	(void)dev;
-	(void)descr;
-	(void)len;
 	tuntap_log(TUNTAP_LOG_NOTICE,
 	    "Your system does not support tuntap_get_descr()");
 	return NULL;
