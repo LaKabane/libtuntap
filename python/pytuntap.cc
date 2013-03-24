@@ -28,6 +28,7 @@ BOOST_PYTHON_MODULE(pytuntap)
         .def("nonblocking", &tun::nonblocking)
         .add_property("name", tun_get_name, tun_set_name)
         .add_property("mtu", tun_get_mtu, tun_set_mtu)
+        .add_property("native_handle", &tun::native_handle)
     ;
     class_<tap, boost::noncopyable>("Tap", init<>())
         .def("release", &tap::release)
@@ -38,5 +39,6 @@ BOOST_PYTHON_MODULE(pytuntap)
         .add_property("name", tap_get_name, tap_set_name)
         .add_property("hwaddr", tap_set_hwaddr, tap_set_hwaddr)
         .add_property("mtu", tap_set_mtu, tap_set_mtu)
+        .add_property("native_handle", &tap::native_handle)
     ;
 }

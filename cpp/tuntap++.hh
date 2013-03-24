@@ -22,6 +22,7 @@ class tun
   void name(std::string const &);
   int mtu() const ;
   void mtu(int);
+  t_tun native_handle() const;
 
   // Network
   void up();
@@ -51,6 +52,7 @@ class tap
   void hwaddr(std::string const &);
   int mtu() const;
   void mtu(int);
+  t_tun native_handle() const;
 
   // Network
   void up();

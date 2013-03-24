@@ -41,6 +41,12 @@ tun::name(std::string const &s)
     tuntap_set_ifname(_dev, s.c_str());
 }
 
+t_tun
+tun::native_handle() const
+{
+    return TUNTAP_GET_FD(this->_dev);
+}
+
 void
 tun::up()
 {
@@ -123,6 +129,12 @@ void
 tap::hwaddr(std::string const &s)
 {
     tuntap_set_hwaddr(_dev, s.c_str());
+}
+
+t_tun
+tap::native_handle() const
+{
+    return TUNTAP_GET_FD(this->_dev);
 }
 
 void
