@@ -123,6 +123,30 @@ target_link_libraries(tuntap++
 target_link_libraries(tuntap++-static
     tuntap
 )
+
+# Python Binding definition
+# -------------------------
+
+find_package(PythonLibs)
+find_package(Boost COMPONENTS system thread python)
+if (${PYTHONLIBS_FOUND} AND ${Boost_FOUND})
+    include_directories(${PYTHON_INCLUDE_PATH})
+    include_directories(${Boost_INCLUDE_PATH})
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/cpp)
+
+    add_library(python-tuntap SHARED
+            ${CMAKE_CURRENT_SOURCE_DIR}/python/pytuntap.cc)
+
+    target_link_libraries(python-tuntap
+        ${PYTHON_LIBRARIES}
+        ${Boost_LIBRARIES}
+        tuntap++
+        )
+    set_target_properties(python-tuntap PROPERTIES OUTPUT_NAME "pytuntap")
+    set_target_properties(python-tuntap PROPERTIES PREFIX "")
+endif()
+
+
 # Install rules
 # -------------
 if(UNIX)
