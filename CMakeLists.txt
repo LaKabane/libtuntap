@@ -142,8 +142,15 @@ if (${PYTHONLIBS_FOUND} AND ${Boost_FOUND})
         ${Boost_LIBRARIES}
         tuntap++
         )
-    set_target_properties(python-tuntap PROPERTIES OUTPUT_NAME "pytuntap")
+    add_custom_command(TARGET python-tuntap POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${PROJECT_SOURCE_DIR}/python/__init__.py"
+            "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/python/pytuntap")
+    set_target_properties(python-tuntap PROPERTIES OUTPUT_NAME "_pytuntap")
     set_target_properties(python-tuntap PROPERTIES PREFIX "")
+    set_target_properties(python-tuntap
+            PROPERTIES LIBRARY_OUTPUT_DIRECTORY
+            ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/python/pytuntap)
 endif()
 
 

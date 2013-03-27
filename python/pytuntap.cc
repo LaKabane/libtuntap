@@ -1,7 +1,7 @@
 #include "tuntap++.hh"
 #include <boost/python.hpp>
 
-BOOST_PYTHON_MODULE(pytuntap)
+BOOST_PYTHON_MODULE(_pytuntap)
 {
     using namespace tuntap;
     using namespace boost::python;
