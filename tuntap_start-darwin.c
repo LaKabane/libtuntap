@@ -14,6 +14,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+/*
+ * Darwin has support for tun and tap drivers through the project tuntaposx,
+ * by Mattias Nissler <mattias.nissler AT gmx DOT de>.
+ *
+ * It can be found here: http://tuntaposx.sourceforge.net
+ */
+
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
