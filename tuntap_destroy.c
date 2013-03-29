@@ -23,7 +23,7 @@
 # include <linux/if_tun.h>
 #elif defined DragonFly
 # include <net/tun/if_tun.h>
-#elif !defined Darwin
+#elif !defined Darwin && !defined SunOS
 # include <net/if_tun.h>
 #endif
 

@@ -20,6 +20,9 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
+#ifdef SunOS
+# include <stropts.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 

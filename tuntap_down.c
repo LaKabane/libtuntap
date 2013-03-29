@@ -19,6 +19,10 @@
 
 #include <sys/ioctl.h>
 
+#ifdef SunOS
+# include <stropts.h>
+# include <sys/sockio.h>
+#endif
 #include <string.h>
 
 int

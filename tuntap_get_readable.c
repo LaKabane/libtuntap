@@ -20,6 +20,10 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
+#ifdef SunOS
+# include <stropts.h>
+#endif
+
 int
 tuntap_get_readable(struct device *dev) {
 	int n;

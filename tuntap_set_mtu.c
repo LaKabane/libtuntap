@@ -20,6 +20,9 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
+#ifdef SunOS
+# include <stropts.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 
@@ -35,7 +38,11 @@ tuntap_set_mtu(struct device *dev, int mtu) {
 
 	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)memcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
+#if defined SunOS
+	ifr.ifr_metric = mtu;
+#else
 	ifr.ifr_mtu = mtu;
+#endif
 
 	if (ioctl(dev->ctrl_sock, SIOCSIFMTU, &ifr) == -1) {
 		tuntap_log(TUNTAP_LOG_ERR, "Can't set MTU");

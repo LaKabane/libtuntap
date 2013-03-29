@@ -17,6 +17,9 @@
 #include "tuntap.h"
 #include "tuntap_private.h"
 
+#ifdef SunOS
+# include <stropts.h>
+#endif
 #include <sys/types.h>
 #include <sys/ioctl.h>
 

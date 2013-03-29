@@ -20,6 +20,10 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
+#ifdef SunOS
+# include <stropts.h>
+# include <sys/sockio.h>
+#endif
 #include <string.h>
 
 int
@@ -39,6 +43,10 @@ tuntap_get_mtu(struct device *dev) {
 		tuntap_log(TUNTAP_LOG_ERR, "Can't get MTU");
 		return -1;
 	}
+#if defined SunOS
+	return ifr.ifr_metric; /* XXX: Check if really equivalent */
+#else
 	return ifr.ifr_mtu;
+#endif
 }
 

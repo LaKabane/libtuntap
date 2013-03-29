@@ -77,6 +77,8 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 	}
 	return 0;
 #else
+	(void)dev;
+	(void)eth_addr;
 	tuntap_log(TUNTAP_LOG_NOTICE,
 	    "Your system does not support tuntap_set_hwaddr()");
 	return -1;
