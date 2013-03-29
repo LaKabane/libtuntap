@@ -43,7 +43,7 @@ TUNTAP_ID_MAX
 TUNTAP_ID_ANY
 -------------
 
-`TUNTAP_ID_ANY` is the wild-card device unit giveable as the third parameter of `tuntap_start()`.
+`TUNTAP_ID_ANY` is the wild-card device unit giveable as the third parameter of `tuntap_start()`. It is the recommended value.
 
 TUNTAP_MODE_ETHERNET
 --------------------
