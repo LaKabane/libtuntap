@@ -5,11 +5,17 @@ project(libtuntap)
 cmake_minimum_required(VERSION 2.8)
 
 # CMake global options
-# ------------------
+# --------------------
 option(ENABLE_REGRESS "Enable the regression tests" OFF)
+option(ENABLE_CXX "Enable the C++ wrapper library" OFF)
+option(ENABLE_PYTHON "Enable the Python wrapper library" OFF)
+
+if(ENABLE_PYTHON AND NOT ENABLE_CXX)
+    message(FATAL_ERROR "You must set ENABLE_CXX with ENABLE_PYTHON")
+endif()
 
 # CMake Configuration
-# ------------------
+# -------------------
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 set(CMAKE_INSTALL_PREFIX "/usr/local/")
@@ -20,69 +26,67 @@ set(${CMAKE_SYSTEM_NAME} True)
 add_definitions(-D${CMAKE_SYSTEM_NAME})
 
 # Portable source files
-# ------------------
+# ---------------------
 set(SOURCES_LIST
-	tuntap.c
-	tuntap_log.c
+    tuntap.c
+    tuntap_log.c
 )
 
 # OS families specific things
 # ---------------------------
 if(UNIX)
-	# Unix specific include directories
-	# ------------------
-	include_directories(
-		"${CMAKE_CURRENT_SOURCE_DIR}"
-		/usr/include/
-		/usr/local/include
-	)
-
-	# Unix specific definitions
-	# ------------------
-  	add_definitions(-DUnix)
-
-	# Unix specific source files
-	# ------------------
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix.c )
-
+    # Unix specific include directories
+    # ---------------------------------
+    include_directories(
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+        /usr/include/
+        /usr/local/include
+    )
+    
+    # Unix specific definitions
+    # -------------------------
+    add_definitions(-DUnix)
+    
+    # Unix specific source files
+    # --------------------------
+    set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix.c )
 endif(UNIX)
 
 if(Windows)
- 	# Windows specific definitions
-	# ------------------
- 	add_definitions(-DWindows)
-
-	# Windows specific source files
-	# ------------------
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-windows.c )
-
+    # Windows specific definitions
+    # ----------------------------
+    add_definitions(-DWindows)
+    
+    # Windows specific source files
+    # -----------------------------
+    set(SOURCES_LIST ${SOURCES_LIST} tuntap-windows.c )
 endif(Windows)
 
 # OS specific things
 # ------------------
 if(UNIX)
-if(Linux)
-	set(CMAKE_INSTALL_PREFIX "/usr/")
-	add_definitions(-D_GNU_SOURCE)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-linux.c)
-elseif (OpenBSD)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-openbsd.c)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-bsd.c)
-elseif (NetBSD)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-netbsd.c)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-bsd.c)
-elseif (FreeBSD)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-freebsd.c)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-bsd.c)
-elseif (Darwin)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-darwin.c)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-bsd.c)
-elseif (DragonFly)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-freebsd.c)
-	set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-bsd.c)
-else()
-	message(FATAL_ERROR "Your operating system is not supported yet")
-endif()
+    if(Linux)
+        set(CMAKE_INSTALL_PREFIX "/usr/")
+        add_definitions(-D_GNU_SOURCE)
+        set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-linux.c)
+    elseif (OpenBSD)
+        set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-openbsd.c)
+        set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-bsd.c)
+    elseif (NetBSD)
+        set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-netbsd.c)
+        set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-bsd.c)
+    elseif (FreeBSD)
+        set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-freebsd.c)
+        set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-bsd.c)
+    elseif (Darwin)
+        set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-darwin.c)
+        set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-bsd.c)
+    elseif (DragonFly)
+        set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-freebsd.c)
+        set(SOURCES_LIST ${SOURCES_LIST} tuntap-unix-bsd.c)
+    else()
+        message(FATAL_ERROR "Your operating system is not supported yet")
+    endif()
 endif(UNIX)
 
 # Library definition
@@ -96,63 +100,69 @@ if(UNIX)
     set_target_properties(tuntap-static PROPERTIES PREFIX "lib")
 endif(UNIX)
 
-if (Windows)
-	target_link_libraries(tuntap Ws2_32.lib)
-	target_link_libraries(tuntap-static Ws2_32.lib)
+if(Windows)
+    target_link_libraries(tuntap Ws2_32.lib)
+    target_link_libraries(tuntap-static Ws2_32.lib)
 endif(Windows)
 
 # C++ Binding definition
 # ----------------------
 
-add_library(tuntap++ SHARED
+if(ENABLE_CXX)
+    add_library(tuntap++ SHARED
         ${CMAKE_CURRENT_SOURCE_DIR}/cpp/tuntap++.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/cpp/tuntap++.hh
-)
-set_target_properties(tuntap++ PROPERTIES VERSION 2.1)
-
-add_library(tuntap++-static STATIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/cpp/tuntap++.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/cpp/tuntap++.hh
-)
-set_target_properties(tuntap++-static PROPERTIES OUTPUT_NAME "tuntap++")
-
-target_link_libraries(tuntap++
-    tuntap
-)
-
-target_link_libraries(tuntap++-static
-    tuntap
-)
+    )
+    set_target_properties(tuntap++ PROPERTIES VERSION 2.1)
+    
+    add_library(tuntap++-static STATIC
+            ${CMAKE_CURRENT_SOURCE_DIR}/cpp/tuntap++.cc
+            ${CMAKE_CURRENT_SOURCE_DIR}/cpp/tuntap++.hh
+    )
+    set_target_properties(tuntap++-static PROPERTIES OUTPUT_NAME "tuntap++")
+    
+    target_link_libraries(tuntap++
+        tuntap
+    )
+    
+    target_link_libraries(tuntap++-static
+        tuntap
+    )
+endif(ENABLE_CXX)
 
 # Python Binding definition
 # -------------------------
 
-find_package(PythonLibs)
-find_package(Boost COMPONENTS system thread python)
-if (${PYTHONLIBS_FOUND} AND ${Boost_FOUND})
-    include_directories(${PYTHON_INCLUDE_PATH})
-    include_directories(${Boost_INCLUDE_PATH})
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/cpp)
+if(ENABLE_PYTHON)
+    find_package(PythonLibs)
+    find_package(Boost COMPONENTS system thread python)
 
-    add_library(python-tuntap SHARED
-            ${CMAKE_CURRENT_SOURCE_DIR}/python/pytuntap.cc)
-
-    target_link_libraries(python-tuntap
-        ${PYTHON_LIBRARIES}
-        ${Boost_LIBRARIES}
-        tuntap++
+    if(${PYTHONLIBS_FOUND} AND ${Boost_FOUND})
+        include_directories(${PYTHON_INCLUDE_PATH})
+        include_directories(${Boost_INCLUDE_PATH})
+        include_directories(${CMAKE_CURRENT_SOURCE_DIR}/cpp)
+    
+        add_library(python-tuntap SHARED
+            ${CMAKE_CURRENT_SOURCE_DIR}/python/pytuntap.cc
         )
-    add_custom_command(TARGET python-tuntap POST_BUILD
+        target_link_libraries(python-tuntap
+            ${PYTHON_LIBRARIES}
+            ${Boost_LIBRARIES}
+            tuntap++
+        )
+        add_custom_command(TARGET python-tuntap POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${PROJECT_SOURCE_DIR}/python/__init__.py"
-            "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/python/pytuntap")
-    set_target_properties(python-tuntap PROPERTIES OUTPUT_NAME "_pytuntap")
-    set_target_properties(python-tuntap PROPERTIES PREFIX "")
-    set_target_properties(python-tuntap
+            "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/python/pytuntap"
+        )
+        set_target_properties(python-tuntap PROPERTIES OUTPUT_NAME "_pytuntap")
+        set_target_properties(python-tuntap PROPERTIES PREFIX "")
+        set_target_properties(python-tuntap
             PROPERTIES LIBRARY_OUTPUT_DIRECTORY
-            ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/python/pytuntap)
-endif()
-
+            ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/python/pytuntap
+        )
+    endif()
+endif (ENABLE_PYTHON)
 
 # Install rules
 # -------------
@@ -167,6 +177,6 @@ include(CMakeLists.txt.local OPTIONAL)
 # Tests rules
 # -----------
 if (ENABLE_REGRESS)
-  include(regress/CMakeLists.txt)
+    include(regress/CMakeLists.txt)
 endif (ENABLE_REGRESS)
 
