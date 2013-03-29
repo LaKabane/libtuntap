@@ -58,6 +58,14 @@ typedef struct in6_addr t_tun_in6_addr;
 #  define IF_NAMESIZE 16
 # endif
 
+# if defined ETH_ALEN /* Linux */
+#  define ETHER_ADDR_LEN ETH_ALEN
+# elif defined ETHERADDRL
+#  define ETHER_ADDR_LEN ETHERADDRL /* SunOS */
+# elif defined Windows
+#  define ETHER_ADDR_LEN 6 
+# endif
+
 # define TUNTAP_ID_MAX 256
 # define TUNTAP_ID_ANY 257
 

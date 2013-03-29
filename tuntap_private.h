@@ -28,12 +28,6 @@
  * - TUNFD_INVALID_VALUE: Invalid value for tun_fd
  */
 
-# if defined ETH_ALEN /* Linux */
-#  define ETHER_ADDR_LEN ETH_ALEN
-# elif defined Windows
-#  define ETHER_ADDR_LEN 6 
-# endif
-
 # define IF_DESCRSIZE 64 /* XXX: Test needed on FreeBSD */
 
 # if defined TUNSETDEBUG
