@@ -11,7 +11,8 @@ option(ENABLE_CXX "Enable the C++ wrapper library" OFF)
 option(ENABLE_PYTHON "Enable the Python wrapper library" OFF)
 
 if(ENABLE_PYTHON AND NOT ENABLE_CXX)
-    message(FATAL_ERROR "You must set ENABLE_CXX with ENABLE_PYTHON")
+    set(ENABLE_CXX ON)
+    message(WARNING "ENABLE_CXX also set to ON")
 endif()
 
 # CMake Configuration
