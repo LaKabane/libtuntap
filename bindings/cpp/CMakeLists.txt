@@ -2,14 +2,14 @@
 # ====================================
 
 add_library(tuntap++ SHARED
-    ${CMAKE_CURRENT_SOURCE_DIR}/binding/cpp/tuntap++.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/binding/cpp/tuntap++.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/bindings/cpp/tuntap++.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/bindings/cpp/tuntap++.hh
 )
 set_target_properties(tuntap++ PROPERTIES VERSION 2.1)
 
 add_library(tuntap++-static STATIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/binding/cpp/tuntap++.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/binding/cpp/tuntap++.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/bindings/cpp/tuntap++.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/bindings/cpp/tuntap++.hh
 )
 set_target_properties(tuntap++-static PROPERTIES OUTPUT_NAME "tuntap++")
 
