@@ -1,6 +1,10 @@
 # libtuntap C++ binding CMakeLists.txt
 # ====================================
 
+include_directories(
+    "${CMAKE_CURRENT_SOURCE_DIR}"/bindings/cpp
+)
+
 add_library(tuntap++ SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/bindings/cpp/tuntap++.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/bindings/cpp/tuntap++.hh
