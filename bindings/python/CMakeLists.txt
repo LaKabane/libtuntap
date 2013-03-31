@@ -26,7 +26,7 @@ if(${PYTHONLIBS_FOUND} AND ${Boost_FOUND})
     set_target_properties(python-tuntap PROPERTIES PREFIX "")
     set_target_properties(python-tuntap
         PROPERTIES LIBRARY_OUTPUT_DIRECTORY
-        ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/bindings/python/pytuntap
+        ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/pytuntap
     )
 endif()
 
