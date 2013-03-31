@@ -20,8 +20,12 @@ class tun
   // Properties
   std::string name() const;
   void name(std::string const &);
+  std::string description() const;
+  void description(std::string const &);
   int mtu() const ;
   void mtu(int);
+  bool debug() const;
+  void debug(bool);
   t_tun native_handle() const;
 
   // Network

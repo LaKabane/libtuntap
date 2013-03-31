@@ -41,6 +41,30 @@ tun::name(std::string const &s)
     tuntap_set_ifname(_dev, s.c_str());
 }
 
+std::string
+tun::description() const
+{
+    return tuntap_get_descr(_dev);
+}
+
+void
+tun::description(std::string const &s)
+{
+    tuntap_set_descr(_dev, s.c_str());
+}
+
+bool
+tun::debug() const
+{
+    return (bool)tuntap_get_debug(_dev);
+}
+
+void
+tun::debug(bool b)
+{
+    tuntap_set_debug(_dev, (int)b);
+}
+
 t_tun
 tun::native_handle() const
 {

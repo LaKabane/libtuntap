@@ -2,7 +2,7 @@
 # =========================================
 
 enable_testing()
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 # C based tests
@@ -103,4 +103,15 @@ if (Windows)
   set_tests_properties(test26 PROPERTIES WILL_FAIL true)
   set_tests_properties(test40 PROPERTIES WILL_FAIL true)
 endif()
+
+# Bindings tests
+# --------------
+
+if(ENABLE_CXX)
+    include(regress/bindings/cpp/CMakeLists.txt)
+endif(ENABLE_CXX)
+
+if(ENABLE_PYTHON)
+    include(regress/bindings/python/CMakeLists.txt)
+endif(ENABLE_PYTHON)
 
