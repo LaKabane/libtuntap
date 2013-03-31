@@ -34,9 +34,10 @@ Supported Systems
    * NetBSD
    * Darwin
 
-Current Porting Efforts
------------------------
+Current Porting Efforts (in listed order)
+-----------------------------------------
 
+   * Solaris
    * Windows
    * FreeBSD
 
@@ -44,7 +45,6 @@ In the future
 -------------
 
    * AIX
-   * Solaris
 
 License
 -------
