@@ -153,3 +153,7 @@ if (ENABLE_REGRESS)
     include(regress/CMakeLists.txt)
 endif (ENABLE_REGRESS)
 
+# Optional local modifications, such as compiler settings
+# -------------------------------------------------------
+include(CMakeLists.txt.local OPTIONAL)
+
