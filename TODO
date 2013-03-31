@@ -1,0 +1,6 @@
+TODO
+====
+ 
+Look at TODO, XXX and FIXME. And fix them :)
+
+    $ grep -RE '(XXX|FIXME|TODO)' regress *.{c,h}
