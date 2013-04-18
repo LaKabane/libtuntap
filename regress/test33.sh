@@ -25,16 +25,16 @@ $TEST && OK=1
 
 # If the $TEST was a success, check if the interface still exist
 if [ $OK -eq 1 ]; then
-	ifconfig $TARGET && OK=2
+	ifconfig $TARGET > /dev/null && OK=2
 else
-	return 1
+	exit 1
 fi
 
 # The $TARGET still exists, clean it and return failure
 if [ $OK -eq 2 ]; then
 	$IFDEL
-	return 1
+	exit 1
 fi
 
 # Everything went fine
-return 0
+exit 0
