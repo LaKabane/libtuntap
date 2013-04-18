@@ -274,10 +274,10 @@ tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s6, uint32_t bits) {
 }
 
 int
-tuntap_set_ip(struct device *dev, const char *addr, int netmask) {
+tuntap_set_ip(struct device *dev, const char *addr, int addrlen) {
 	t_tun_in_addr baddr4;
 	t_tun_in6_addr baddr6;
-	uint32_t mask;
+	uint32_t v4mask;
 	int errval;
 
 	/* Only accept started device */
@@ -291,15 +291,15 @@ tuntap_set_ip(struct device *dev, const char *addr, int netmask) {
 		return -1;
 	}
 
-	if (netmask < 0 || netmask > 128) {
-		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'netmask'");
+	if (addrlen < 0 || addrlen > 128) {
+		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'addrlen'");
 		return -1;
 	}
 
 	/* Netmask */
-	mask = ~0;
-	mask = ~(mask >> netmask);
-	mask = htonl(mask);
+	v4mask = ~0;
+	v4mask = ~(v4mask >> addrlen);
+	v4mask = htonl(v4mask);
 
 	/*
 	 * Destination address parsing: we try IPv4 first and fall back to
@@ -310,13 +310,13 @@ tuntap_set_ip(struct device *dev, const char *addr, int netmask) {
 
 	errval = inet_pton(AF_INET, addr, &(baddr4));
 	if (errval == 1) {
-		return tuntap_sys_set_ipv4(dev, &baddr4, mask);
+		return tuntap_sys_set_ipv4(dev, &baddr4, v4mask);
 	} else if (errval == 0) {
 		if (inet_pton(AF_INET6, addr, &(baddr6)) == -1) {
 			tuntap_log(TUNTAP_LOG_ERR, "Invalid parameters");
 			return -1;
 		}
-		return tuntap_sys_set_ipv6(dev, &baddr6, mask);
+		return tuntap_sys_set_ipv6(dev, &baddr6, addrlen);
 	} else if (errval == -1) {
 		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameters");
 		return -1;
