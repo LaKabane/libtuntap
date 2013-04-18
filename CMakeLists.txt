@@ -2,7 +2,7 @@
 # ========================
 
 project(libtuntap)
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8) # Needs only 2.6 if ENABLE_* are OFF
 
 # CMake global options
 # --------------------
