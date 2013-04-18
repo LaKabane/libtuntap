@@ -20,13 +20,13 @@ $TEST && OK=1
 if [ $OK -eq 1 ]; then
 	ifconfig $TARGET && OK=2
 else
-	return 1
+	exit 1
 fi
 
-# The $TARGET still exists, clean it and return success
+# The $TARGET still exists, clean it and exit success
 if [ $OK -eq 2 ]; then
 	$IFDEL
-	return 0
+	exit 0
 fi
 
-return 1
+exit 1
