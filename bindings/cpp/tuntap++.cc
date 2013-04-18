@@ -4,6 +4,10 @@
 #include <string>
 #include <algorithm>
 
+#if __cplusplus <= 199711L
+# define nullptr NULL
+#endif
+
 namespace tuntap {
 
 tun::tun()
@@ -154,6 +158,31 @@ tap::hwaddr(std::string const &s)
 {
     tuntap_set_hwaddr(_dev, s.c_str());
 }
+
+std::string
+tap::description() const
+{
+    return tuntap_get_descr(_dev);
+}
+
+void
+tap::description(std::string const &s)
+{
+    tuntap_set_descr(_dev, s.c_str());
+}
+
+bool
+tap::debug() const
+{
+    return (bool)tuntap_get_debug(_dev);
+}
+
+void
+tap::debug(bool b)
+{
+    tuntap_set_debug(_dev, (int)b);
+}
+
 
 t_tun
 tap::native_handle() const
