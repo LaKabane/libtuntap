@@ -1,5 +1,5 @@
-libtuntap 0.3
-=============
+libtuntap 0.4-beta
+==================
 
 Description
 -----------
@@ -25,6 +25,7 @@ Supported Features
    * Setting the persistence mode of the device;
    * Setting the name of the device (Linux only);
    * Setting the description of the device (OpenBSD and FreeBSD only);
+   * Python and C++ bindings;
 
 Supported Systems
 -----------------

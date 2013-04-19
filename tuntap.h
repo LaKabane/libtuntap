@@ -83,7 +83,7 @@ typedef struct in6_addr t_tun_in6_addr;
 
 /* Versioning: 0xMMmm, with 'M' for major and 'm' for minor */
 # define TUNTAP_VERSION_MAJOR 0
-# define TUNTAP_VERSION_MINOR 3
+# define TUNTAP_VERSION_MINOR 4
 # define TUNTAP_VERSION ((TUNTAP_VERSION_MAJOR<<8)|TUNTAP_VERSION_MINOR)
 
 /* XXX: Why not as a function? */
