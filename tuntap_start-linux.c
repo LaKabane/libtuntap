@@ -112,19 +112,10 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	/* Save interface name */
 	(void)memcpy(dev->if_name, ifr.ifr_name, sizeof ifr.ifr_name);
 
-	/* Save pre-existing MAC address */
-	if (mode == TUNTAP_MODE_ETHERNET) {
-		struct ifreq ifr_hw;
-
-		(void)memcpy(ifr_hw.ifr_name, dev->if_name,
-		    sizeof(dev->if_name));
-		if (ioctl(fd, SIOCGIFHWADDR, &ifr_hw) == -1) {
-			tuntap_log(TUNTAP_LOG_WARN,
-			    "Can't get link-layer address");
-			return fd;
-		}
-		(void)memcpy(dev->hwaddr, ifr_hw.ifr_hwaddr.sa_data, ETH_ALEN);
-	}
+	/*
+	 * Don't save the pre-existing MAC address,
+	 * tuntap_get_hwaddr() do the job on OpenBSD.
+	 */
 	return fd;
 }
 

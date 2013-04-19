@@ -37,6 +37,15 @@ tuntap_sys_get_hwaddr(struct device *dev) {
 		tuntap_log(TUNTAP_LOG_WARN, "Can't get link-layer address");
 		return NULL;
 	}
+#elif defined Linux
+	struct ifreq ifr_hw;
+
+	(void)memcpy(ifr_hw.ifr_name, dev->if_name, sizeof(dev->if_name));
+	if (ioctl(dev->tun_fd, SIOCGIFHWADDR, &ifr_hw) == -1) {
+		tuntap_log(TUNTAP_LOG_WARN, "Can't get link-layer address");
+		return NULL;
+	}
+	(void)memcpy(&eth_addr, ifr_hw.ifr_hwaddr.sa_data, ETHER_ADDR_LEN);
 #else
 	(void)memcpy(&eth_addr, dev->hwaddr, sizeof dev->hwaddr);
 #endif
