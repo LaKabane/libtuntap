@@ -28,11 +28,28 @@
 
 #include <string.h>
 
+static char *
+tuntap_sys_get_hwaddr(struct device *dev) {
+	struct ether_addr eth_addr;
+
+#if defined OpenBSD
+	if (ioctl(fd, SIOCGIFADDR, &eth_addr) == -1) {
+		tuntap_log(TUNTAP_LOG_WARN, "Can't get link-layer address");
+		return NULL;
+	}
+#else
+	(void)memcpy(&eth_addr, dev->hwaddr, sizeof dev->hwaddr);
+#endif
+	return ether_ntoa(&eth_addr);
+}
+
 char *
 tuntap_get_hwaddr(struct device *dev) {
-	struct ether_addr eth_attr;
+	if (dev->tun_fd == -1) {
+		tuntap_log(TUNTAP_LOG_NOTICE, "Device is not started");
+		return 0;
+	}
 
-	(void)memcpy(&eth_attr, dev->hwaddr, sizeof dev->hwaddr);
-	return ether_ntoa(&eth_attr);
+	return tuntap_sys_get_hwaddr(dev);
 }
 
