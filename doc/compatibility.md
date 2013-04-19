@@ -19,7 +19,7 @@ API compatibility grid
 +------------------------+---------+-------+--------+--------+
 | tuntap_destroy         |   Yes   |  Yes  |   Yes  |   Yes  |
 | tuntap_down            |   Yes   |  Yes  |   Yes  |   Yes  |
-| tuntap_get_debug       |   Yes   |  Yes  |   No   |   Yes  |
+| tuntap_get_debug       |   Yes   |  No   |   No   |   Yes  |
 | tuntap_get_descr       |   Yes   |  No   |   No   |   No   |
 | tuntap_get_hwaddr      |   Yes   |  Yes  |   Yes  |   Yes  |
 | tuntap_get_ifname      |   Yes   |  Yes  |   Yes  |   Yes  |
@@ -53,6 +53,10 @@ restrictions. One of them is the MTU, that you can modify with tuntap_set_mtu().
 On OpenBSD, the given MTU should be between 50 (ETHERMIN) and 16384 (TUNMRU).
 
 Source: /usr/src/sys/net/if_tun.{c,h}
+
+=== Linux
+
+On Linux, the given MTU should be between 68 and 65535.
 
 Limitation - Devices number
 ---------------------------

@@ -6,4 +6,5 @@ They can be used as examples or starting point for anyone who wish to use this
 library.
 
 demo1: A little helper that create tun or tap device with some configuration.
+       You need libbsd to compile it on Linux-based systems.
 
