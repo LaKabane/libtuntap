@@ -138,6 +138,7 @@ TUNTAP_PUB int		 tuntap_set_mtu(struct device *, int);
 TUNTAP_PUB int		 tuntap_get_debug(struct device *dev);
 TUNTAP_PUB int		 tuntap_set_debug(struct device *dev, int);
 TUNTAP_PUB int		 tuntap_set_ip(struct device *, const char *, int);
+TUNTAP_PUB int		 tuntap_del_ip(struct device *, const char *, int);
 TUNTAP_PUB int		 tuntap_get_readable(struct device *);
 TUNTAP_PUB int		 tuntap_set_nonblocking(struct device *dev, int);
 

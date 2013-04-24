@@ -67,6 +67,7 @@ if(UNIX)
     	tuntap_set_hwaddr.c
     	tuntap_set_ifname.c
     	tuntap_set_ip.c
+    	tuntap_del_ip.c
     	tuntap_set_mtu.c
     	tuntap_set_nonblocking.c
     	tuntap_start.c
