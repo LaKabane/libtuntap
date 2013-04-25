@@ -1,6 +1,8 @@
 # libtuntap regression tests CMakeLists.txt
 # =========================================
 
+cmake_minimum_required(VERSION 2.8)
+
 enable_testing()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})

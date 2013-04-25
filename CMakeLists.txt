@@ -2,7 +2,8 @@
 # ========================
 
 project(libtuntap)
-cmake_minimum_required(VERSION 2.8) # Needs only 2.6 if ENABLE_* are OFF
+# Needs 2.8 if the ENABLE_REGRESS option is ON
+cmake_minimum_required(VERSION 2.6)
 
 # CMake global options
 # --------------------
