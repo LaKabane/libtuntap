@@ -52,7 +52,11 @@
 #  define ETHER_ADDR_LEN 6 
 # endif
 
-# define IF_DESCRSIZE 64 /* XXX: Test needed on FreeBSD */
+# if defined IFDESCRSIZE
+#  define IF_DESCRSIZE IFDESCRSIZE /* OpenBSD */
+# else
+#  define IF_DESCRSIZE 1024 /* FreeBSD /sys/net/if.c, ifdescr_maxlen */
+# endif
 
 # if defined TUNSETDEBUG
 #  define TUNSDEBUG TUNSETDEBUG
