@@ -16,6 +16,16 @@
 
 #include <sys/types.h>
 
+#if !defined Windows
+# if defined Linux
+#  include <linux/if.h>
+# else
+#  include <net/if.h>
+# endif
+# include <netinet/in.h>
+# include <netinet/if_ether.h>
+#endif
+
 #ifndef LIBTUNTAP_PRIVATE_H_
 # define LIBTUNTAP_PRIVATE_H_
 
@@ -28,6 +38,20 @@
  * - TUNFD_INVALID_VALUE: Invalid value for tun_fd
  */
 
+# if defined IFNAMSIZ && !defined IF_NAMESIZE
+#  define IF_NAMESIZE IFNAMSIZ /* Historical BSD name */
+# elif !defined IF_NAMESIZE
+#  define IF_NAMESIZE 16
+# endif
+
+# if defined ETH_ALEN /* Linux */
+#  define ETHER_ADDR_LEN ETH_ALEN
+# elif defined ETHERADDRL
+#  define ETHER_ADDR_LEN ETHERADDRL /* SunOS */
+# elif defined Windows
+#  define ETHER_ADDR_LEN 6 
+# endif
+
 # define IF_DESCRSIZE 64 /* XXX: Test needed on FreeBSD */
 
 # if defined TUNSETDEBUG
@@ -39,6 +63,14 @@
 # else /* Unix */
 #  define TUNFD_INVALID_VALUE -1
 # endif
+
+struct device {
+	t_tun           tun_fd;
+	int             ctrl_sock;
+	int             flags;     /* ifr.ifr_flags on Unix */
+	unsigned char   hwaddr[ETHER_ADDR_LEN];
+	char            if_name[IF_NAMESIZE];
+};
 
 /*
  * Windows helpers, prevent it from warning every time

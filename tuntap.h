@@ -21,18 +21,6 @@
 # include <sys/socket.h>
 #endif
 
-#if !defined Windows /* Unix :) */
-# if defined Linux && !defined _NET_IF_H
-#  include <linux/if.h>
-# else
-#  include <net/if.h>
-# endif
-# include <netinet/in.h>
-# include <netinet/if_ether.h>
-#endif
-
-#include <stdint.h>
-
 #ifndef LIBTUNTAP_H_
 # define LIBTUNTAP_H_
 
@@ -50,20 +38,6 @@ typedef IN6_ADDR t_tun_in6_addr;
 typedef int t_tun;
 typedef struct in_addr t_tun_in_addr;
 typedef struct in6_addr t_tun_in6_addr;
-# endif
-
-# if defined IFNAMSIZ && !defined IF_NAMESIZE
-#  define IF_NAMESIZE IFNAMSIZ /* Historical BSD name */
-# elif !defined IF_NAMESIZE
-#  define IF_NAMESIZE 16
-# endif
-
-# if defined ETH_ALEN /* Linux */
-#  define ETHER_ADDR_LEN ETH_ALEN
-# elif defined ETHERADDRL
-#  define ETHER_ADDR_LEN ETHERADDRL /* SunOS */
-# elif defined Windows
-#  define ETHER_ADDR_LEN 6 
 # endif
 
 # define TUNTAP_ID_MAX 256
@@ -104,13 +78,8 @@ typedef struct in6_addr t_tun_in6_addr;
 extern "C" {
 # endif
 
-struct device {
-	t_tun           tun_fd;
-	int             ctrl_sock;
-	int             flags;     /* ifr.ifr_flags on Unix */
-	unsigned char   hwaddr[ETHER_ADDR_LEN];
-	char            if_name[IF_NAMESIZE];
-};
+/* Forward declare struct device */
+struct device;
 
 /* User definable log callback */
 typedef void (*t_tuntap_log)(int, const char *);

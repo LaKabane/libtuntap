@@ -14,6 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "tuntap.h"
+#include "tuntap_private.h"
+
 #include <sys/types.h>
 
 #include <windows.h>
@@ -22,9 +25,6 @@
 #include <string.h>
 #include <time.h>
 #include <strsafe.h>
-
-#include "tuntap.h"
-#include "tuntap_private.h"
 
 /* From OpenVPN tap driver, common.h */
 #define TAP_CONTROL_CODE(request,method) CTL_CODE(FILE_DEVICE_UNKNOWN, request, method, FILE_ANY_ACCESS)
