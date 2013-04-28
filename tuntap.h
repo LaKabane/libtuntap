@@ -22,7 +22,7 @@
 #endif
 
 #if !defined Windows /* Unix :) */
-# if defined Linux
+# if defined Linux && !defined _NET_IF_H
 #  include <linux/if.h>
 # else
 #  include <net/if.h>
