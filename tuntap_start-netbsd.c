@@ -14,6 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "tuntap.h"
+#include "tuntap_private.h"
+
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/sockio.h>
@@ -35,9 +38,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#include "tuntap.h"
-#include "tuntap_private.h"
 
 static int
 tuntap_sys_create_dev(struct device *dev, int mode, int tun) {

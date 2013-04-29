@@ -15,6 +15,7 @@
  */
 
 #include "tuntap.h"
+#include "tuntap_private.h"
 
 #include <sys/types.h>
 #include <sys/ioctl.h>
@@ -32,8 +33,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-
-#include "tuntap_private.h"
 
 static int
 tuntap_sys_set_debug(struct device *dev, int set) {
