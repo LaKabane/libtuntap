@@ -88,7 +88,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 
 	/* Configure the interface */
 	if (ioctl(fd, TUNSETIFF, &ifr) == -1) {
-		tuntap_log(TUNTAP_LOG_ERR, "Can't set interface name");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't set interface parameters");
 		return -1;
 	}
 
