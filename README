@@ -27,6 +27,28 @@ Supported Features
    * Setting the description of the device (OpenBSD and FreeBSD only);
    * Python and C++ bindings;
 
+Building libtuntap
+------------------
+
+libtuntap builds cleanly without any external libraries. The only other
+dependency is CMake (2.6 or +) and, of course, a C compiler.
+
+On most systems you can build the library using these commands:
+
+   * mkdir build && cd build
+   * cmake ..
+   * make
+
+There is three options for the CMakeLists.txt, all desactivated by default:
+
+   * `ENABLE_REGRESS`: include the regression tests
+      * Needs CMake 2.8
+   * `ENABLE_CXX`: include the C++ bindings
+      * Needs a C++ 11 compiler
+   * `ENABLE_PYTHON`: include the Python bindings, it also activates ENABLE_CXX
+      * Needs a C++ 11 compiler
+      * Needs boost-python
+
 Supported Systems
 -----------------
 
