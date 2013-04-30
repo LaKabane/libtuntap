@@ -395,3 +395,14 @@ TUNTAP_GET_FD
 
 This macro is deprecated and call `tuntap_get_fd`.
 
+tuntap_del_ip
+-------------
+
+    int tuntap_del_ip(struct device *dev, const char *, int ip_addr);
+
+This function delete the specified IP address from the interface list of already configured one.
+
+_Caveats_:
+
+This function actually only works on Linux and with IPv6 addresses.
+
