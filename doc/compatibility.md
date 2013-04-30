@@ -71,3 +71,16 @@ OpenBSD limits to 4 devices by default. If you want more you have use MAKEDEV.
 
     sudo /dev/MAKEDEV tun4
 
+Limitation - Interface description
+
+Only OpenBSD and FreeBSD actually support this feature, and they are not fully
+compatible.
+
+=== OpenBSD
+
+OpenBSD supports interface descriptions of 64 characters.
+
+=== FreeBSD
+
+FreeBSD supports interface descriptions of 1024 characters.
+
