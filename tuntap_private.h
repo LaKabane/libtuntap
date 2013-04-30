@@ -16,14 +16,20 @@
 
 #include <sys/types.h>
 
+#if defined HAVE_LINUX_IF_H
+# include <linux/if.h>
+#elif defined HAVE_NET_IF_H
+# include <net/if.h>
+#endif
+
 #if !defined Windows
-# if defined Linux
-#  include <linux/if.h>
-# else
-#  include <net/if.h>
-# endif
 # include <netinet/in.h>
+#endif
+
+#if defined HAVE_NETINET_IF_ETHER_H
 # include <netinet/if_ether.h>
+#elif defined HAVE_NETINET_ETHER_H
+# include <netinet/ether.h>
 #endif
 
 #ifndef LIBTUNTAP_PRIVATE_H_
@@ -48,7 +54,7 @@
 #  define ETHER_ADDR_LEN ETH_ALEN
 # elif defined ETHERADDRL
 #  define ETHER_ADDR_LEN ETHERADDRL /* SunOS */
-# elif defined Windows
+# else /* Windows */
 #  define ETHER_ADDR_LEN 6 
 # endif
 

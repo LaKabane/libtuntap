@@ -20,15 +20,16 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
-#if defined Linux
-# include <linux/if_tun.h>
-#else
+#if defined HAVE_NET_IF_H
 # include <net/if.h>
-# if defined DragonFly
-#  include <net/tun/if_tun.h>
-# elif !defined Darwin && !defined SunOS
-#  include <net/if_tun.h>
-# endif
+#endif
+
+#if defined HAVE_LINUX_IF_TUN_H
+# include <linux/if_tun.h>
+#elif defined HAVE_NET_TUN_IF_TUN_H
+# include <net/tun/if_tun.h>
+#elif defined HAVE_NET_IF_TUN_H
+# include <net/if_tun.h>
 #endif
 
 #include <stdlib.h>

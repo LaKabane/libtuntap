@@ -20,7 +20,7 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
-#if defined OpenBSD || defined FreeBSD
+#if defined HAVE_NET_IF_TUN_H
 # include <net/if_tun.h>
 #endif
 

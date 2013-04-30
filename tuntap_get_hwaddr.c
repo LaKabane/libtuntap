@@ -20,9 +20,9 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
-#if defined Linux
+#if defined HAVE_NETINET_ETHER_H
 # include <netinet/ether.h>
-#else
+#elif defined HAVE_NETINET_IF_ETHER_H
 # include <netinet/if_ether.h>
 #endif
 

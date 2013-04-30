@@ -19,11 +19,11 @@
 
 #include <sys/ioctl.h>
 
-#if defined Linux
+#if defined HAVE_LINUX_IF_TUN_H
 # include <linux/if_tun.h>
-#elif defined DragonFly
+#elif defined HAVE_NET_TUN_IF_TUN_H
 # include <net/tun/if_tun.h>
-#elif !defined Darwin && !defined SunOS
+#elif defined HAVE_NET_IF_TUN_H
 # include <net/if_tun.h>
 #endif
 

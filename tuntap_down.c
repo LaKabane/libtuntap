@@ -19,7 +19,7 @@
 
 #include <sys/ioctl.h>
 
-#ifdef SunOS
+#if defined HAVE_STROPTS_H
 # include <stropts.h>
 # include <sys/sockio.h>
 #endif

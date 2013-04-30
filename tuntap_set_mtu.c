@@ -20,7 +20,7 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 
-#ifdef SunOS
+#ifdef HAVE_STROPTS_H
 # include <stropts.h>
 #endif
 #include <stdlib.h>

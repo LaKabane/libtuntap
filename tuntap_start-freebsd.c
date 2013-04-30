@@ -21,9 +21,9 @@
 
 #include <arpa/inet.h>
 #include <net/if.h>
-#if defined FreeBSD
+#if defined HAVE_NET_IF_TUN_H
 # include <net/if_tun.h>
-#elif defined DragonFly
+#elif defined HAVE_NET_TUN_IF_TUN_H
 # include <net/tun/if_tun.h>
 #endif
 #include <net/if_types.h>

@@ -17,7 +17,7 @@
 #include "tuntap.h"
 #include "tuntap_private.h"
 
-#ifdef SunOS
+#ifdef HAVE_STROPTS_H
 # include <stropts.h>
 #endif
 #include <sys/types.h>
