@@ -1,0 +1,14 @@
+# libtuntap site local CMakeLists.txt
+# ===================================
+
+# Tested C compilers
+#set(CMAKE_C_COMPILER clang)
+#set(CMAKE_C_COMPILER gcc)
+#set(CMAKE_C_COMPILER pcc)
+
+# You probably need something like this for C++ bindings
+#set(CMAKE_CXX_FLAGS -std=c++0x)
+#set(CMAKE_CXX_FLAGS -std=c++11)
+
+# On Solaris you might want to use the OpenCSW provided GNU ar
+#set(CMAKE_AR /opt/csw/bin/gar)
