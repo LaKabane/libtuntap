@@ -382,10 +382,16 @@ tuntap_log_set_cb
 
 This function allow to set an external printing function, in order to erase the default behaviour.
 
+tuntap_get_fd
+-------------
+
+    tun_t tuntap_get_fd(struct device *dev)
+
+This function will return a `tun_t` handle value, usable with various
+I/O functions on the supported operating systems.
+
 TUNTAP_GET_FD
 -------------
 
-    int TUNTAP_GET_FD(struct device *dev)
-
-This macro will return the socket of the interface described by `dev`.
+This macro is deprecated and call `tuntap_get_fd`.
 

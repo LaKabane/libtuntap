@@ -21,6 +21,7 @@ API compatibility grid
 | tuntap_down            |   Yes   |  Yes  |   Yes  |   Yes  |
 | tuntap_get_debug       |   Yes   |  No   |   No   |   Yes  |
 | tuntap_get_descr       |   Yes   |  No   |   No   |   No   |
+| tuntap_get_fd          |   Yes   |  Yes  |   Yes  |   Yes  |
 | tuntap_get_hwaddr      |   Yes   |  Yes  |   Yes  |   Yes  |
 | tuntap_get_ifname      |   Yes   |  Yes  |   Yes  |   Yes  |
 | tuntap_get_mtu         |   Yes   |  Yes  |   Yes  |   Yes  |

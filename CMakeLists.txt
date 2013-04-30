@@ -57,6 +57,7 @@ if(UNIX)
     	tuntap_down.c
     	tuntap_get_debug.c
     	tuntap_get_descr.c
+    	tuntap_get_fd.c
     	tuntap_get_hwaddr.c
     	tuntap_get_ifname.c
     	tuntap_get_mtu.c

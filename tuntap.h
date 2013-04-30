@@ -60,8 +60,8 @@ typedef struct in6_addr t_tun_in6_addr;
 # define TUNTAP_VERSION_MINOR 4
 # define TUNTAP_VERSION ((TUNTAP_VERSION_MAJOR<<8)|TUNTAP_VERSION_MINOR)
 
-/* XXX: Why not as a function? */
-# define TUNTAP_GET_FD(x) (x)->tun_fd
+/* Compatibility with older versions of libtuntap */
+# define TUNTAP_GET_FD(x) tuntap_get_fd(x)
 
 /* Handle Windows symbols export */
 # if defined Windows 
