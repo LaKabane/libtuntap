@@ -15,30 +15,9 @@
  */
 
 #include <sys/types.h>
-#if defined Windows
-# include <In6addr.h>
-#else /* Unix */
-# include <sys/socket.h>
-#endif
 
 #ifndef LIBTUNTAP_H_
 # define LIBTUNTAP_H_
-
-/*
- * Uniformize types
- * - t_tun: tun device file descriptor
- * - t_tun_in_addr: struct in_addr/IN_ADDR
- * - t_tun_in6_addr: struct in6_addr/IN6_ADDR
- */
-# if defined Windows
-typedef HANDLE t_tun;
-typedef IN_ADDR t_tun_in_addr;
-typedef IN6_ADDR t_tun_in6_addr;
-# else /* Unix */
-typedef int t_tun;
-typedef struct in_addr t_tun_in_addr;
-typedef struct in6_addr t_tun_in6_addr;
-# endif
 
 # define TUNTAP_ID_MAX 256
 # define TUNTAP_ID_ANY 257
@@ -78,8 +57,15 @@ typedef struct in6_addr t_tun_in6_addr;
 extern "C" {
 # endif
 
-/* Forward declare struct device */
+/* Forward declaration of struct device */
 struct device;
+
+/* tun device file descriptor */
+# if defined Windows
+typedef HANDLE t_tun;
+# else
+typedef int t_tun;
+# endif
 
 /* User definable log callback */
 typedef void (*t_tuntap_log)(int, const char *);
@@ -109,7 +95,8 @@ TUNTAP_PUB int		 tuntap_set_debug(struct device *dev, int);
 TUNTAP_PUB int		 tuntap_set_ip(struct device *, const char *, int);
 TUNTAP_PUB int		 tuntap_del_ip(struct device *, const char *, int);
 TUNTAP_PUB int		 tuntap_get_readable(struct device *);
-TUNTAP_PUB int		 tuntap_set_nonblocking(struct device *dev, int);
+TUNTAP_PUB int		 tuntap_set_nonblocking(struct device *, int);
+TUNTAP_PUB t_tun	 tuntap_get_fd(struct device *);
 
 /* Logging functions */
 TUNTAP_PUB void		 tuntap_log_set_cb(t_tuntap_log cb);

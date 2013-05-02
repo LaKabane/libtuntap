@@ -16,6 +16,12 @@
 
 #include <sys/types.h>
 
+#if defined Windows
+# include <In6addr.h>
+#else /* Unix */
+# include <sys/socket.h>
+#endif
+
 #if defined HAVE_LINUX_IF_H
 # include <linux/if.h>
 #elif defined HAVE_NET_IF_H
@@ -72,6 +78,19 @@
 #  define TUNFD_INVALID_VALUE INVALID_HANDLE_VALUE
 # else /* Unix */
 #  define TUNFD_INVALID_VALUE -1
+# endif
+
+/*
+ * Uniformize types
+ * - t_tun_in_addr: struct in_addr/IN_ADDR
+ * - t_tun_in6_addr: struct in6_addr/IN6_ADDR
+ */
+# if defined Windows
+typedef IN_ADDR t_tun_in_addr;
+typedef IN6_ADDR t_tun_in6_addr;
+# else
+typedef struct in_addr t_tun_in_addr;
+typedef struct in6_addr t_tun_in6_addr;
 # endif
 
 struct device {
