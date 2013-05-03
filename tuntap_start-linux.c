@@ -114,7 +114,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 
 	/*
 	 * Don't save the pre-existing MAC address,
-	 * tuntap_get_hwaddr() do the job on OpenBSD.
+	 * tuntap_get_hwaddr() do the job.
 	 */
 	return fd;
 }
