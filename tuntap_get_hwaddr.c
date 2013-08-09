@@ -34,7 +34,6 @@ tuntap_sys_get_hwaddr(struct device *dev) {
 
 #if defined OpenBSD
 	if (ioctl(fd, SIOCGIFADDR, &eth_addr) == -1) {
-		tuntap_log(TUNTAP_LOG_WARN, "Can't get link-layer address");
 		return NULL;
 	}
 #elif defined Linux
@@ -42,7 +41,6 @@ tuntap_sys_get_hwaddr(struct device *dev) {
 
 	(void)memcpy(ifr_hw.ifr_name, dev->if_name, sizeof(dev->if_name));
 	if (ioctl(dev->tun_fd, SIOCGIFHWADDR, &ifr_hw) == -1) {
-		tuntap_log(TUNTAP_LOG_WARN, "Can't get link-layer address");
 		return NULL;
 	}
 	(void)memcpy(&eth_addr, ifr_hw.ifr_hwaddr.sa_data, ETHER_ADDR_LEN);
@@ -54,11 +52,18 @@ tuntap_sys_get_hwaddr(struct device *dev) {
 
 char *
 tuntap_get_hwaddr(struct device *dev) {
+	char *ret;
+
 	if (dev->tun_fd == -1) {
 		tuntap_log(TUNTAP_LOG_NOTICE, "Device is not started");
-		return 0;
+		return NULL;
 	}
 
-	return tuntap_sys_get_hwaddr(dev);
+	ret = tuntap_sys_get_hwaddr(dev);
+	if (ret == NULL) {
+		tuntap_log(TUNTAP_LOG_WARN, "Can't get link-layer address");
+		return NULL;
+	}
+	return ret;
 }
 
