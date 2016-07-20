@@ -1,5 +1,5 @@
-libtuntap 0.3
-=============
+libtuntap
+=========
 
 Description
 -----------
@@ -24,27 +24,27 @@ Supported Features
    * Setting the IPv4 address and netmask of the device;
    * Setting the persistence mode of the device;
    * Setting the name of the device (Linux only);
-   * Setting the description of the device (OpenBSD and FreeBSD only);
+   * Setting the description of the device (OpenBSD and FreeBSD only).
 
 Supported Systems
 -----------------
 
-   * OpenBSD
-   * Linux
-   * NetBSD
-   * Darwin
+   * OpenBSD;
+   * Linux;
+   * NetBSD;
+   * Darwin.
 
 Current Porting Efforts
 -----------------------
 
-   * Windows
-   * FreeBSD
+   * Windows;
+   * FreeBSD.
 
 In the future
 -------------
 
-   * AIX
-   * Solaris
+   * AIX;
+   * Solaris.
 
 License
 -------
