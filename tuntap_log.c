@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2012, PICHOT Fabien Paul Leonard <pichot.fabienATgmail.com>
- * Copyright (c) 2012, Tristan Le Guern <leguern AT medu DOT se>
+ * Copyright (c) 2012, Tristan Le Guern <tleguern@bouledef.eu>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
