@@ -6,6 +6,7 @@
   - [ ] Fix regress tests test07 and test09 for OpenBSD;
 - [ ] Test on NetBSD ;
 - [ ] Test on Darwin ;
-- [ ] Test on Debian ;
+- [X] Test on Debian ;
+  - [ ] Fix shell scripts based tests ;
 - [ ] Test on Windows ;
 - [ ] Test on FreeBSD ;
