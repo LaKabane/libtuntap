@@ -26,7 +26,7 @@ fi
 # The $TARGET still exists
 if [ $OK -eq 2 ]; then
 	$IFDEL
-	return 1
+	return 0
 fi
 
-return 0
+return 1
