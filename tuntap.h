@@ -5,6 +5,17 @@
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
+ * Copyright (c) 2016 Mahdi Mokhtari <mokhi64@gmail.com>
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
  * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
@@ -135,6 +146,9 @@ struct device {
 	int				flags;     /* ifr.ifr_flags on Unix */
 	unsigned char	hwaddr[ETHER_ADDR_LEN];
 	char			if_name[IF_NAMESIZE];
+#if defined(FreeBSD)
+	int				mode;
+#endif
 };
 
 /* User definable log callback */
@@ -156,7 +170,13 @@ TUNTAP_EXPORT int		 tuntap_up(struct device *);
 TUNTAP_EXPORT int		 tuntap_down(struct device *);
 TUNTAP_EXPORT int		 tuntap_get_mtu(struct device *);
 TUNTAP_EXPORT int		 tuntap_set_mtu(struct device *, int);
-TUNTAP_EXPORT int		 tuntap_set_ip(struct device *, const char *, int);
+/*
+ * It's impossible to set single IP for `tun` devices on FreeBSD .
+ * FreeBSD's `tun` interface needs 2 IP addresses.
+ * So a new (and backward compatible) version of tuntap_set_ip() is implemented.
+ */
+TUNTAP_EXPORT int		 tuntap_set_ip(struct device *, ...);
+/*TUNTAP_EXPORT int		 tuntap_set_ip_old(struct device *, const char *, int);*/
 TUNTAP_EXPORT int		 tuntap_read(struct device *, void *, size_t);
 TUNTAP_EXPORT int		 tuntap_write(struct device *, void *, size_t);
 TUNTAP_EXPORT int		 tuntap_get_readable(struct device *);
@@ -173,6 +193,10 @@ void		 tuntap_log_chksum(void *, int);
 int		 tuntap_sys_start(struct device *, int, int);
 void	 tuntap_sys_destroy(struct device *);
 int		 tuntap_sys_set_hwaddr(struct device *, struct ether_addr *);
+#if defined(FreeBSD)
+int		 tuntap_sys_set_ipv4_tap(struct device *, t_tun_in_addr *, uint32_t);
+int		 tuntap_sys_set_ipv4_tun(struct device *dev, t_tun_in_addr *s4, t_tun_in_addr *s4dest, uint32_t bits);
+#endif
 int		 tuntap_sys_set_ipv4(struct device *, t_tun_in_addr *, uint32_t);
 int		 tuntap_sys_set_ipv6(struct device *, t_tun_in6_addr *, uint32_t);
 int		 tuntap_sys_set_ifname(struct device *, const char *, size_t);

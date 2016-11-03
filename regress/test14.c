@@ -36,7 +36,7 @@ main(void) {
 		return 1;
 	}
 
-	if (tuntap_set_ip(dev, "1.2.3.4", 24) == -1) {
+	if (tuntap_set_ip(dev, "1.2.3.4", 24, "4.3.2.1") == -1) {
 		return 1;
 	}
 

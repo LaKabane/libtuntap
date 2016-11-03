@@ -30,11 +30,11 @@ else
 	return 1
 fi
 
-# The $TARGET still exists, clean it and return failure
+# Everything went fine
 if [ $OK -eq 2 ]; then
 	$IFDEL
-	return 1
+	return 0
 fi
 
-# Everything went fine
-return 0
+# The $TARGET still exists, return failure
+return 1
