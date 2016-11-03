@@ -5,6 +5,17 @@
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
+ * Copyright (c) 2016 Mahdi Mokhtari <mokhi64@gmail.com>
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
  * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
@@ -41,8 +52,8 @@ tuntap_init(void) {
 	if ((dev = (struct device *)malloc(sizeof(*dev))) == NULL)
 		return NULL;
 
-	(void)memset(dev->if_name, '\0', sizeof dev->if_name);
-	(void)memset(dev->hwaddr, '\0', sizeof dev->hwaddr);
+	(void)memset(dev->if_name, '\0', sizeof(dev->if_name));
+	(void)memset(dev->hwaddr, '\0', sizeof(dev->hwaddr));
 	dev->tun_fd = TUNFD_INVALID_VALUE;
 	dev->ctrl_sock = -1;
 	dev->flags = 0;
@@ -173,8 +184,8 @@ tuntap_set_ip(struct device *dev, ...)
 	 * Destination address parsing: we try IPv4 first and fall back to
 	 * IPv6 if inet_pton return 0
 	 */
-	(void)memset(&sbaddr4, 0, sizeof sbaddr4);
-	(void)memset(&sbaddr6, 0, sizeof sbaddr6);
+	(void)memset(&sbaddr4, 0, sizeof(sbaddr4));
+	(void)memset(&sbaddr6, 0, sizeof(sbaddr6));
 
 	errval = inet_pton(AF_INET, saddr, &(sbaddr4));
 	if (errval == 1) {
@@ -185,7 +196,7 @@ tuntap_set_ip(struct device *dev, ...)
 				tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'daddr'");
 				return -1;
 			}
-			(void)memset(&dbaddr4, 0, sizeof dbaddr4);
+			(void)memset(&dbaddr4, 0, sizeof(dbaddr4));
 			(void)inet_pton(AF_INET, daddr, &(dbaddr4));
 			return tuntap_sys_set_ipv4_tun(dev, &sbaddr4, &dbaddr4, mask); 
 		} else
@@ -195,11 +206,11 @@ tuntap_set_ip(struct device *dev, ...)
 		}
 	} else if (errval == 0) {
 #if !defined(FreeBSD) /* No IPV6 tests YET */
-		if (inet_pton(AF_INET6, addr, &(baddr6)) == -1) {
+		if (inet_pton(AF_INET6, saddr, &(sbaddr6)) == -1) {
 			tuntap_log(TUNTAP_LOG_ERR, "Invalid parameters");
 			return -1;
 		}
-		return tuntap_sys_set_ipv6(dev, &baddr6, mask);
+		return tuntap_sys_set_ipv6(dev, &sbaddr6, mask);
 	} else if (errval == -1) {
 		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameters");
 		return -1;
