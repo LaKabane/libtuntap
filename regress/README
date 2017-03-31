@@ -46,4 +46,5 @@ test42: Set a NULL name to an interface
 test43: Set a name of more than IF_NAMESIZE to an interface
 test44: Set a description to an interface
 test45: Set a NULL description to an interface
+test46: Set a description to an interface and check it
 
