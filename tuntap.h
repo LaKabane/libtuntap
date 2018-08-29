@@ -56,7 +56,11 @@
 #  define IF_NAMESIZE 16
 # endif
 
-# define IF_DESCRSIZE 50 /* XXX: Tests needed on NetBSD and OpenBSD */
+# if defined IFDESCRSIZE
+#  define IF_DESCRSIZE IFDESCRSIZE /* OpenBSD */
+# else
+#  define IF_DESCRSIZE 1024 /* FreeBSD /sys/net/if.c, ifdescr_maxlen */
+# endif
 
 # if defined TUNSETDEBUG
 #  define TUNSDEBUG TUNSETDEBUG
