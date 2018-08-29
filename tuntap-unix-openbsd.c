@@ -233,3 +233,21 @@ tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len) {
 	return 0;
 }
 
+char *
+tuntap_sys_get_descr(struct device *dev) {
+	struct ifreq ifr;
+	char buf[4096];
+	void *descr;
+
+	descr = buf;
+	(void)memset(&ifr, 0, sizeof ifr);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof ifr.ifr_name);
+	ifr.ifr_data = descr;
+
+	if (ioctl(dev->ctrl_sock, SIOCGIFDESCR, &ifr) == -1) {
+		tuntap_log(TUNTAP_LOG_ERR,
+		    "Can't get the interface description");
+		return NULL;
+	}
+	return (char *)descr;
+}

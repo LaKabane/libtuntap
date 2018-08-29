@@ -112,6 +112,11 @@ tuntap_set_descr(struct device *dev, const char *descr) {
 	return 0;
 }
 
+char *
+tuntap_get_descr(struct device *dev) {
+	return tuntap_sys_get_descr(dev);
+}
+
 int
 tuntap_set_ifname(struct device *dev, const char *ifname) {
 	size_t len;

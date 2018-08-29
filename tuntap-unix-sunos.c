@@ -80,3 +80,8 @@ tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len) {
 	return -1;
 }
 
+char *
+tuntap_sys_get_descr(struct device *dev) {
+	(void)dev;
+	return NULL;
+}

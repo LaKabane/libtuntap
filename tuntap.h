@@ -152,6 +152,7 @@ TUNTAP_EXPORT int		 tuntap_set_ifname(struct device *, const char *);
 TUNTAP_EXPORT char		*tuntap_get_hwaddr(struct device *);
 TUNTAP_EXPORT int		 tuntap_set_hwaddr(struct device *, const char *);
 TUNTAP_EXPORT int		 tuntap_set_descr(struct device *, const char *);
+TUNTAP_EXPORT char		*tuntap_get_descr(struct device *);
 TUNTAP_EXPORT int		 tuntap_up(struct device *);
 TUNTAP_EXPORT int		 tuntap_down(struct device *);
 TUNTAP_EXPORT int		 tuntap_get_mtu(struct device *);
@@ -177,6 +178,7 @@ int		 tuntap_sys_set_ipv4(struct device *, t_tun_in_addr *, uint32_t);
 int		 tuntap_sys_set_ipv6(struct device *, t_tun_in6_addr *, uint32_t);
 int		 tuntap_sys_set_ifname(struct device *, const char *, size_t);
 int		 tuntap_sys_set_descr(struct device *, const char *, size_t);
+char		*tuntap_sys_get_descr(struct device *);
 
 # ifdef __cplusplus
 }
