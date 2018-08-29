@@ -5,14 +5,8 @@
 TEST="`pwd`/helper35"
 SYSTEM=`uname`
 
-# There is no tap driver on OpenBSD
-if [ "$SYSTEM" = "OpenBSD" ]; then
-	TARGET='tun0'
-	TYPE='tap'
-else
-	TARGET='tap0'
-	TYPE='tap'
-fi
+TARGET='tap0'
+TYPE='tap'
 
 if [ "$SYSTEM" = "Linux" ]; then
 	IFDEL="ip tuntap del $TARGET mode $TYPE"

@@ -37,12 +37,12 @@
 #include "tuntap.h"
 
 static int
-tuntap_sys_create_dev(struct device *dev, int tun) {
+tuntap_sys_create_dev(struct device *dev, const char *ifname, int tun) {
 	struct ifreq ifr;
 
 	/* At this point 'tun' can't be TUNTAP_ID_ANY */
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)snprintf(ifr.ifr_name, IF_NAMESIZE, "tun%i", tun);
+	(void)snprintf(ifr.ifr_name, IF_NAMESIZE, "%s%i", ifname, tun);
 
 	if (ioctl(dev->ctrl_sock, SIOCIFCREATE, &ifr) == -1) {
 		tuntap_log(TUNTAP_LOG_ERR, "Can't set persistent");
@@ -54,26 +54,45 @@ tuntap_sys_create_dev(struct device *dev, int tun) {
 int
 tuntap_sys_start(struct device *dev, int mode, int tun) {
 	int fd;
+	int persist;
+	char *ifname;
 	char name[MAXPATHLEN];
 	struct ifreq ifr;
 
 	/* Get the persistence bit */
 	if (mode & TUNTAP_MODE_PERSIST) {
 		mode &= ~TUNTAP_MODE_PERSIST;
-		/* And force the creation of the driver, if needed */
-		if (tuntap_sys_create_dev(dev, tun) == -1)
+		persist = 1;
+	} else {
+		persist = 0;
+	}
+
+        /* Set the mode: tun or tap */
+	if (mode == TUNTAP_MODE_ETHERNET) {
+		ifname = "tap";
+	} else if (mode == TUNTAP_MODE_TUNNEL) {
+		ifname = "tun";
+	} else {
+		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'mode'");
+		return -1;
+	}
+
+	/* And force the creation of the driver, if needed */
+	if (persist == 1 ) {
+		if (tuntap_sys_create_dev(dev, ifname, tun) == -1)
 			return -1;
 	}
 
 	/* Try to use the given driver or loop throught the avaible ones */
 	fd = -1;
 	if (tun < TUNTAP_ID_MAX) {
-		(void)snprintf(name, sizeof name, "/dev/tun%i", tun);
+		(void)snprintf(name, sizeof name, "/dev/%s%i", ifname, tun);
 		fd = open(name, O_RDWR);
 	} else if (tun == TUNTAP_ID_ANY) {
 		for (tun = 0; tun < TUNTAP_ID_MAX; ++tun) {
 			(void)memset(name, '\0', sizeof name);
-			(void)snprintf(name, sizeof name, "/dev/tun%i", tun);
+			(void)snprintf(name, sizeof name, "/dev/%s%i",
+			    ifname, tun);
 			if ((fd = open(name, O_RDWR)) > 0)
 				break;
 		}
@@ -95,25 +114,13 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 
 	/* Set the interface name */
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name, "tun%i", tun);
+	(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name, "%s%i", ifname, tun);
 	/* And save it */
 	(void)strlcpy(dev->if_name, ifr.ifr_name, sizeof dev->if_name);
 
 	/* Get the interface default values */
 	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &ifr) == -1) {
 		tuntap_log(TUNTAP_LOG_ERR, "Can't get interface values");
-		return -1;
-	}
-
-        /* Set the mode: tun or tap */
-	if (mode == TUNTAP_MODE_ETHERNET) {
-		ifr.ifr_flags |= IFF_LINK0;
-	}
-	else if (mode == TUNTAP_MODE_TUNNEL) {
-		ifr.ifr_flags &= ~IFF_LINK0;
-	}
-	else {
-		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'mode'");
 		return -1;
 	}
 
