@@ -61,6 +61,11 @@ if(NOT NetBSD AND NOT FreeBSD AND NOT DragonFly)
   set_tests_properties(test40 PROPERTIES WILL_FAIL true)
 endif()
 
+# There is no debug mode for tap on NetBSD
+if(NetBSD)
+  set_tests_properties(test39 PROPERTIES WILL_FAIL true)
+endif()
+
 # Only Linux has a tuntap_set_ifname() implemented
 if(NOT Linux)
   set_tests_properties(test41 PROPERTIES WILL_FAIL true)
