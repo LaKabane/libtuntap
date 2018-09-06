@@ -17,7 +17,7 @@ add_library(tuntap++-static STATIC
 )
 set_target_properties(tuntap++-static PROPERTIES OUTPUT_NAME "tuntap++")
 
-target_link_libraries(tuntap++ tuntap) 
+target_link_libraries(tuntap++ tuntap)
 
 target_link_libraries(tuntap++-static tuntap)
 
