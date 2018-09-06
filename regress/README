@@ -38,7 +38,7 @@ test34: Create a tun0 persistent device and destroy it
 test35: Create a tap0 persistent device and release it
 test36: Create a tun1 persistent device and release it
 test37: Set a log callback and generate an error
-test38: Set a log callback and generate all possible error levels
+test38: Nothing (previously: Set a log callback and generate all possible error levels)
 test39: Enable debug for a tap device
 test40: Enable debug for a tun device
 test41: Set a new name to an interface
