@@ -44,7 +44,7 @@ tun::name(std::string const &s)
 t_tun
 tun::native_handle() const
 {
-    return TUNTAP_GET_FD(this->_dev);
+    return tuntap_get_fd(this->_dev);
 }
 
 void
@@ -134,7 +134,7 @@ tap::hwaddr(std::string const &s)
 t_tun
 tap::native_handle() const
 {
-    return TUNTAP_GET_FD(this->_dev);
+    return tuntap_get_fd(this->_dev);
 }
 
 void

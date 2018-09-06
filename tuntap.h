@@ -116,8 +116,6 @@ typedef struct in6_addr t_tun_in6_addr;
 # define TUNTAP_VERSION_MINOR 3
 # define TUNTAP_VERSION ((TUNTAP_VERSION_MAJOR<<8)|TUNTAP_VERSION_MINOR)
 
-# define TUNTAP_GET_FD(x) (x)->tun_fd
-
 /* Handle Windows symbols export */
 # if defined Windows 
 #  if defined(tuntap_EXPORTS) /* CMake generated goo */
@@ -167,6 +165,7 @@ TUNTAP_EXPORT int		 tuntap_write(struct device *, void *, size_t);
 TUNTAP_EXPORT int		 tuntap_get_readable(struct device *);
 TUNTAP_EXPORT int		 tuntap_set_nonblocking(struct device *dev, int);
 TUNTAP_EXPORT int		 tuntap_set_debug(struct device *dev, int);
+TUNTAP_EXPORT t_tun		 tuntap_get_fd(struct device *);
 
 /* Logging functions */
 TUNTAP_EXPORT void		 tuntap_log_set_cb(t_tuntap_log cb);

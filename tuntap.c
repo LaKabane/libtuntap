@@ -117,3 +117,8 @@ tuntap_set_ip(struct device *dev, const char *addr, int netmask) {
 	/* NOTREACHED */
 	return -1;
 }
+
+t_tun
+tuntap_get_fd(struct device *dev) {
+	return dev->tun_fd;
+}
