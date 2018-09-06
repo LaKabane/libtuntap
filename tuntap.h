@@ -34,8 +34,8 @@
 # define TUNTAP_LOG_ERR       0x0016
 
 /* Versioning: 0xMMmm, with 'M' for major and 'm' for minor */
-# define TUNTAP_VERSION_MAJOR 0
-# define TUNTAP_VERSION_MINOR 3
+# define TUNTAP_VERSION_MAJOR 2
+# define TUNTAP_VERSION_MINOR 1
 # define TUNTAP_VERSION ((TUNTAP_VERSION_MAJOR<<8)|TUNTAP_VERSION_MINOR)
 
 /* Handle Windows symbols export */
