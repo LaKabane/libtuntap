@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include "tuntap.h"
+#include "private.h"
 
 int
 tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s6, uint32_t bits) {

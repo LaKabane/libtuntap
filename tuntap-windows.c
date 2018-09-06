@@ -24,6 +24,7 @@
 #include <strsafe.h>
 
 #include "tuntap.h"
+#include "private.h"
 
 /* From OpenVPN tap driver, common.h */
 #define TAP_CONTROL_CODE(request,method) CTL_CODE(FILE_DEVICE_UNKNOWN, request, method, FILE_ANY_ACCESS)

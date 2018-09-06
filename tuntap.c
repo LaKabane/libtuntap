@@ -31,6 +31,7 @@
 #include <ctype.h>
 
 #include "tuntap.h"
+#include "private.h"
 
 struct device *
 tuntap_init(void) {

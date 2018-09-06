@@ -33,6 +33,7 @@
 #include <unistd.h>
 
 #include "tuntap.h"
+#include "private.h"
 
 static int
 tuntap_sys_create_dev(struct device *dev, int tun) {
