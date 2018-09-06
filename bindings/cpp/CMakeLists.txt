@@ -1,6 +1,8 @@
 # libtuntap C++ binding CMakeLists.txt
 # ====================================
 
+set(CMAKE_CXX_STANDARD 11)
+
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/bindings/cpp
 )
