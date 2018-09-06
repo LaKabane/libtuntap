@@ -22,5 +22,5 @@ target_link_libraries(tuntap++ tuntap)
 target_link_libraries(tuntap++-static tuntap)
 
 install(TARGETS tuntap++ DESTINATION lib)
-install(FILES ./bindings/cpp/tuntap++.hh DESTINATION include)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/bindings/cpp/tuntap++.hh DESTINATION include)
 install(TARGETS tuntap++-static DESTINATION lib)
