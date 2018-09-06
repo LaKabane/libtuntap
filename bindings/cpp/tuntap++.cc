@@ -1,6 +1,5 @@
 #include "tuntap++.hh"
 
-#include <iostream>
 #include <string>
 #include <algorithm>
 
