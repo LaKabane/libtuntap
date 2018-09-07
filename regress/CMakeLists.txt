@@ -46,6 +46,14 @@ if(NetBSD)
   set_tests_properties(tuntap.test39 PROPERTIES WILL_FAIL true)
 endif()
 
+# Persistence is not implemented on Darwin
+if(Darwin)
+  set_tests_properties(test33 PROPERTIES WILL_FAIL true)
+  set_tests_properties(test34 PROPERTIES WILL_FAIL true)
+  set_tests_properties(test35 PROPERTIES WILL_FAIL true)
+  set_tests_properties(test36 PROPERTIES WILL_FAIL true)
+endif()
+
 # Only Linux has a tuntap_set_ifname() implemented
 if(NOT Linux)
   set_tests_properties(tuntap.test41 PROPERTIES WILL_FAIL true)
