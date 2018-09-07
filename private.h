@@ -23,11 +23,7 @@
 #endif
 
 #if !defined Windows /* Unix :) */
-# if defined Linux
-#  include <linux/if.h>
-# else
-#  include <net/if.h>
-# endif
+# include <net/if.h>
 # include <netinet/in.h>
 # include <netinet/if_ether.h>
 #endif
