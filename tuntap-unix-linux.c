@@ -18,12 +18,12 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 
-#include <netinet/in.h>
 #include <arpa/inet.h>
-#include <linux/if.h>
-#include <linux/if_tun.h>
-#include <netinet/if_ether.h>
 #include <net/if_arp.h>
+#include <netinet/if_ether.h>
+#include <netinet/in.h>
+
+#include <linux/if_tun.h>
 
 #include <fcntl.h>
 #include <stdint.h>
