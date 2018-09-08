@@ -2,31 +2,33 @@
 # =======================================
 
 find_package(PythonLibs)
-find_package(Boost COMPONENTS system thread python)
+find_package(Boost COMPONENTS system thread python36)
 
 if(${PYTHONLIBS_FOUND} AND ${Boost_FOUND})
-    include_directories(${PYTHON_INCLUDE_PATH})
-    include_directories(${Boost_INCLUDE_PATH})
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/bindings/cpp)
 
-    add_library(python-tuntap SHARED
-        ${CMAKE_CURRENT_SOURCE_DIR}/bindings/python/pytuntap.cc
+    add_library(pytuntap SHARED
+        pytuntap.cc
     )
-    target_link_libraries(python-tuntap
+
+    target_include_directories(pytuntap PRIVATE
+        ${PYTHON_INCLUDE_PATH}
+        ${Boost_INCLUDE_PATH})
+
+    target_link_libraries(pytuntap
         ${PYTHON_LIBRARIES}
         ${Boost_LIBRARIES}
         tuntap++
     )
-    add_custom_command(TARGET python-tuntap POST_BUILD
+
+    add_custom_command(TARGET pytuntap POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${PROJECT_SOURCE_DIR}/bindings/python/__init__.py"
-        "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/bindings/python/pytuntap"
+        "${CMAKE_CURRENT_SOURCE_DIR}/__init__.py"
+        $<TARGET_FILE_DIR:pytuntap>
     )
-    set_target_properties(python-tuntap PROPERTIES OUTPUT_NAME "_pytuntap")
-    set_target_properties(python-tuntap PROPERTIES PREFIX "")
-    set_target_properties(python-tuntap
-        PROPERTIES LIBRARY_OUTPUT_DIRECTORY
-        ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/bindings/python/pytuntap
-    )
+
+    set_target_properties(pytuntap PROPERTIES
+        OUTPUT_NAME "_pytuntap"
+        PREFIX ""
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/bindings/python/pytuntap)
 endif()
 
