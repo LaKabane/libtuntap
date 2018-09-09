@@ -4,12 +4,11 @@ cmake_minimum_required(VERSION 3.0)
 
 project(libtuntap)
 
-enable_testing()
+include(CTest)
 
 # CMake global options
 # --------------------
 option(ENABLE_CXX "Enable the C++ wrapper library" ON)
-option(ENABLE_REGRESS "Enable the regression tests" OFF)
 option(ENABLE_PYTHON "Enable the Python wrapper library" OFF)
 
 if(ENABLE_PYTHON AND NOT ENABLE_CXX)
@@ -133,7 +132,7 @@ include(CMakeLists.txt.local OPTIONAL)
 
 # Tests rules
 # -----------
-if (ENABLE_REGRESS)
+if (BUILD_TESTING)
     add_subdirectory(regress)
 endif ()
 
