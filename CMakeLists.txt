@@ -23,21 +23,16 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 set(CMAKE_INSTALL_PREFIX "/usr/local/")
 set(${CMAKE_SYSTEM_NAME} True)
 
-# Tuntap library declaration
+# Tuntap library declaration and portable source files
 # --------------------------
-add_library(tuntap)
-
+add_library(tuntap
+            tuntap.c
+            tuntap.h
+            tuntap_log.c
+)
 # Global CPP definitions
 # ----------------------
 target_compile_definitions(tuntap PUBLIC -D${CMAKE_SYSTEM_NAME})
-
-# Portable source files
-# ---------------------
-target_sources(tuntap PRIVATE
-    tuntap.c
-    tuntap.h
-    tuntap_log.c
-)
 
 target_include_directories(tuntap PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}"
