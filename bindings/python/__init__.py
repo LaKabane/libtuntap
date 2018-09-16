@@ -1,4 +1,4 @@
-from _pytuntap import *
+from ._pytuntap import *
 import io
 
 class TunTapFileIO(io.FileIO):
