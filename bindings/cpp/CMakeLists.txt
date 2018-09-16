@@ -1,28 +1,25 @@
 # libtuntap C++ binding CMakeLists.txt
 # ====================================
 
-set(CMAKE_CXX_STANDARD 11)
+# tuntap++ declaration
+# --------------------
+add_library(tuntap++ tuntap++.cc tuntap++.hh)
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/bindings/cpp
-)
+target_include_directories(tuntap++ PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(tuntap++ SHARED
-    ${CMAKE_CURRENT_SOURCE_DIR}/bindings/cpp/tuntap++.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/bindings/cpp/tuntap++.hh
-)
-set_target_properties(tuntap++ PROPERTIES VERSION 2.1)
+target_link_libraries(tuntap++ PUBLIC tuntap)
 
-add_library(tuntap++-static STATIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/bindings/cpp/tuntap++.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/bindings/cpp/tuntap++.hh
-)
-set_target_properties(tuntap++-static PROPERTIES OUTPUT_NAME "tuntap++")
+set_target_properties(tuntap++ PROPERTIES
+                      POSITION_INDEPENDENT_CODE TRUE
+                      VERSION 2.1
+                      CXX_STANDARD 11)
 
-target_link_libraries(tuntap++ tuntap)
+# install rules for shared and static
+# -----------------------------------
+install(TARGETS tuntap++
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION include)
 
-target_link_libraries(tuntap++-static tuntap)
-
-install(TARGETS tuntap++ DESTINATION lib)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/bindings/cpp/tuntap++.hh DESTINATION include)
-install(TARGETS tuntap++-static DESTINATION lib)
+install(FILES tuntap++.hh
+        DESTINATION include)
