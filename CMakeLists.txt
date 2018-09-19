@@ -68,7 +68,7 @@ if(Windows)
 
     # Windows specific source files
     # -----------------------------
-    target_sources(tuntap PRIVATE tap-windows.c )
+    target_sources(tuntap PRIVATE tuntap-windows.c )
 endif(Windows)
 
 # OS specific things
