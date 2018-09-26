@@ -26,13 +26,19 @@ Supported Features
    * Setting the name of the device (Linux only);
    * Setting the description of the device (OpenBSD and FreeBSD only).
 
+Note for Mac OS X users
+-----------------------
+
+You need to install the tuntaposx project for this library to be useful,
+which is a third-party kext.
+
 Supported Systems
 -----------------
 
    * OpenBSD;
    * Linux;
    * NetBSD;
-   * Darwin.
+   * Darwin (up to High Sierra).
 
 Current Porting Efforts
 -----------------------
