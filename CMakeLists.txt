@@ -11,6 +11,8 @@ include(CTest)
 option(ENABLE_CXX "Enable the C++ wrapper library" ON)
 option(ENABLE_PYTHON "Enable the Python wrapper library" OFF)
 
+include(CMakeLists.txt.local OPTIONAL)
+
 if(ENABLE_PYTHON AND NOT ENABLE_CXX)
     set(ENABLE_CXX ON)
     message(WARNING "ENABLE_CXX also set to ON")
@@ -122,8 +124,6 @@ if(UNIX)
                 ARCHIVE DESTINATION lib)
         install(FILES tuntap.h DESTINATION include)
 endif(UNIX)
-
-include(CMakeLists.txt.local OPTIONAL)
 
 # Tests rules
 # -----------
