@@ -7,7 +7,8 @@ libtuntap is a library for configuring TUN or TAP devices in a portable manner.
 1. [Description](#description)
 2. [Install](#install)
 3. [Notes](#notes)
-4. [License](#license)
+4. [Contributing](#contributing)
+5. [License](#license)
 
 ## Description
 
@@ -139,6 +140,12 @@ which is a third-party kext.
 ### Notes for Windows users
 
 You need to install the tap-windows driver provided by the [OpenVPN project](https://openvpn.net/index.php/open-source/downloads.html).
+
+## Contributing
+
+Feel free to open issues and pull-requests, even if we are bad at replying
+on time.  You can also chat with us on the XMPP network: libtuntap channel
+at rooms.bouledef.eu.
 
 ## License
 
