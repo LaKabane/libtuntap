@@ -136,6 +136,10 @@ Example:
 You need to install the tuntaposx project for this library to be useful,
 which is a third-party kext.
 
+### Notes for Windows users
+
+You need to install the tap-windows driver provided by the [OpenVPN project](https://openvpn.net/index.php/open-source/downloads.html).
+
 ## License
 
 All the code is licensed under the ISC License.
