@@ -1,4 +1,4 @@
-# libtuntap
+# libtuntap 0.4
 
 libtuntap is a library for configuring TUN or TAP devices in a portable manner.
 
