@@ -41,7 +41,7 @@ target_include_directories(tuntap PUBLIC
 )
 
 set_target_properties(tuntap PROPERTIES
-    VERSION 2.1
+    VERSION 2.2
     POSITION_INDEPENDENT_CODE TRUE)
 
 # OS families specific things
