@@ -1,0 +1,21 @@
+image: debian/stretch
+packages:
+  - cmake
+  - git
+  - build-essential
+sources:
+  - https://github.com/LaKabane/libtuntap
+tasks:
+  - setup: |
+      cd libtuntap
+      mkdir build
+      cd build
+      cmake ..
+  - build: |
+      cd libtuntap
+      cd build
+      make
+  - test: |
+      cd libtuntap
+      cd build
+      sudo make test
