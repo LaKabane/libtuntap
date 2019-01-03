@@ -36,6 +36,56 @@
 #include "tuntap.h"
 #include "private.h"
 
+
+#include <sys/kern_control.h>
+#include <sys/sys_domain.h>
+#include <sys/kern_event.h>
+
+#define APPLE_UTUN "com.apple.net.utun_control"
+#define UTUN_OPT_IFNAME 2
+
+static int
+tuntap_utun_open(char * ifname, uint32_t namesz)
+{
+	int fd;
+
+	fd = socket(PF_SYSTEM, SOCK_DGRAM, SYSPROTO_CONTROL);
+	if(fd == -1)
+		return -1;
+
+	struct ctl_info info;
+	memset(&info, 0, sizeof(info));
+	strncpy(info.ctl_name, APPLE_UTUN, strlen(APPLE_UTUN));
+
+	if(ioctl(fd, CTLIOCGINFO, &info) < 0) {
+		tuntap_log(TUNTAP_LOG_ERR, "call to ioctl() failed");
+		tuntap_log(TUNTAP_LOG_ERR, strerror(errno));
+		close(fd);
+		return -1;
+	}
+
+	struct sockaddr_ctl addr;
+	addr.sc_id = info.ctl_id;
+
+	addr.sc_len = sizeof(addr);
+	addr.sc_family = AF_SYSTEM;
+	addr.ss_sysaddr = AF_SYS_CONTROL;
+	addr.sc_unit = 0;
+
+	if(connect(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+		close(fd);
+		return -1;
+	}
+
+	if(getsockopt(fd, SYSPROTO_CONTROL, UTUN_OPT_IFNAME, ifname, &namesz) < 0) {
+		close(fd);
+		return -1;
+	}
+	return fd;
+}
+
+
+
 int
 tuntap_sys_start(struct device *dev, int mode, int tun) {
 	struct ifreq ifr;
@@ -43,17 +93,17 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	char name[MAXPATHLEN];
 	int fd;
 	char *type;
+	char *ifname;
 
 	fd = -1;
 
 	/* Force creation of the driver if needed or let it resilient */
 	if (mode & TUNTAP_MODE_PERSIST) {
-		tuntap_log(TUNTAP_LOG_NOTICE,
-		    "Your system does not support persistent device");
+		tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support persistent device");
 		return -1;
 	}
 
-        /* Set the mode: tun or tap */
+	/* Set the mode: tun or tap */
 	if (mode == TUNTAP_MODE_ETHERNET) {
 		type = "tap";
 		ifr.ifr_flags |= IFF_LINK0;
@@ -67,17 +117,27 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 		return -1;
 	}
 
+	ifname = NULL;
+
 	/* Try to use the given driver or loop throught the avaible ones */
 	if (tun < TUNTAP_ID_MAX) {
 		(void)snprintf(name, sizeof name, "/dev/%s%i", type, tun);
 		fd = open(name, O_RDWR);
 	} else if (tun == TUNTAP_ID_ANY) {
-		for (tun = 0; tun < TUNTAP_ID_MAX; ++tun) {
-			(void)memset(name, '\0', sizeof name);
-			(void)snprintf(name, sizeof name, "/dev/%s%i",
-			    type, tun);
-			if ((fd = open(name, O_RDWR)) > 0)
-				break;
+		/* Use utun if we can */
+		if( mode == TUNTAP_MODE_TUNNEL) {
+			fd = tuntap_utun_open(name, IFNAMSIZ);
+		}
+		if( fd != -1 )
+			ifname = name;
+		else {
+			for (tun = 0; tun < TUNTAP_ID_MAX; ++tun) {
+				(void)memset(name, '\0', sizeof name);
+				(void)snprintf(name, sizeof name, "/dev/%s%i",
+					type, tun);
+				if ((fd = open(name, O_RDWR)) > 0)
+					break;
+			}
 		}
 	} else {
 		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'tun'");
@@ -97,7 +157,10 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 
 	/* Set the interface name */
 	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name, "%s%i", type, tun);
+	if(ifname)
+		(void)strlcpy(ifr.ifr_name, ifname, strnlen(ifname, sizeof ifr.ifr_name));
+	else
+		(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name, "%s%i", type, tun);
 	/* And save it */
 	(void)strlcpy(dev->if_name, ifr.ifr_name, sizeof dev->if_name);
 
