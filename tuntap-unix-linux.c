@@ -203,7 +203,6 @@ tuntap_sys_set_ifname(struct device *dev, const char *ifname, size_t len) {
 	(void)strncpy(ifr.ifr_newname, ifname, len);
 
 	if (ioctl(dev->ctrl_sock, SIOCSIFNAME, &ifr) == -1) {
-		perror(NULL);
 		tuntap_log(TUNTAP_LOG_ERR, "Can't set interface name");
 		return -1;
 	}
