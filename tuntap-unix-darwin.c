@@ -48,12 +48,13 @@ static int
 tuntap_utun_open(char * ifname, uint32_t namesz)
 {
 	int fd;
+	struct sockaddr_ctl addr;
+	struct ctl_info info;
 
 	fd = socket(PF_SYSTEM, SOCK_DGRAM, SYSPROTO_CONTROL);
 	if(fd == -1)
 		return -1;
 
-	struct ctl_info info;
 	memset(&info, 0, sizeof(info));
 	strncpy(info.ctl_name, APPLE_UTUN, strlen(APPLE_UTUN));
 
@@ -64,7 +65,6 @@ tuntap_utun_open(char * ifname, uint32_t namesz)
 		return -1;
 	}
 
-	struct sockaddr_ctl addr;
 	addr.sc_id = info.ctl_id;
 
 	addr.sc_len = sizeof(addr);
