@@ -2,7 +2,7 @@
 # =======================================
 
 find_package(PythonLibs)
-find_package(Boost COMPONENTS system thread python36)
+find_package(Boost COMPONENTS system thread python3)
 
 if(${PYTHONLIBS_FOUND} AND ${Boost_FOUND})
 
