@@ -76,6 +76,18 @@ tun::ip(std::string const &s, int netmask)
     tuntap_set_ip(_dev, s.c_str(), netmask);
 }
 
+int
+tun::read(void *buf, size_t len)
+{
+	return tuntap_read(_dev, buf, len);
+}
+
+int
+tun::write(void *buf, size_t len)
+{
+	return tuntap_write(_dev, buf, len);
+}
+
 void
 tun::nonblocking(bool b)
 {
@@ -164,6 +176,18 @@ void
 tap::ip(std::string const &s, int netmask)
 {
     tuntap_set_ip(_dev, s.c_str(), netmask);
+}
+
+int
+tap::read(void *buf, size_t len)
+{
+	return tuntap_read(_dev, buf, len);
+}
+
+int
+tap::write(void *buf, size_t len)
+{
+	return tuntap_write(_dev, buf, len);
 }
 
 void
