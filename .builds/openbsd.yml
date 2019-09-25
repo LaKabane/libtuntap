@@ -1,0 +1,20 @@
+image: openbsd/6.5
+packages:
+  - cmake
+  - git
+sources:
+  - https://github.com/LaKabane/libtuntap
+tasks:
+  - setup: |
+      cd libtuntap
+      mkdir build
+      cd build
+      cmake ..
+  - build: |
+      cd libtuntap
+      cd build
+      make
+  - test: |
+      cd libtuntap
+      cd build
+      doas make test
