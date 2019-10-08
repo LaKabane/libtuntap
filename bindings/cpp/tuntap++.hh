@@ -29,6 +29,10 @@ class tun
   void down();
   void ip(std::string const &presentation, int netmask);
 
+  //IO
+  int read(void *buf, size_t len);
+  int write(void *buf, size_t len);
+
   // System
   void release();
   void nonblocking(bool);
@@ -58,6 +62,10 @@ class tap
   void up();
   void down();
   void ip(std::string const &presentation, int netmask);
+
+  //IO
+  int read(void *buf, size_t len);
+  int write(void *buf, size_t len);
 
   // System
   void release();

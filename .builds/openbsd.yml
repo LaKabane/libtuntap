@@ -1,4 +1,4 @@
-image: freebsd/12.x
+image: openbsd/6.5
 packages:
   - cmake
   - git
@@ -17,4 +17,4 @@ tasks:
   - test: |
       cd libtuntap
       cd build
-      sudo make test
+      doas make test

@@ -364,7 +364,7 @@ tuntap_read(struct device *dev, void *buf, size_t size) {
 	}
 
 	if (0 == ret) {
-		return len;
+		return (int)len;
 	}
 	else {
 		return -1;
@@ -406,7 +406,7 @@ tuntap_write(struct device *dev, void *buf, size_t size) {
 	}
 
 	if (0 == ret) {
-		return len;
+		return (int)len;
 	}
 	else {
 		return -1;
