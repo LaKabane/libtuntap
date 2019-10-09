@@ -50,18 +50,17 @@ tuntap_utun_open(char * ifname, uint32_t namesz)
 	struct sockaddr_ctl addr;
 	struct ctl_info info;
 
-	fd = socket(PF_SYSTEM, SOCK_DGRAM, SYSPROTO_CONTROL);
-	if(fd == -1)
+	if (-1 == (fd = socket(PF_SYSTEM, SOCK_DGRAM, SYSPROTO_CONTROL)))
 		return -1;
 
-	memset(&info, 0, sizeof(info));
+	(void)memset(&info, 0, sizeof(info));
 	if (strlcpy(info.ctl_name, UTUN_CONTROL_NAME, sizeof(info.ctl_name)) \
 	    >= sizeof(info.ctl_name)) {
 		tuntap_log(TUNTAP_LOG_ERR, "utun is not supported");
 		return -1;
 	}
 
-	if(ioctl(fd, CTLIOCGINFO, &info) < 0) {
+	if (ioctl(fd, CTLIOCGINFO, &info) < 0) {
 		tuntap_log(TUNTAP_LOG_ERR, "call to ioctl() failed");
 		tuntap_log(TUNTAP_LOG_ERR, strerror(errno));
 		close(fd);
@@ -69,25 +68,22 @@ tuntap_utun_open(char * ifname, uint32_t namesz)
 	}
 
 	addr.sc_id = info.ctl_id;
-
 	addr.sc_len = sizeof(addr);
 	addr.sc_family = AF_SYSTEM;
 	addr.ss_sysaddr = AF_SYS_CONTROL;
 	addr.sc_unit = 0;
 
-	if(connect(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+	if (connect(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
 		close(fd);
 		return -1;
 	}
 
-	if(getsockopt(fd, SYSPROTO_CONTROL, UTUN_OPT_IFNAME, ifname, &namesz) < 0) {
+	if (getsockopt(fd, SYSPROTO_CONTROL, UTUN_OPT_IFNAME, ifname, &namesz) < 0) {
 		close(fd);
 		return -1;
 	}
 	return fd;
 }
-
-
 
 int
 tuntap_sys_start(struct device *dev, int mode, int tun) {
@@ -128,10 +124,10 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 		fd = open(name, O_RDWR);
 	} else if (tun == TUNTAP_ID_ANY) {
 		/* Use utun if we can */
-		if( mode == TUNTAP_MODE_TUNNEL) {
+		if (mode == TUNTAP_MODE_TUNNEL) {
 			fd = tuntap_utun_open(name, IFNAMSIZ);
 		}
-		if( fd != -1 )
+		if (fd != -1)
 			ifname = name;
 		else {
 			for (tun = 0; tun < TUNTAP_ID_MAX; ++tun) {
@@ -160,10 +156,14 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 
 	/* Set the interface name */
 	(void)memset(&ifr, '\0', sizeof ifr);
-	if(ifname)
-		(void)strlcpy(ifr.ifr_name, ifname, strnlen(ifname, sizeof ifr.ifr_name));
-	else
-		(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name, "%s%i", type, tun);
+	if (ifname) {
+		(void)strlcpy(ifr.ifr_name, ifname, \
+		    strnlen(ifname, sizeof ifr.ifr_name));
+	} else {
+		(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name, \
+		    "%s%i", type, tun);
+	}
+
 	/* And save it */
 	(void)strlcpy(dev->if_name, ifr.ifr_name, sizeof dev->if_name);
 
