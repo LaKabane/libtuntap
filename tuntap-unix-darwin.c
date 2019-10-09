@@ -18,6 +18,7 @@
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/param.h>
+#include <sys/errno.h>
 
 #include <arpa/inet.h>
 #include <net/if.h>
