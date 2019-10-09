@@ -23,6 +23,7 @@
 #include <arpa/inet.h>
 #include <net/if.h>
 #include <net/if_types.h>
+#include <net/if_utun.h> /* TODO: Detection with cmake */
 #include <netinet/if_ether.h>
 #include <netinet/in.h>
 
@@ -42,9 +43,6 @@
 #include <sys/sys_domain.h>
 #include <sys/kern_event.h>
 
-#define APPLE_UTUN "com.apple.net.utun_control"
-#define UTUN_OPT_IFNAME 2
-
 static int
 tuntap_utun_open(char * ifname, uint32_t namesz)
 {
@@ -57,7 +55,11 @@ tuntap_utun_open(char * ifname, uint32_t namesz)
 		return -1;
 
 	memset(&info, 0, sizeof(info));
-	strncpy(info.ctl_name, APPLE_UTUN, strlen(APPLE_UTUN));
+	if (strlcpy(info.ctl_name, UTUN_CONTROL_NAME, sizeof(info.ctl_name)) \
+	    >= sizeof(info.ctl_name)) {
+		tuntap_log(TUNTAP_LOG_ERR, "utun is not supported");
+		return -1;
+	}
 
 	if(ioctl(fd, CTLIOCGINFO, &info) < 0) {
 		tuntap_log(TUNTAP_LOG_ERR, "call to ioctl() failed");
