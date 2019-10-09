@@ -73,7 +73,7 @@ tuntap_utun_open(char * ifname, uint32_t namesz)
 	addr.sc_len = sizeof(addr);
 	addr.sc_family = AF_SYSTEM;
 	addr.ss_sysaddr = AF_SYS_CONTROL;
-	addr.sc_unit = 0;
+	addr.sc_unit = 0; /* TODO: pass tun if not TUNTAP_ID_ANY */
 
 	if (connect(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
 		tuntap_log(TUNTAP_LOG_ERR, "utun interface probably already in use");
