@@ -50,8 +50,10 @@ tuntap_utun_open(char * ifname, uint32_t namesz)
 	struct sockaddr_ctl addr;
 	struct ctl_info info;
 
-	if (-1 == (fd = socket(PF_SYSTEM, SOCK_DGRAM, SYSPROTO_CONTROL)))
+	if (-1 == (fd = socket(PF_SYSTEM, SOCK_DGRAM, SYSPROTO_CONTROL))) {
+		tuntap_log(TUNTAP_LOG_ERR, "utun is not supported");
 		return -1;
+	}
 
 	(void)memset(&info, 0, sizeof(info));
 	if (strlcpy(info.ctl_name, UTUN_CONTROL_NAME, sizeof(info.ctl_name)) \
@@ -61,7 +63,7 @@ tuntap_utun_open(char * ifname, uint32_t namesz)
 	}
 
 	if (ioctl(fd, CTLIOCGINFO, &info) < 0) {
-		tuntap_log(TUNTAP_LOG_ERR, "call to ioctl() failed");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't retrieve kernel control id");
 		tuntap_log(TUNTAP_LOG_ERR, strerror(errno));
 		close(fd);
 		return -1;
@@ -74,11 +76,13 @@ tuntap_utun_open(char * ifname, uint32_t namesz)
 	addr.sc_unit = 0;
 
 	if (connect(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+		tuntap_log(TUNTAP_LOG_ERR, "utun interface probably already in use");
 		close(fd);
 		return -1;
 	}
 
 	if (getsockopt(fd, SYSPROTO_CONTROL, UTUN_OPT_IFNAME, ifname, &namesz) < 0) {
+		tuntap_log(TUNTAP_LOG_ERR, "Can't retrieve utun name");
 		close(fd);
 		return -1;
 	}
