@@ -57,7 +57,7 @@ extern "C" {
 struct device;
 
 # if defined Windows
-typedef HANDLE t_tun;
+typedef void* t_tun;
 # else /* Unix */
 typedef int t_tun;
 # endif
