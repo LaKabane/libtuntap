@@ -15,6 +15,7 @@
  */
 
 #include <sys/types.h>
+#include <tuntap-export.h>
 
 #ifndef LIBTUNTAP_H_
 # define LIBTUNTAP_H_
@@ -37,17 +38,6 @@
 # define TUNTAP_VERSION_MAJOR 0
 # define TUNTAP_VERSION_MINOR 4
 # define TUNTAP_VERSION ((TUNTAP_VERSION_MAJOR<<8)|TUNTAP_VERSION_MINOR)
-
-/* Handle Windows symbols export */
-# if defined Windows 
-#  if defined(tuntap_EXPORTS) /* CMake generated goo */
-#   define  TUNTAP_EXPORT __declspec(dllexport)
-#  else
-#   define  TUNTAP_EXPORT __declspec(dllimport)
-#  endif
-# else /* Unix */
-#  define TUNTAP_EXPORT
-# endif
 
 # ifdef __cplusplus
 extern "C" {
