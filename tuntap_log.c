@@ -79,7 +79,7 @@ tuntap_log_hexdump(void *data, size_t size) {
 	for (n = 1; n <= size; n++) {
 		if (n % 16 == 1) {
 			/* store address for this line */
-			snprintf(addrstr, sizeof(addrstr), "%.4lx",
+			snprintf(addrstr, sizeof(addrstr), "%.4llx",
 			    ((uintptr_t)p - (uintptr_t)data) );
 		}
 

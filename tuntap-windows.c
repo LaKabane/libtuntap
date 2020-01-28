@@ -372,3 +372,11 @@ tuntap_set_ifname(struct device *dev, const char *name) {
 	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_set_ifname()");
 	return -1;
 }
+
+char*
+tuntap_get_descr(struct device* dev) {
+	(void)dev;
+	tuntap_log(TUNTAP_LOG_NOTICE,
+		"Your system does not support tuntap_get_descr()");
+	return NULL;
+}
