@@ -12,6 +12,7 @@ option(ENABLE_CXX "Enable the C++ wrapper library" ON)
 option(ENABLE_PYTHON "Enable the Python wrapper library" OFF)
 
 include(CMakeLists.txt.local OPTIONAL)
+include(GenerateExportHeader)
 
 if(ENABLE_PYTHON AND NOT ENABLE_CXX)
     set(ENABLE_CXX ON)
@@ -42,7 +43,13 @@ target_include_directories(tuntap PUBLIC
 
 set_target_properties(tuntap PROPERTIES
     VERSION 2.2
-    POSITION_INDEPENDENT_CODE TRUE)
+    POSITION_INDEPENDENT_CODE TRUE
+    C_VISIBILITY_PRESET hidden
+    VISIBILITY_INLINES_HIDDEN ON)
+
+generate_export_header(tuntap EXPORT_FILE_NAME tuntap-export.h)
+target_include_directories(tuntap PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_sources(tuntap PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/tuntap-export.h)
 
 # OS families specific things
 # ---------------------------
@@ -122,7 +129,7 @@ if(UNIX)
         install(TARGETS tuntap
                 LIBRARY DESTINATION lib
                 ARCHIVE DESTINATION lib)
-        install(FILES tuntap.h DESTINATION include)
+        install(FILES tuntap.h ${CMAKE_CURRENT_BINARY_DIR}/tuntap-export.h DESTINATION include)
 endif(UNIX)
 
 # Tests rules
