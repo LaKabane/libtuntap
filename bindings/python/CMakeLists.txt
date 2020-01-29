@@ -3,7 +3,7 @@
 
 find_package(Python REQUIRED COMPONENTS Development)
 
-set(PY_VERSION ${Python_VERSION_MAJOR}${Python_VERSION_MINOR})
+set(PY_VERSION ${Python_VERSION_MAJOR})
 find_package(Boost REQUIRED COMPONENTS python${PY_VERSION})
 
 Python_add_library(_pytuntap MODULE
