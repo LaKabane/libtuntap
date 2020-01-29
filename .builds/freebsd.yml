@@ -14,7 +14,3 @@ tasks:
       cd libtuntap
       cd build
       make
-  - test: |
-      cd libtuntap
-      cd build
-      sudo make test
