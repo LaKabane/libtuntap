@@ -2,33 +2,25 @@
 
 # test33: Create a tap0 persistent device and destroy it
 
-TEST="`pwd`/helper33"
-SYSTEM=`uname`
-
+TEST="$(pwd)/helper33"
 TARGET='tap0'
 TYPE='tap'
 
-if [ "$SYSTEM" = "Linux" ]; then
-	IFDEL="ip tuntap del $TARGET mode $TYPE"
+if [ "$(uname)" = Linux ]; then
+	ifdel() { ip tuntap del "$1" mode "$2"; }
+	ifcheck() { ip link show "$1"; }
 else
-	IFDEL="ifconfig $TARGET destroy"
+	ifdel() { ifconfig "$1" destroy; }
+	ifcheck() { ifconfig "$1"; }
 fi
 
-OK=0
-$TEST && OK=1
-
-# If the $TEST was a success, check if the interface still exist
-if [ $OK -eq 1 ]; then
-	ifconfig $TARGET > /dev/null && OK=2
-else
+if ! $TEST; then
 	exit 1
 fi
 
-# The $TARGET still exists, clean it and return failure
-if [ $OK -eq 2 ]; then
-	$IFDEL
+# The interface should NOT exists
+if ifcheck "$TARGET"; then
+	ifdel "$TARGET" "$TYPE"
 	exit 1
 fi
-
-# Everything went fine
 exit 0
