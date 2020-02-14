@@ -46,7 +46,7 @@
 
 /* From OpenVPN tap driver, proto.h */
 typedef unsigned long IPADDR;
-
+//OVERLAPPED __Overlapped = { 0 };//Add on
 /* This one is from Fabien Pichot, in the tNETacle source code */
 static LPWSTR
 formated_error(LPWSTR pMessage, DWORD m, ...) {
@@ -152,7 +152,6 @@ tuntap_start(struct device *dev, int mode, int tun) {
 	HANDLE tun_fd;
 	char *deviceid;
 	char buf[60];
-
 	/* Don't re-initialise a previously started device */
 	if (dev->tun_fd != TUNFD_INVALID_VALUE) {
 		return -1;
@@ -174,6 +173,7 @@ tuntap_start(struct device *dev, int mode, int tun) {
 
 	deviceid = reg_query(NETWORK_ADAPTERS);
 	snprintf(buf, sizeof buf, "\\\\.\\Global\\%s.tap", deviceid);
+	//tun_fd = CreateFile(buf, GENERIC_WRITE | GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM|FILE_FLAG_OVERLAPPED, 0);
 	tun_fd = CreateFile(buf, GENERIC_WRITE | GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM, 0);
 	if (tun_fd == TUNFD_INVALID_VALUE) {
 		int errcode = GetLastError();
