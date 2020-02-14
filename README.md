@@ -114,10 +114,18 @@ Example cmake invocation:
 Up to version 0.3 the libtuntap `CMakeFiles.txt` exported two libraries: one shared, one static. To simplify the building of the wrapper libraries it was decided to only build one. The default is to build a static library but this behaviour can be changed with the option `BUILD_SHARED_LIBS`.
 
 Example cmake invocation:
-
+    
     $ mkdir build; cd build
     $ cmake -D BUILD_SHARED_LIBS=ON ../
     $ make
+
+cmake windows x64:
+
+    $ cmake -A x64 -D BUILD_SHARED_LIBS=ON ../
+
+cmake Linux x64:
+
+    $ cmake -m64 -D BUILD_SHARED_LIBS=ON ../
 
 #### Local configurations
 
