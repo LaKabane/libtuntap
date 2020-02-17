@@ -10,6 +10,7 @@ include(CTest)
 # --------------------
 option(ENABLE_CXX "Enable the C++ wrapper library" ON)
 option(ENABLE_PYTHON "Enable the Python wrapper library" OFF)
+option(ENABLE_JAVA "Enable the Java wrapper library" OFF)
 
 include(CMakeLists.txt.local OPTIONAL)
 include(GenerateExportHeader)
@@ -32,8 +33,6 @@ add_library(tuntap
             tuntap.c
             tuntap.h
             tuntap_log.c
-			com_github_smallru8_driver_tuntap_TunTap.h
-			com_github_smallru8_driver_tuntap_TunTap.cpp
 )
 # Global CPP definitions
 # ----------------------
@@ -53,10 +52,6 @@ generate_export_header(tuntap EXPORT_FILE_NAME tuntap-export.h)
 target_include_directories(tuntap PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 target_sources(tuntap PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/tuntap-export.h)
 
-find_package(JNI REQUIRED)
-include_directories(${JAVA_INCLUDE_PATH})
-include_directories(${JAVA_INCLUDE_PATH2})
-
 # OS families specific things
 # ---------------------------
 if(UNIX)
@@ -74,7 +69,6 @@ if(UNIX)
     # Unix specific source files
     # --------------------------
     target_sources(tuntap PRIVATE tuntap-unix.c )
-    target_sources(tuntap PRIVATE converter.cpp )
 endif(UNIX)
 
 if(Windows)
@@ -85,7 +79,6 @@ if(Windows)
     # Windows specific source files
     # -----------------------------
     target_sources(tuntap PRIVATE tuntap-windows.c )
-	target_sources(tuntap PRIVATE converter.cpp )
 endif(Windows)
 
 # OS specific things
@@ -130,6 +123,12 @@ endif(ENABLE_CXX)
 if(ENABLE_PYTHON)
     add_subdirectory(bindings/python/)
 endif (ENABLE_PYTHON)
+
+# Java Binding definition
+# -------------------------
+if(ENABLE_JAVA)
+    add_subdirectory(bindings/java/)
+endif (ENABLE_JAVA)
 
 # Install rules
 # -------------
