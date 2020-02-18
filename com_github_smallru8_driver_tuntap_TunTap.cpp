@@ -165,16 +165,17 @@ JNIEXPORT jint JNICALL Java_com_github_smallru8_driver_tuntap_TunTap_tuntap_1set
  */
 JNIEXPORT jbyteArray JNICALL Java_com_github_smallru8_driver_tuntap_TunTap_tuntap_1read
   (JNIEnv *env, jobject obj, jint len){
-	int ret = 512;
+	int ret = tuntap_get_mtu(dev);
 	if(len>0)
 		ret = len;
 	char *cData = (char*)malloc(sizeof(char)*ret);
-	//char cData[ret] = {0};
+
 	ret = tuntap_read(dev,cData,ret);
 	if(ret==-1)
         ret = 0;
 	jbyteArray jData = env->NewByteArray(ret);
 	env->SetByteArrayRegion(jData, 0, ret, (jbyte*)cData);
+	free(cData);
 	return jData;
 }
 
@@ -188,10 +189,12 @@ JNIEXPORT jint JNICALL Java_com_github_smallru8_driver_tuntap_TunTap_tuntap_1wri
 	jbyte *jData;
 	jData = env->GetByteArrayElements(data, 0);
 	char *cData = (char*)malloc(sizeof(char)*len);
-	//char cData[len];
+
 	memcpy(cData, jData, len);
 	env->ReleaseByteArrayElements(data, jData, 0);
-	return tuntap_write(dev,cData,len);
+	int ret = tuntap_write(dev,cData,len);
+	free(cData);
+	return ret;
 }
 
 /*
