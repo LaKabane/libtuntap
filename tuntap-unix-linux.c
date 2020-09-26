@@ -51,7 +51,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	}
 
 	/* Set the mode: tun or tap */
-	(void)memset(&ifr, '\0', sizeof ifr);
+        memset(&ifr, 0, sizeof(ifr));
 	if (mode == TUNTAP_MODE_ETHERNET) {
 		ifr.ifr_flags = IFF_TAP;
 		ifname = "tap%i";
@@ -64,10 +64,10 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	}
 	ifr.ifr_flags |= IFF_NO_PI;
 
-    if (tun < 0) {
+	if (tun < 0) {
 		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'tun'");
-        return -1;
-    }
+		return -1;
+	}
 
 	/* Open the clonable interface */
 	fd = -1;
@@ -116,6 +116,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	if (mode == TUNTAP_MODE_ETHERNET) {
 		struct ifreq ifr_hw;
 
+		memset(&ifr_hw, 0, sizeof(ifr_hw));
 		(void)memcpy(ifr_hw.ifr_name, dev->if_name,
 		    sizeof(dev->if_name));
 		if (ioctl(fd, SIOCGIFHWADDR, &ifr_hw) == -1) {
@@ -130,6 +131,10 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 
 void
 tuntap_sys_destroy(struct device *dev) {
+	if (TUNFD_INVALID_VALUE == dev->tun_fd) {
+		return;
+	}
+	
 	if (ioctl(dev->tun_fd, TUNSETPERSIST, 0) == -1) {
        		tuntap_log(TUNTAP_LOG_WARN, "Can't destroy the interface");
 	}
@@ -139,7 +144,7 @@ int
 tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 	struct ifreq ifr;
 
-	(void)memset(&ifr, '\0', sizeof ifr);
+        memset(&ifr, 0, sizeof(ifr));
 	(void)memcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 
 	ifr.ifr_hwaddr.sa_family = ARPHRD_ETHER;
@@ -158,7 +163,8 @@ tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s4, uint32_t bits) {
 	struct ifreq ifr;
 	struct sockaddr_in mask;
 
-	(void)memset(&ifr, '\0', sizeof ifr);
+	memset(&ifr, 0, sizeof(ifr));
+	memset(&mask, 0, sizeof(mask));
 	(void)memcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
 
 	/* Set the IP address first */
@@ -199,6 +205,7 @@ int
 tuntap_sys_set_ifname(struct device *dev, const char *ifname, size_t len) {
 	struct ifreq ifr;
 
+	memset(&ifr, 0, sizeof(ifr));
 	(void)strncpy(ifr.ifr_name, dev->if_name, IF_NAMESIZE);
 	(void)strncpy(ifr.ifr_newname, ifname, len);
 

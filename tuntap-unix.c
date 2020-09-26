@@ -77,9 +77,11 @@ tuntap_start(struct device *dev, int mode, int tun) {
 
 clean:
 	if (fd != -1) {
+		dev->tun_fd = TUNFD_INVALID_VALUE;
 		(void)close(fd);
 	}
 	if (sock != -1) {
+		dev->ctrl_sock = -1;
 		(void)close(sock);
 	}
 	return -1;
@@ -87,8 +89,14 @@ clean:
 
 void
 tuntap_release(struct device *dev) {
-	(void)close(dev->tun_fd);
-	(void)close(dev->ctrl_sock);
+	if (TUNFD_INVALID_VALUE != dev->tun_fd) {
+		(void)close(dev->tun_fd);
+	}
+
+	if (-1 != dev->ctrl_sock) {
+		(void)close(dev->ctrl_sock);
+	}
+
 	free(dev);
 }
 
