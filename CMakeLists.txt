@@ -23,7 +23,6 @@ endif()
 # -------------------
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
-set(CMAKE_INSTALL_PREFIX "/usr/local/")
 set(${CMAKE_SYSTEM_NAME} True)
 
 # Tuntap library declaration and portable source files
@@ -84,7 +83,6 @@ endif(Windows)
 # ------------------
 if(UNIX)
     if(Linux)
-        set(CMAKE_INSTALL_PREFIX "/usr/")
         target_compile_definitions(tuntap PUBLIC -D_GNU_SOURCE)
         target_sources(tuntap PRIVATE tuntap-unix-linux.c)
     elseif (OpenBSD)
