@@ -26,6 +26,8 @@
 #include "tuntap.h"
 #include "private.h"
 
+t_tuntap_log tuntap_log = NULL;
+
 void
 tuntap_log_set_cb(t_tuntap_log cb) {
 	if (cb == NULL)
