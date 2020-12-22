@@ -26,7 +26,7 @@
 #include "tuntap.h"
 #include "private.h"
 
-/* From OpenVPN tap driver, common.h */
+ /* From OpenVPN tap driver, common.h */
 #define TAP_CONTROL_CODE(request,method) CTL_CODE(FILE_DEVICE_UNKNOWN, request, method, FILE_ANY_ACCESS)
 #define TAP_IOCTL_GET_MAC               TAP_CONTROL_CODE (1, METHOD_BUFFERED)
 #define TAP_IOCTL_GET_VERSION           TAP_CONTROL_CODE (2, METHOD_BUFFERED)
@@ -47,26 +47,29 @@
 /* From OpenVPN tap driver, proto.h */
 typedef unsigned long IPADDR;
 
+OVERLAPPED g_olw = { 0 };
+OVERLAPPED g_olr = { 0 };
+
 /* This one is from Fabien Pichot, in the tNETacle source code */
 static LPWSTR
 formated_error(LPWSTR pMessage, DWORD m, ...) {
-    LPWSTR pBuffer = NULL;
+	LPWSTR pBuffer = NULL;
 
-    va_list args = NULL;
-    va_start(args, pMessage);
+	va_list args = NULL;
+	va_start(args, pMessage);
 
-    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
-                  FORMAT_MESSAGE_ALLOCATE_BUFFER,
-                  pMessage, 
-                  m,
-                  0,
-                  (LPSTR)&pBuffer, 
-                  0, 
-                  &args);
+	FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
+		FORMAT_MESSAGE_ALLOCATE_BUFFER,
+		pMessage,
+		m,
+		0,
+		(LPSTR)&pBuffer,
+		0,
+		&args);
 
-    va_end(args);
+	va_end(args);
 
-    return pBuffer;
+	return pBuffer;
 }
 
 /* TODO: Rework to be more generic and allow arbitrary key modification (MTU and stuff) */
@@ -77,13 +80,13 @@ reg_query(char *key_name) {
 	char *deviceid = NULL;
 	DWORD sub_keys = 0;
 
-	ret = RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT(key_name), 0, KEY_READ, &adapters);
+	ret = RegOpenKeyEx(HKEY_LOCAL_MACHINE, key_name, 0, KEY_READ, &adapters);
 	if (ret != ERROR_SUCCESS) {
 		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", ret));
 		return NULL;
 	}
 
-	ret = RegQueryInfoKey(adapters,	NULL, NULL, NULL, &sub_keys, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+	ret = RegQueryInfoKey(adapters, NULL, NULL, NULL, &sub_keys, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 	if (ret != ERROR_SUCCESS) {
 		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", ret));
 		return NULL;
@@ -95,7 +98,7 @@ reg_query(char *key_name) {
 	}
 
 	/* Walk througt all adapters */
-    for (i = 0; i < sub_keys; i++) {
+	for (i = 0; i < sub_keys; i++) {
 		char new_key[MAX_KEY_LENGTH];
 		char data[256];
 		TCHAR key[MAX_KEY_LENGTH];
@@ -106,10 +109,10 @@ reg_query(char *key_name) {
 		if (ret != ERROR_SUCCESS) {
 			continue;
 		}
-		
+
 		/* Append it to NETWORK_ADAPTERS and open it */
 		snprintf(new_key, sizeof new_key, "%s\\%s", key_name, key);
-		ret = RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT(new_key), 0, KEY_READ, &adapter);
+		ret = RegOpenKeyEx(HKEY_LOCAL_MACHINE, new_key, 0, KEY_READ, &adapter);
 		if (ret != ERROR_SUCCESS) {
 			continue;
 		}
@@ -134,7 +137,7 @@ reg_query(char *key_name) {
 			deviceid = strdup(data);
 			break;
 		}
-clean:
+	clean:
 		RegCloseKey(adapter);
 	}
 	RegCloseKey(adapters);
@@ -160,7 +163,7 @@ tuntap_start(struct device *dev, int mode, int tun) {
 
 	/* Shift the persistence bit */
 	if (mode & TUNTAP_MODE_PERSIST) {
-		mode &= ~TUNTAP_MODE_PERSIST; 
+		mode &= ~TUNTAP_MODE_PERSIST;
 	}
 
 	if (mode == TUNTAP_MODE_TUNNEL) {
@@ -172,9 +175,20 @@ tuntap_start(struct device *dev, int mode, int tun) {
 		return -1;
 	}
 
+	g_olw.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	if (NULL == g_olw.hEvent) {
+		return -1;
+	}
+	g_olr.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	if (NULL == g_olr.hEvent) {
+		CloseHandle(g_olw.hEvent);
+		g_olw.hEvent = NULL;
+		return -1;
+	}
+
 	deviceid = reg_query(NETWORK_ADAPTERS);
 	snprintf(buf, sizeof buf, "\\\\.\\Global\\%s.tap", deviceid);
-	tun_fd = CreateFile(buf, GENERIC_WRITE | GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM|FILE_FLAG_OVERLAPPED, 0);
+	tun_fd = CreateFile(buf, GENERIC_WRITE | GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM | FILE_FLAG_OVERLAPPED, 0);
 	if (tun_fd == TUNFD_INVALID_VALUE) {
 		int errcode = GetLastError();
 
@@ -189,6 +203,14 @@ tuntap_start(struct device *dev, int mode, int tun) {
 void
 tuntap_release(struct device *dev) {
 	(void)CloseHandle(dev->tun_fd);
+	if (g_olw.hEvent) {
+		CloseHandle(g_olw.hEvent);
+		g_olw.hEvent = NULL;
+	}
+	if (g_olr.hEvent) {
+		CloseHandle(g_olr.hEvent);
+		g_olr.hEvent = NULL;
+	}
 	free(dev);
 }
 
@@ -197,16 +219,17 @@ tuntap_get_hwaddr(struct device *dev) {
 	static unsigned char hwaddr[ETHER_ADDR_LEN];
 	DWORD len;
 
-    if (DeviceIoControl(dev->tun_fd, TAP_IOCTL_GET_MAC, &hwaddr, sizeof(hwaddr), &hwaddr, sizeof(hwaddr), &len, NULL) == 0) {
+	if (DeviceIoControl(dev->tun_fd, TAP_IOCTL_GET_MAC, &hwaddr, sizeof(hwaddr), &hwaddr, sizeof(hwaddr), &len, NULL) == 0) {
 		int errcode = GetLastError();
 
 		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
 		return NULL;
-    } else {
+	}
+	else {
 		char buf[128];
-	
+
 		(void)_snprintf_s(buf, sizeof buf, sizeof buf, "MAC address: %.2x:%.2x:%.2x:%.2x:%.2x:%.2x",
-			hwaddr[0],hwaddr[1],hwaddr[2],hwaddr[3],hwaddr[4],hwaddr[5]);
+			hwaddr[0], hwaddr[1], hwaddr[2], hwaddr[3], hwaddr[4], hwaddr[5]);
 		tuntap_log(TUNTAP_LOG_DEBUG, buf);
 	}
 	return (char *)hwaddr;
@@ -227,12 +250,13 @@ tuntap_sys_set_updown(struct device *dev, ULONG flag) {
 
 		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
 		return -1;
-    } else {
+	}
+	else {
 		char buf[32];
 
 		(void)_snprintf_s(buf, sizeof buf, sizeof buf, "Status: %s", flag ? "Up" : "Down");
 		tuntap_log(TUNTAP_LOG_DEBUG, buf);
-	return 0;
+		return 0;
 	}
 }
 
@@ -262,7 +286,7 @@ tuntap_get_mtu(struct device *dev) {
 
 		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
 		return -1;
-    }
+	}
 	return 0;
 }
 
@@ -280,19 +304,19 @@ tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s, uint32_t mask) {
 	DWORD len;
 
 	/* Address + Netmask */
-	psock[0] = s->S_un.S_addr; 
+	psock[0] = s->S_un.S_addr;
 	psock[1] = mask;
 	/* DHCP server address (We don't want it) */
 	psock[2] = 0;
-	/* DHCP lease time */
-	psock[3] = 0;
+	/* DHCP lease time in seconds */
+	psock[3] = 60 * 5;
 
 	if (DeviceIoControl(dev->tun_fd, TAP_IOCTL_CONFIG_DHCP_MASQ, &psock, sizeof(psock), &psock, sizeof(psock), &len, NULL) == 0) {
 		int errcode = GetLastError();
 
 		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
 		return -1;
-    }
+	}
 	return 0;
 }
 
@@ -307,30 +331,86 @@ tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s, uint32_t mask) {
 
 int
 tuntap_read(struct device *dev, void *buf, size_t size) {
+
 	DWORD len;
+	int ret = 0;
+	ResetEvent(g_olr.hEvent);
 
-	if (ReadFile(dev->tun_fd, buf, (DWORD)size, &len, NULL) == 0) {
-		int errcode = GetLastError();
-
-		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
-		return -1;
+	if (!ReadFile(dev->tun_fd, buf, (DWORD)size, &len, &g_olr))
+	{
+		if (GetLastError() != ERROR_IO_PENDING) {
+			tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", GetLastError()));
+			ret = -1;
+		}
+		else
+		{
+			switch (WaitForSingleObject(g_olr.hEvent, INFINITE))
+			{
+			case WAIT_OBJECT_0:
+				if (!GetOverlappedResult(dev->tun_fd, &g_olr, &len, FALSE)) {
+					tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", GetLastError()));
+					ret = -1;
+				}
+				else {
+					ret = 0;    //read ok
+				}
+				break;
+			default:
+				tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", GetLastError()));
+				ret = -1;
+				break;
+			}
+		}
 	}
 
-	return (int)len;
+	if (0 == ret) {
+		return (int)len;
+	}
+	else {
+		return -1;
+	}
 }
 
 int
 tuntap_write(struct device *dev, void *buf, size_t size) {
+
 	DWORD len;
+	int ret = 0;
+	ResetEvent(g_olw.hEvent);
 
-	if (WriteFile(dev->tun_fd, buf, (DWORD)size, &len, NULL) == 0) {
-		int errcode = GetLastError();
-
-		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
-		return -1;
+	if (!WriteFile(dev->tun_fd, buf, (DWORD)size, &len, &g_olw))
+	{
+		if (GetLastError() != ERROR_IO_PENDING) {
+			tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", GetLastError()));
+			ret = -1;
+		}
+		else
+		{
+			switch (WaitForSingleObject(g_olw.hEvent, INFINITE))
+			{
+			case WAIT_OBJECT_0:
+				if (!GetOverlappedResult(dev->tun_fd, &g_olw, &len, FALSE)) {
+					tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", GetLastError()));
+					ret = -1;
+				}
+				else {
+					ret = 0;    //write ok
+				}
+				break;
+			default:
+				tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", GetLastError()));
+				ret = -1;
+				break;
+			}
+		}
 	}
 
-	return (int)len;
+	if (0 == ret) {
+		return (int)len;
+	}
+	else {
+		return -1;
+	}
 }
 
 int
