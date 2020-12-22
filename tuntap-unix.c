@@ -34,6 +34,7 @@
 # include <netinet/if_ether.h>
 #endif
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -268,7 +269,9 @@ tuntap_read(struct device *dev, void *buf, size_t size) {
 
 	n = read(dev->tun_fd, buf, size);
 	if (n == -1) {
-		tuntap_log(TUNTAP_LOG_WARN, "Can't to read from device");
+        if (errno != EAGAIN) {
+		    tuntap_log(TUNTAP_LOG_WARN, "Can't to read from device");
+        }
 		return -1;
 	}
 	return n;
