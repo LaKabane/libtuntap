@@ -196,9 +196,9 @@ This function replaces the MTU of the interface described by `dev` with the give
 
 ### tuntap_set_ip
 
-    int tuntap_set_ip(struct device *dev, const char *, int ip_addr);
+    int tuntap_set_ip(struct device *dev, const char *addr, int netmask);
 
-This function replaces the IP address of the interface described by `dev` with the given address `ip_addr`.
+This function replaces the IP address of the interface described by `dev` with the given address `addr` and `netmask`.
 
 ### tuntap_read
 
