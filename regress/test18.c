@@ -21,7 +21,11 @@ main(void) {
 	if (tuntap_set_ip(dev, "1.2.3.4", 24) == -1) {
 		return 1;
 	}
-
+#ifdef enable_ipv6
+	if (tuntap_set_ip(dev, "fe80:1:2:3:4:5:6:7", 64) == -1) {
+		return 1;
+	}
+#endif
 	if (tuntap_up(dev) == -1) {
 		return 1;
 	}

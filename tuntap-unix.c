@@ -63,6 +63,15 @@ tuntap_start(struct device *dev, int mode, int tun) {
 	}
 	dev->ctrl_sock = sock;
 
+#ifdef enable_ipv6
+	int sock6 = -1;
+	sock6 = socket(AF_INET6, SOCK_DGRAM, 0);
+	if (sock6 == -1) {
+		goto clean;
+	}
+	dev->ctrl_sock6 = sock6;
+#endif
+
 	if (mode & TUNTAP_MODE_PERSIST && tun == TUNTAP_ID_ANY) {
 		goto clean; /* XXX: Explain why */
 	}
@@ -83,6 +92,11 @@ clean:
 	if (sock != -1) {
 		(void)close(sock);
 	}
+#ifdef enable_ipv6
+	if (sock6 != -1){
+		(void)close(sock6);
+	}
+#endif
 	return -1;
 }
 
@@ -90,6 +104,9 @@ void
 tuntap_release(struct device *dev) {
 	(void)close(dev->tun_fd);
 	(void)close(dev->ctrl_sock);
+#ifdef enable_ipv6
+	(void)close(dev->ctrl_sock6);
+#endif
 	free(dev);
 }
 
