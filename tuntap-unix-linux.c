@@ -197,23 +197,23 @@ tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s4, uint32_t bits) {
 	return 0;
 }
 #ifdef enable_ipv6
-	int
-	tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s6, uint32_t prefixLen) {
-		struct in6_ifreq ifrv6;
+int
+tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s6, uint32_t prefixLen) {
+	struct in6_ifreq ifrv6;
 
-		(void)memset(&ifrv6, '\0', sizeof ifrv6);
-		ifrv6.ifr6_ifindex = dev->ifr6_ifindex;
-		/* Delete previously assigned ipv6 address */
-		(void)ioctl(dev->ctrl_sock6, SIOCDIFADDR, &ifrv6);
-		ifrv6.ifr6_prefixlen = prefixLen;
-		(void)memcpy(&ifrv6.ifr6_addr, s6, sizeof(t_tun_in6_addr));
+	(void)memset(&ifrv6, '\0', sizeof ifrv6);
+	ifrv6.ifr6_ifindex = dev->ifr6_ifindex;
+	/* Delete previously assigned ipv6 address */
+	(void)ioctl(dev->ctrl_sock6, SIOCDIFADDR, &ifrv6);
+	ifrv6.ifr6_prefixlen = prefixLen;
+	(void)memcpy(&ifrv6.ifr6_addr, s6, sizeof(t_tun_in6_addr));
 
-		if (ioctl(dev->ctrl_sock6, SIOCSIFADDR, &ifrv6) == -1) {
-			tuntap_log(TUNTAP_LOG_ERR, "Can't set IPv6 address");
-			return -1;
-		}
-		return 0;
+	if (ioctl(dev->ctrl_sock6, SIOCSIFADDR, &ifrv6) == -1) {
+		tuntap_log(TUNTAP_LOG_ERR, "Can't set IPv6 address");
+		return -1;
 	}
+	return 0;
+}
 #else
 int
 tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s6, uint32_t bits) {
