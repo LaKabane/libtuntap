@@ -122,7 +122,7 @@ reg_query(char *key_name) {
 			goto clean;
 		}
 		/* If its a tap adapter, its all good */
-		if (strncmp(data, "tap", 3) == 0) {
+		if (strncmp(data, "tap", 3) == 0 || strncmp(data, "root\\tap", 8) == 0) {
 			DWORD type;
 
 			len = sizeof data;
@@ -174,7 +174,7 @@ tuntap_start(struct device *dev, int mode, int tun) {
 
 	deviceid = reg_query(NETWORK_ADAPTERS);
 	snprintf(buf, sizeof buf, "\\\\.\\Global\\%s.tap", deviceid);
-	tun_fd = CreateFile(buf, GENERIC_WRITE | GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM|FILE_FLAG_OVERLAPPED, 0);
+	tun_fd = CreateFile(buf, GENERIC_WRITE | GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM | FILE_FLAG_OVERLAPPED, 0);
 	if (tun_fd == TUNFD_INVALID_VALUE) {
 		int errcode = GetLastError();
 
