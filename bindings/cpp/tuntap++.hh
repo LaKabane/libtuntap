@@ -38,6 +38,7 @@ class tun
   void nonblocking(bool);
  private:
   struct device* _dev;
+  bool _started;
 };
 
 class tap
@@ -72,6 +73,7 @@ class tap
   void nonblocking(bool);
  private:
   struct device* _dev;
+  bool _started;
 };
 
 } /* tuntap */

@@ -121,6 +121,10 @@ tuntap_get_descr(struct device *dev) {
 
 int
 tuntap_set_ifname(struct device *dev, const char *ifname) {
+	printf("ifname: %s\n", ifname);
+	printf("ifname count: %d\n", strlen(ifname));
+	printf("ifname last char: %c\n", ifname[strlen(ifname)-1]);
+
 	size_t len;
 
 	if (ifname == NULL) {

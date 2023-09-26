@@ -6,14 +6,16 @@
 namespace tuntap {
 
 tun::tun()
-    : _dev{tuntap_init()}
+    : _dev{tuntap_init()}, _started{true}
 {
     tuntap_start(_dev, TUNTAP_MODE_TUNNEL, TUNTAP_ID_ANY);
 }
 
 tun::~tun()
 {
-    tuntap_destroy(_dev);
+    if (_started) {
+        tuntap_destroy(_dev);
+    }
 }
 
 tun::tun(tun &&t)
@@ -26,6 +28,7 @@ void
 tun::release()
 {
     tuntap_release(_dev);
+    _started = false;
 }
 
 std::string
@@ -95,14 +98,16 @@ tun::nonblocking(bool b)
 }
 
 tap::tap()
-    : _dev{tuntap_init()}
+    : _dev{tuntap_init()}, _started{true}
 {
     tuntap_start(_dev, TUNTAP_MODE_ETHERNET, TUNTAP_ID_ANY);
 }
 
 tap::~tap()
 {
-    tuntap_destroy(_dev);
+    if (_started) {
+        tuntap_destroy(_dev);
+    }
 }
 
 tap::tap(tap &&t)
@@ -116,6 +121,7 @@ void
 tap::release()
 {
     tuntap_release(_dev);
+    _started = false;
 }
 
 std::string
