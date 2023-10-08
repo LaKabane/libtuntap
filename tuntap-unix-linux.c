@@ -41,7 +41,6 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	int persist;
 	char *ifname;
 	struct ifreq ifr;
-	memset(&ifr, 0, sizeof(ifr));
 
 	/* Get the persistence bit */
 	if (mode & TUNTAP_MODE_PERSIST) {
@@ -139,7 +138,6 @@ tuntap_sys_destroy(struct device *dev) {
 int
 tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 	struct ifreq ifr;
-	memset(&ifr, 0, sizeof(ifr));
 
 	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)memcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
@@ -159,8 +157,6 @@ int
 tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s4, uint32_t bits) {
 	struct ifreq ifr;
 	struct sockaddr_in mask;
-	memset(&ifr, 0, sizeof ifr);
-	memset(&mask, 0, sizeof mask);
 
 	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)memcpy(ifr.ifr_name, dev->if_name, sizeof dev->if_name);
@@ -202,8 +198,8 @@ tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s6, uint32_t bits) {
 int
 tuntap_sys_set_ifname(struct device *dev, const char *ifname, size_t len) {
 	struct ifreq ifr;
-	memset(&ifr, '\0', sizeof ifr);
 
+	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)strncpy(ifr.ifr_name, dev->if_name, IF_NAMESIZE);
 	(void)strncpy(ifr.ifr_newname, ifname, len);
 
