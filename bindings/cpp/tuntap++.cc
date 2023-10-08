@@ -2,13 +2,16 @@
 
 #include <string>
 #include <algorithm>
+#include <stdexcept>
 
 namespace tuntap {
 
 tun::tun()
     : _dev{tuntap_init()}, _started{true}
 {
-    tuntap_start(_dev, TUNTAP_MODE_TUNNEL, TUNTAP_ID_ANY);
+    if (tuntap_start(_dev, TUNTAP_MODE_TUNNEL, TUNTAP_ID_ANY) == -1) {
+        throw std::runtime_error("tuntap_start failed");
+    }
 }
 
 tun::~tun()
@@ -100,7 +103,9 @@ tun::nonblocking(bool b)
 tap::tap()
     : _dev{tuntap_init()}, _started{true}
 {
-    tuntap_start(_dev, TUNTAP_MODE_ETHERNET, TUNTAP_ID_ANY);
+    if (tuntap_start(_dev, TUNTAP_MODE_ETHERNET, TUNTAP_ID_ANY) == -1) {
+        throw std::runtime_error("tuntap_start failed");
+    }
 }
 
 tap::~tap()
