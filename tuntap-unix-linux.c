@@ -199,6 +199,7 @@ int
 tuntap_sys_set_ifname(struct device *dev, const char *ifname, size_t len) {
 	struct ifreq ifr;
 
+	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)strncpy(ifr.ifr_name, dev->if_name, IF_NAMESIZE);
 	(void)strncpy(ifr.ifr_newname, ifname, len);
 
