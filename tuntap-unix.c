@@ -17,6 +17,7 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <sys/select.h>
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -279,12 +280,42 @@ tuntap_read(struct device *dev, void *buf, size_t size) {
 
 int
 tuntap_write(struct device *dev, void *buf, size_t size) {
+	return tuntap_write2(dev, buf, size, -1);
+}
+
+int
+tuntap_write2(struct device *dev, void *buf, size_t size, int timeout_ms) {
 	int n;
 
 	/* Only accept started device */
 	if (dev->tun_fd == -1) {
 		tuntap_log(TUNTAP_LOG_NOTICE, "Device is not started");
 		return 0;
+	}
+
+	if (timeout_ms >= 0) {
+		// A timeout was specified
+
+		struct timeval timeout;
+		timeout.tv_sec = timeout_ms / 1000;
+		timeout.tv_usec = (timeout_ms % 1000) * 1000;
+
+		fd_set set;
+		FD_ZERO(&set);
+		FD_SET(dev->tun_fd, &set);
+
+		int res = select(dev->tun_fd+1, NULL, &set, NULL, &timeout);
+
+		if (res < 0) {
+			tuntap_log(TUNTAP_LOG_NOTICE, "Can't run select on device");
+			return -1;
+		}
+
+		if (res == 0)
+			return -1; // Timed out
+
+		// Note that at this point the following is true:
+		//   res == 1 && FD_ISSET(&set, dev->tun_fd)
 	}
 
 	n = write(dev->tun_fd, buf, size);
