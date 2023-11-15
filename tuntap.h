@@ -74,6 +74,7 @@ TUNTAP_EXPORT int		 tuntap_set_mtu(struct device *, int);
 TUNTAP_EXPORT int		 tuntap_set_ip(struct device *, const char *, int);
 TUNTAP_EXPORT int		 tuntap_read(struct device *, void *, size_t);
 TUNTAP_EXPORT int		 tuntap_write(struct device *, void *, size_t);
+TUNTAP_EXPORT int		 tuntap_write2(struct device *, void *, size_t, int);
 TUNTAP_EXPORT int		 tuntap_get_readable(struct device *);
 TUNTAP_EXPORT int		 tuntap_set_nonblocking(struct device *dev, int);
 TUNTAP_EXPORT int		 tuntap_set_debug(struct device *dev, int);

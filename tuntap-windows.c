@@ -321,12 +321,43 @@ tuntap_read(struct device *dev, void *buf, size_t size) {
 
 int
 tuntap_write(struct device *dev, void *buf, size_t size) {
+	return tuntap_write2(dev, buf, size, -1);
+}
+
+int
+tuntap_write2(struct device *dev, void *buf, size_t size, int timeout_ms) {
+	int errcode;
+	BOOL ok;
 	DWORD len;
+	OVERLAPPED overlapped;
+	memset(&overlapped, 0, sizeof(overlapped));
 
-	if (WriteFile(dev->tun_fd, buf, (DWORD)size, &len, NULL) == 0) {
-		int errcode = GetLastError();
+	ok = WriteFile(dev->tun_fd, buf, (DWORD)size, &len, &overlapped);
+	if (ok)
+		return (int) len; // Write operation completed immediately
 
+	errcode = GetLastError();
+	if (errcode != ERROR_IO_PENDING) {
+		// Couldn't start write operation at all
 		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
+		return -1;
+	}
+
+	// Operation is pending, so wait until either it completes
+	// or the timeout triggers. If timeout_ms < 0, then don't
+	// set a timeout.
+
+	DWORD timeout;
+	if (timeout_ms < 0)
+		timeout = INFINITE;
+	else
+		timeout = timeout_ms;
+
+	ok = GetOverlappedResultEx(dev->tun_fd, &overlapped, &len, timeout, FALSE);
+	if (!ok) {
+		errcode = GetLastError();
+		if (errcode != WAIT_TIMEOUT)
+			tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
 		return -1;
 	}
 
