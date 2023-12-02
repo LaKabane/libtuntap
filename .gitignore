@@ -1,0 +1,6 @@
+.vs
+out
+compile_commands.json
+CMakeSettings.json
+.cache
+.clang-format

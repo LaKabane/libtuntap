@@ -47,6 +47,79 @@
 /* From OpenVPN tap driver, proto.h */
 typedef unsigned long IPADDR;
 
+#define WIN_BUFF_NUM  10
+#define WIN_BUFF_SIZE 2048
+
+typedef enum {
+    sta_not_init = 0,
+    sta_idle     = 1,
+    sta_work     = 2,
+} buf_sta;
+typedef struct {
+    OVERLAPPED ov;
+    buf_sta    sta;
+    int        bufferlen;
+    char       buffer[0];
+} win_async_node;
+
+typedef struct {
+    int             rdarray_len;
+    win_async_node* rdarray;
+	HANDLE        * rdhandles;
+    int             wrarray_len;
+    win_async_node* wrarray;
+	HANDLE        * wrhandles;
+} win_async_ctrl;
+
+static win_async_ctrl*
+ctrl_block_init(int rd_cnt, int rd_buf_len, int wr_cnt, int wr_buf_len)
+{
+    win_async_ctrl* ctrl = malloc(sizeof(win_async_ctrl));
+
+    ctrl->rdarray_len = rd_cnt;
+    ctrl->wrarray_len = wr_cnt;
+    ctrl->rdarray     = malloc((sizeof(win_async_node) + rd_buf_len) * rd_cnt);
+    ctrl->wrarray     = malloc((sizeof(win_async_node) + wr_buf_len) * wr_cnt);
+    ctrl->rdhandles   = malloc(sizeof(HANDLE) * rd_cnt);
+    ctrl->wrhandles   = malloc(sizeof(HANDLE) * rd_cnt);
+    for (int i = 0; i < rd_cnt; i++) {
+        ctrl->rdarray[i].bufferlen = rd_buf_len;
+        ctrl->rdarray[i].ov.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+        memset(&ctrl->rdarray[i].ov, 0, sizeof(OVERLAPPED));
+        ctrl->rdarray[i].sta = sta_idle;
+    }
+    for (int i = 0; i < wr_cnt; i++) {
+        ctrl->wrarray[i].bufferlen = wr_buf_len;
+        ctrl->wrarray[i].ov.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+        memset(&ctrl->wrarray[i].ov, 0, sizeof(OVERLAPPED));
+        ctrl->wrarray[i].sta = sta_idle;
+    }
+    return ctrl;
+}
+
+void
+ctrl_block_destory(win_async_ctrl * ctrl)
+{
+	if(!ctrl) {
+		return;
+	}
+	// delete rd buff and handle
+    for (int i = 0; i < ctrl->rdarray_len; i++) {
+		(void)CloseHandle(ctrl->rdarray[i].ov.hEvent);
+    }
+	free(ctrl->rdarray);
+	free(ctrl->rdhandles);
+	// delete wr buff and handle
+    for (int i = 0; i < ctrl->wrarray_len; i++) {
+		(void)CloseHandle(ctrl->wrarray[i].ov.hEvent);
+    }
+	free(ctrl->wrarray);
+	free(ctrl->wrhandles);
+	// free ctrl block
+    free(ctrl);
+}
+
+
 /* This one is from Fabien Pichot, in the tNETacle source code */
 static LPWSTR
 formated_error(LPWSTR pMessage, DWORD m, ...) {
@@ -184,18 +257,19 @@ tuntap_start(struct device *dev, int mode, int tun) {
 
 	dev->tun_fd = tun_fd;
 
-    memset(&dev->ovrd, 0, sizeof(OVERLAPPED));
-    memset(&dev->ovwr, 0, sizeof(OVERLAPPED));
+	if(dev->private) {
+		return 0;
+	}
 
-	dev->ovwr.hEvent = CreateEvent(NULL, TRUE, TRUE, NULL);
-	dev->ovrd.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+    dev->private = ctrl_block_init(WIN_BUFF_NUM, WIN_BUFF_SIZE, WIN_BUFF_NUM, WIN_BUFF_SIZE);
     return 0;
 }
 
 void
 tuntap_release(struct device *dev) {
 	(void)CloseHandle(dev->tun_fd);
-	free(dev);
+    ctrl_block_destory(dev->private);
+    free(dev);
 }
 
 char *
@@ -313,53 +387,87 @@ tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s, uint32_t mask) {
 
 int
 tuntap_read(struct device *dev, void *buf, size_t size) {
-	DWORD len = 0;
+    win_async_ctrl* ctrl       = (win_async_ctrl*)dev->private;
+    HANDLE*         wait_array = ctrl->rdhandles;
+    int             wait_index = 0;
+    // set all idle buff to readfile and set wait array
+    for (int i = 0; i < ctrl->rdarray_len; i++) {
+        switch (ctrl->rdarray[i].sta) {
+        case sta_idle: {
+            ResetEvent(ctrl->rdarray[i].ov.hEvent);
+            int sta = ReadFile(dev->tun_fd,
+                               ctrl->rdarray[i].buffer,
+                               (DWORD)ctrl->rdarray[i].bufferlen,
+                               NULL,
+                               &ctrl->rdarray[i].ov);
 
-	ResetEvent(dev->ovrd.hEvent);
-
-	if (ReadFile(dev->tun_fd, buf, (DWORD)size, &len, &dev->ovrd) == 0) {
-		int errcode = GetLastError();
-
-		if(errcode == ERROR_IO_PENDING) {
-            int ret = GetOverlappedResult(dev->tun_fd, &dev->ovrd, &len, TRUE);
-			if (ret) {
-                ResetEvent(dev->ovrd.hEvent);
-                return len;
+            if (sta == 0 || (sta && GetLastError() == ERROR_IO_PENDING)) {
+                ctrl->rdarray[i].sta   = sta_work;
+                wait_array[wait_index] = &ctrl->rdarray[i].ov.hEvent;
+                wait_index++;
             } else {
-				tuntap_log(TUNTAP_LOG_ERR, "read pending");
-				return -1;
-			}
-		} else {
-			tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
-		}
-	}
-    SetEvent(dev->ovrd.hEvent);
-    return (int)len;
+				// warning here there is something err
+                tuntap_log(TUNTAP_LOG_ERR, (const char*)formated_error(L"%1%0", GetLastError()));
+            }
+        } break;
+        case sta_work:
+            wait_array[wait_index] = &ctrl->rdarray[i].ov.hEvent;
+            wait_index++;
+            break;
+        default:
+			// warning here there is something err
+            tuntap_log(TUNTAP_LOG_ERR, (const char*)formated_error(L"error sta %d", ctrl->rdarray[i].sta));
+            break;
+        }
+    }
+    // wait any readfile object is ok
+    DWORD index = WaitForMultipleObjects(wait_index, wait_array, FALSE, INFINITE);
+    // return the data
+    if (index >= WAIT_OBJECT_0 && index < WAIT_OBJECT_0 + wait_index) {
+        HANDLE evthd = wait_array[index - WAIT_OBJECT_0];
+        for (int i = 0; i < ctrl->rdarray_len; i++) {
+            if (ctrl->rdarray[i].ov.hEvent == evthd) {
+                ctrl->rdarray->sta = sta_idle;
+                memcpy(buf, ctrl->rdarray[i].buffer, ctrl->rdarray[i].ov.InternalHigh);
+                return (int)ctrl->rdarray[i].ov.InternalHigh;
+            }
+        }
+    }
+    return -1;
 }
 
 int
 tuntap_write(struct device *dev, void *buf, size_t size) {
-	DWORD len = 0;
-	ResetEvent(dev->ovwr.hEvent);
+    win_async_ctrl* ctrl = (win_async_ctrl*)dev->private;
+    // check if any buff can write
+    for (int i = 0; i < ctrl->wrarray_len; i++) {
+        if (ctrl->wrarray[i].sta == sta_idle) {
+            ResetEvent(ctrl->wrarray[i].ov.hEvent);
+            memcpy(ctrl->wrarray[i].buffer, buf, size);
+            WriteFile(dev->tun_fd, ctrl->wrarray[i].buffer, (DWORD)size, NULL, &ctrl->wrarray[i].ov);
+            return (int)size;
+        }
+    }
 
-	if (WriteFile(dev->tun_fd, buf, (DWORD)size, &len, &dev->ovwr) == 0) {
-		int errcode = GetLastError();
-		if(errcode == ERROR_IO_PENDING) {
-            int ret = GetOverlappedResult(dev->tun_fd, &dev->ovwr, &len, TRUE);
-			if (ret) {
-                ResetEvent(dev->ovwr.hEvent);
-                return len;
-            } else {
-				tuntap_log(TUNTAP_LOG_ERR, "write pending");
-				return -1;
-			}
-		} else {
-			tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
-		}
-	}
-    SetEvent(dev->ovwr.hEvent);
+    // set wait array
+    HANDLE* wait_array = ctrl->wrhandles;
+    for (int i = 0; i < ctrl->wrarray_len; i++) {
+        wait_array[i] = ctrl->wrarray[i].ov.hEvent;
+    }
 
-	return (int)len;
+    DWORD index = WaitForMultipleObjects(ctrl->wrarray_len, wait_array, FALSE, INFINITE);
+    // check object and set sta to idle
+    if (index >= WAIT_OBJECT_0 && index < WAIT_OBJECT_0 + ctrl->wrarray_len) {
+        HANDLE evthd = wait_array[index - WAIT_OBJECT_0];
+        for (int i = 0; i < ctrl->rdarray_len; i++) {
+            if (ctrl->wrarray[i].ov.hEvent == evthd) {
+                ctrl->wrarray[i].sta = sta_idle;
+                break;
+            }
+        }
+    }
+    // restart write again
+    return tuntap_write(dev, buf, size);
 }
 
 int
