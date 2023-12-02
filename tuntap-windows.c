@@ -183,7 +183,13 @@ tuntap_start(struct device *dev, int mode, int tun) {
 	}
 
 	dev->tun_fd = tun_fd;
-	return 0;
+
+    memset(&dev->ovrd, 0, sizeof(OVERLAPPED));
+    memset(&dev->ovwr, 0, sizeof(OVERLAPPED));
+
+	dev->ovwr.hEvent = CreateEvent(NULL, TRUE, TRUE, NULL);
+	dev->ovrd.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+    return 0;
 }
 
 void
@@ -263,7 +269,7 @@ tuntap_get_mtu(struct device *dev) {
 		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
 		return -1;
     }
-	return 0;
+	return mtu;
 }
 
 int
@@ -307,28 +313,51 @@ tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s, uint32_t mask) {
 
 int
 tuntap_read(struct device *dev, void *buf, size_t size) {
-	DWORD len;
+	DWORD len = 0;
 
-	if (ReadFile(dev->tun_fd, buf, (DWORD)size, &len, NULL) == 0) {
+	ResetEvent(dev->ovrd.hEvent);
+
+	if (ReadFile(dev->tun_fd, buf, (DWORD)size, &len, &dev->ovrd) == 0) {
 		int errcode = GetLastError();
 
-		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
-		return -1;
+		if(errcode == ERROR_IO_PENDING) {
+            int ret = GetOverlappedResult(dev->tun_fd, &dev->ovrd, &len, TRUE);
+			if (ret) {
+                ResetEvent(dev->ovrd.hEvent);
+                return len;
+            } else {
+				tuntap_log(TUNTAP_LOG_ERR, "read pending");
+				return -1;
+			}
+		} else {
+			tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
+		}
 	}
-
-	return (int)len;
+    SetEvent(dev->ovrd.hEvent);
+    return (int)len;
 }
 
 int
 tuntap_write(struct device *dev, void *buf, size_t size) {
-	DWORD len;
+	DWORD len = 0;
+	ResetEvent(dev->ovwr.hEvent);
 
-	if (WriteFile(dev->tun_fd, buf, (DWORD)size, &len, NULL) == 0) {
+	if (WriteFile(dev->tun_fd, buf, (DWORD)size, &len, &dev->ovwr) == 0) {
 		int errcode = GetLastError();
-
-		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
-		return -1;
+		if(errcode == ERROR_IO_PENDING) {
+            int ret = GetOverlappedResult(dev->tun_fd, &dev->ovwr, &len, TRUE);
+			if (ret) {
+                ResetEvent(dev->ovwr.hEvent);
+                return len;
+            } else {
+				tuntap_log(TUNTAP_LOG_ERR, "write pending");
+				return -1;
+			}
+		} else {
+			tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
+		}
 	}
+    SetEvent(dev->ovwr.hEvent);
 
 	return (int)len;
 }
