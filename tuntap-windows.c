@@ -59,66 +59,75 @@ typedef struct {
     OVERLAPPED ov;
     buf_sta    sta;
     int        bufferlen;
-    char       buffer[0];
+    char*      buffer;
 } win_async_node;
 
 typedef struct {
     int             rdarray_len;
     win_async_node* rdarray;
 	HANDLE        * rdhandles;
+    char*           rdbuff;
     int             wrarray_len;
     win_async_node* wrarray;
 	HANDLE        * wrhandles;
+    char*           wrbuff;
 } win_async_ctrl;
 
 static win_async_ctrl*
-ctrl_block_init(int rd_cnt, int rd_buf_len, int wr_cnt, int wr_buf_len)
-{
+ctrl_block_init(int rd_cnt, int rd_buf_len, int wr_cnt, int wr_buf_len) {
     win_async_ctrl* ctrl = malloc(sizeof(win_async_ctrl));
+
+    int alloc_rd = (rd_buf_len + 31) / 32 * 32;
+    int alloc_wr = (wr_buf_len + 31) / 32 * 32;
 
     ctrl->rdarray_len = rd_cnt;
     ctrl->wrarray_len = wr_cnt;
-    ctrl->rdarray     = malloc((sizeof(win_async_node) + rd_buf_len) * rd_cnt);
-    ctrl->wrarray     = malloc((sizeof(win_async_node) + wr_buf_len) * wr_cnt);
+    ctrl->rdarray     = malloc(sizeof(win_async_node) * rd_cnt);
+    ctrl->wrarray     = malloc(sizeof(win_async_node) * wr_cnt);
     ctrl->rdhandles   = malloc(sizeof(HANDLE) * rd_cnt);
-    ctrl->wrhandles   = malloc(sizeof(HANDLE) * rd_cnt);
+    ctrl->wrhandles   = malloc(sizeof(HANDLE) * wr_cnt);
+    ctrl->rdbuff      = _aligned_malloc(alloc_rd * rd_cnt, 32);
+    ctrl->wrbuff      = _aligned_malloc(alloc_wr * wr_cnt, 32);
+
     for (int i = 0; i < rd_cnt; i++) {
         ctrl->rdarray[i].bufferlen = rd_buf_len;
         ctrl->rdarray[i].ov.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
         memset(&ctrl->rdarray[i].ov, 0, sizeof(OVERLAPPED));
-        ctrl->rdarray[i].sta = sta_idle;
+        ctrl->rdarray[i].sta    = sta_idle;
+        ctrl->rdarray[i].buffer = ctrl->rdbuff + i * alloc_rd;
     }
     for (int i = 0; i < wr_cnt; i++) {
         ctrl->wrarray[i].bufferlen = wr_buf_len;
         ctrl->wrarray[i].ov.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
         memset(&ctrl->wrarray[i].ov, 0, sizeof(OVERLAPPED));
-        ctrl->wrarray[i].sta = sta_idle;
+        ctrl->wrarray[i].sta    = sta_idle;
+        ctrl->wrarray[i].buffer = ctrl->wrbuff + i * alloc_wr;
     }
     return ctrl;
 }
 
-void
-ctrl_block_destory(win_async_ctrl * ctrl)
-{
-	if(!ctrl) {
-		return;
-	}
-	// delete rd buff and handle
+static void
+ctrl_block_destory(win_async_ctrl* ctrl) {
+    if (!ctrl) {
+        return;
+    }
+    // delete rd buff and handle
     for (int i = 0; i < ctrl->rdarray_len; i++) {
-		(void)CloseHandle(ctrl->rdarray[i].ov.hEvent);
+        (void)CloseHandle(ctrl->rdarray[i].ov.hEvent);
     }
-	free(ctrl->rdarray);
-	free(ctrl->rdhandles);
-	// delete wr buff and handle
+    free(ctrl->rdarray);
+    free(ctrl->rdhandles);
+    _aligned_free(ctrl->rdbuff);
+    // delete wr buff and handle
     for (int i = 0; i < ctrl->wrarray_len; i++) {
-		(void)CloseHandle(ctrl->wrarray[i].ov.hEvent);
+        (void)CloseHandle(ctrl->wrarray[i].ov.hEvent);
     }
-	free(ctrl->wrarray);
-	free(ctrl->wrhandles);
-	// free ctrl block
+    free(ctrl->wrarray);
+    free(ctrl->wrhandles);
+    _aligned_free(ctrl->wrbuff);
+    // free ctrl block
     free(ctrl);
 }
-
 
 /* This one is from Fabien Pichot, in the tNETacle source code */
 static LPWSTR
@@ -406,7 +415,7 @@ tuntap_read(struct device *dev, void *buf, size_t size) {
                 wait_array[wait_index] = &ctrl->rdarray[i].ov.hEvent;
                 wait_index++;
             } else {
-				// warning here there is something err
+                // warning here there is something err
                 tuntap_log(TUNTAP_LOG_ERR, (const char*)formated_error(L"%1%0", GetLastError()));
             }
         } break;
@@ -415,7 +424,7 @@ tuntap_read(struct device *dev, void *buf, size_t size) {
             wait_index++;
             break;
         default:
-			// warning here there is something err
+            // warning here there is something err
             tuntap_log(TUNTAP_LOG_ERR, (const char*)formated_error(L"error sta %d", ctrl->rdarray[i].sta));
             break;
         }
