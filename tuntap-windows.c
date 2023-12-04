@@ -436,9 +436,16 @@ tuntap_read(struct device *dev, void *buf, size_t size) {
         HANDLE evthd = wait_array[index - WAIT_OBJECT_0];
         for (int i = 0; i < ctrl->rdarray_len; i++) {
             if (ctrl->rdarray[i].ov.hEvent == evthd) {
+				// get output data and reset event
+                DWORD reslen;
+                int   res = GetOverlappedResult(dev->tun_fd,          // handle to pipe
+                                              &ctrl->rdarray[i].ov, // OVERLAPPED structure
+                                              &reslen,              // bytes transferred
+                                              FALSE);               // do not wait
+
                 ctrl->rdarray->sta = sta_idle;
-                memcpy(buf, ctrl->rdarray[i].buffer, ctrl->rdarray[i].ov.InternalHigh);
-                return (int)ctrl->rdarray[i].ov.InternalHigh;
+                memcpy(buf, ctrl->rdarray[i].buffer, reslen);
+                return (int)reslen;
             }
         }
     }
@@ -470,6 +477,12 @@ tuntap_write(struct device *dev, void *buf, size_t size) {
         HANDLE evthd = wait_array[index - WAIT_OBJECT_0];
         for (int i = 0; i < ctrl->rdarray_len; i++) {
             if (ctrl->wrarray[i].ov.hEvent == evthd) {
+				// reset event
+                DWORD reslen;
+                int   res            = GetOverlappedResult(dev->tun_fd,          // handle to pipe
+                                              &ctrl->wrarray[i].ov, // OVERLAPPED structure
+                                              &reslen,              // bytes transferred
+                                              FALSE);               // do not wait
                 ctrl->wrarray[i].sta = sta_idle;
                 break;
             }
