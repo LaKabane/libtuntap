@@ -91,15 +91,17 @@ ctrl_block_init(int rd_cnt, int rd_buf_len, int wr_cnt, int wr_buf_len) {
 
     for (int i = 0; i < rd_cnt; i++) {
         ctrl->rdarray[i].bufferlen = rd_buf_len;
-        ctrl->rdarray[i].ov.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
         memset(&ctrl->rdarray[i].ov, 0, sizeof(OVERLAPPED));
+        ctrl->rdarray[i].ov.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+
         ctrl->rdarray[i].sta    = sta_idle;
         ctrl->rdarray[i].buffer = ctrl->rdbuff + i * alloc_rd;
     }
     for (int i = 0; i < wr_cnt; i++) {
         ctrl->wrarray[i].bufferlen = wr_buf_len;
-        ctrl->wrarray[i].ov.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
         memset(&ctrl->wrarray[i].ov, 0, sizeof(OVERLAPPED));
+        ctrl->wrarray[i].ov.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+
         ctrl->wrarray[i].sta    = sta_idle;
         ctrl->wrarray[i].buffer = ctrl->wrbuff + i * alloc_wr;
     }
@@ -403,7 +405,6 @@ tuntap_read(struct device *dev, void *buf, size_t size) {
     for (int i = 0; i < ctrl->rdarray_len; i++) {
         switch (ctrl->rdarray[i].sta) {
         case sta_idle: {
-            ResetEvent(ctrl->rdarray[i].ov.hEvent);
             int sta = ReadFile(dev->tun_fd,
                                ctrl->rdarray[i].buffer,
                                (DWORD)ctrl->rdarray[i].bufferlen,
@@ -412,7 +413,7 @@ tuntap_read(struct device *dev, void *buf, size_t size) {
 
             if (sta == 0 || (sta && GetLastError() == ERROR_IO_PENDING)) {
                 ctrl->rdarray[i].sta   = sta_work;
-                wait_array[wait_index] = &ctrl->rdarray[i].ov.hEvent;
+                wait_array[wait_index] = ctrl->rdarray[i].ov.hEvent;
                 wait_index++;
             } else {
                 // warning here there is something err
@@ -420,7 +421,7 @@ tuntap_read(struct device *dev, void *buf, size_t size) {
             }
         } break;
         case sta_work:
-            wait_array[wait_index] = &ctrl->rdarray[i].ov.hEvent;
+            wait_array[wait_index] = ctrl->rdarray[i].ov.hEvent;
             wait_index++;
             break;
         default:
@@ -458,7 +459,7 @@ tuntap_write(struct device *dev, void *buf, size_t size) {
     // check if any buff can write
     for (int i = 0; i < ctrl->wrarray_len; i++) {
         if (ctrl->wrarray[i].sta == sta_idle) {
-            ResetEvent(ctrl->wrarray[i].ov.hEvent);
+            ctrl->wrarray[i].sta = sta_work;
             memcpy(ctrl->wrarray[i].buffer, buf, size);
             WriteFile(dev->tun_fd, ctrl->wrarray[i].buffer, (DWORD)size, NULL, &ctrl->wrarray[i].ov);
             return (int)size;
@@ -477,7 +478,7 @@ tuntap_write(struct device *dev, void *buf, size_t size) {
         HANDLE evthd = wait_array[index - WAIT_OBJECT_0];
         for (int i = 0; i < ctrl->rdarray_len; i++) {
             if (ctrl->wrarray[i].ov.hEvent == evthd) {
-				// reset event
+                // reset event
                 DWORD reslen;
                 int   res            = GetOverlappedResult(dev->tun_fd,          // handle to pipe
                                               &ctrl->wrarray[i].ov, // OVERLAPPED structure
