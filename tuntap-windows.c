@@ -444,7 +444,7 @@ tuntap_read(struct device *dev, void *buf, size_t size) {
                                               &reslen,              // bytes transferred
                                               FALSE);               // do not wait
 
-                ctrl->rdarray->sta = sta_idle;
+                ctrl->rdarray[i].sta = sta_idle;
                 memcpy(buf, ctrl->rdarray[i].buffer, reslen);
                 return (int)reslen;
             }
