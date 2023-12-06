@@ -208,14 +208,16 @@ tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s6, uint32_t prefixLen) 
 	(void)memset(&ifrv6, '\0', sizeof ifrv6);
 	ifrv6.ifr6_ifindex = dev->ifr6_ifindex;
 	/* Delete previously assigned ipv6 address */
-	(void)ioctl(dev->ctrl_sock6, SIOCDIFADDR, &ifrv6);
+	(void)ioctl(fd, SIOCDIFADDR, &ifrv6);
 	ifrv6.ifr6_prefixlen = prefixLen;
 	(void)memcpy(&ifrv6.ifr6_addr, s6, sizeof(t_tun_in6_addr));
 
-	if (ioctl(dev->ctrl_sock6, SIOCSIFADDR, &ifrv6) == -1) {
+	if (ioctl(fd, SIOCSIFADDR, &ifrv6) == -1) {
 		tuntap_log(TUNTAP_LOG_ERR, "Can't set IPv6 address");
+		(void)close(fd);
 		return -1;
 	}
+	(void)close(fd);
 	return 0;
 }
 

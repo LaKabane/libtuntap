@@ -63,13 +63,6 @@ tuntap_start(struct device *dev, int mode, int tun) {
 	}
 	dev->ctrl_sock = sock;
 
-	int sock6 = -1;
-	sock6 = socket(AF_INET6, SOCK_DGRAM, 0);
-	if (sock6 == -1) {
-		goto clean;
-	}
-	dev->ctrl_sock6 = sock6;
-
 	if (mode & TUNTAP_MODE_PERSIST && tun == TUNTAP_ID_ANY) {
 		goto clean; /* XXX: Explain why */
 	}
@@ -90,9 +83,6 @@ clean:
 	if (sock != -1) {
 		(void)close(sock);
 	}
-	if (sock6 != -1){
-		(void)close(sock6);
-	}
 	return -1;
 }
 
@@ -100,7 +90,6 @@ void
 tuntap_release(struct device *dev) {
 	(void)close(dev->tun_fd);
 	(void)close(dev->ctrl_sock);
-	(void)close(dev->ctrl_sock6);
 	free(dev);
 }
 
