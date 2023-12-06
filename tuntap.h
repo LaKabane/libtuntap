@@ -39,8 +39,6 @@
 # define TUNTAP_VERSION_MINOR 4
 # define TUNTAP_VERSION ((TUNTAP_VERSION_MAJOR<<8)|TUNTAP_VERSION_MINOR)
 
-# define enable_ipv6
-
 # ifdef __cplusplus
 extern "C" {
 # endif

@@ -87,23 +87,20 @@ typedef struct in_addr t_tun_in_addr;
 typedef struct in6_addr t_tun_in6_addr;
 # endif
 
-#ifdef enable_ipv6
 struct in6_ifreq {
     struct in6_addr     ifr6_addr;
     u_int32_t           ifr6_prefixlen;
     int                 ifr6_ifindex; /* Interface index */
 };
-#endif
+
 struct device {
 	t_tun		tun_fd;
 	int		ctrl_sock;
 	int		flags;     /* ifr.ifr_flags on Unix */
 	unsigned char	hwaddr[ETHER_ADDR_LEN];
 	char		if_name[IF_NAMESIZE + 1];
-	#if defined enable_ipv6
-		int ifr6_ifindex;
-		int ctrl_sock6;
-	#endif
+	int ifr6_ifindex;
+	int ctrl_sock6;
 };
 
 /*

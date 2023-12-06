@@ -113,7 +113,6 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	(void)memcpy(dev->if_name, ifr.ifr_name, sizeof ifr.ifr_name);
 
 	
-#ifdef enable_ipv6
 	/* get the ifindex for ipv6*/
 	
 	if (ioctl(dev->ctrl_sock, SIOCGIFINDEX, &ifr) == -1) {
@@ -121,7 +120,6 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	    	return -1;
 	}
 	dev->ifr6_ifindex = ifr.ifr_ifindex;
-#endif
 
 	/* Save pre-existing MAC address */
 	if (mode == TUNTAP_MODE_ETHERNET) {
@@ -196,7 +194,7 @@ tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s4, uint32_t bits) {
 
 	return 0;
 }
-#ifdef enable_ipv6
+
 int
 tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s6, uint32_t prefixLen) {
 	struct in6_ifreq ifrv6;
@@ -214,16 +212,6 @@ tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s6, uint32_t prefixLen) 
 	}
 	return 0;
 }
-#else
-int
-tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s6, uint32_t bits) {
-	(void)dev;
-	(void)s6;
-	(void)bits;
-	tuntap_log(TUNTAP_LOG_NOTICE, "IPv6 is not implemented on your system");
-	return -1;
-}
-#endif
 
 int
 tuntap_sys_set_ifname(struct device *dev, const char *ifname, size_t len) {
