@@ -35,6 +35,12 @@
 #include "tuntap.h"
 #include "private.h"
 
+struct in6_ifreq {
+    struct in6_addr     ifr6_addr;
+    u_int32_t           ifr6_prefixlen;
+    int                 ifr6_ifindex; /* Interface index */
+};
+
 int
 tuntap_sys_start(struct device *dev, int mode, int tun) {
 	int fd;

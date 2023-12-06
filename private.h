@@ -87,12 +87,6 @@ typedef struct in_addr t_tun_in_addr;
 typedef struct in6_addr t_tun_in6_addr;
 # endif
 
-struct in6_ifreq {
-    struct in6_addr     ifr6_addr;
-    u_int32_t           ifr6_prefixlen;
-    int                 ifr6_ifindex; /* Interface index */
-};
-
 struct device {
 	t_tun		tun_fd;
 	int		ctrl_sock;
