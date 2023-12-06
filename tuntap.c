@@ -45,7 +45,6 @@ tuntap_init(void) {
 	dev->tun_fd = TUNFD_INVALID_VALUE;
 	dev->ctrl_sock = -1;
 	dev->flags = 0;
-	dev->ifr6_ifindex = -1;
 	tuntap_log = tuntap_log_default;
 	return dev;
 }
