@@ -58,6 +58,14 @@ if(NOT Linux)
   set_tests_properties(tuntap.test41 PROPERTIES WILL_FAIL true)
 endif()
 
+# Only Linux has a tuntap_sys_set_ipv6() implemented
+if(NOT Linux)
+  set_tests_properties(tuntap.test15 PROPERTIES WILL_FAIL true)
+  set_tests_properties(tuntap.test16 PROPERTIES WILL_FAIL true)
+  set_tests_properties(tuntap.test19 PROPERTIES WILL_FAIL true)
+  set_tests_properties(tuntap.test20 PROPERTIES WILL_FAIL true)
+endif()
+
 # Only FreeBSD and OpenBSD have a tuntap_set_descr() implemented
 if(NOT FreeBSD AND NOT OpenBSD)
   set_tests_properties(tuntap.test44 PROPERTIES WILL_FAIL true)
