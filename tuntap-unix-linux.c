@@ -198,7 +198,13 @@ tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s4, uint32_t bits) {
 int
 tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s6, uint32_t prefixLen) {
 	struct in6_ifreq ifrv6;
+	int fd;
 
+	fd = socket(AF_INET6, SOCK_DGRAM, 0);
+	if (fd == -1) {
+		tuntap_log(TUNTAP_LOG_ERR, "IPv6 is not enabled on your system");
+		return -1;
+	}
 	(void)memset(&ifrv6, '\0', sizeof ifrv6);
 	ifrv6.ifr6_ifindex = dev->ifr6_ifindex;
 	/* Delete previously assigned ipv6 address */
