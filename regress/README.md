@@ -15,12 +15,12 @@ Regression Testing
 12. test12: Create a tunN device and turn it up
 13. test13: Create a tapN device, turn it up and set its IPv4 address
 14. test14: Create a tunN device, turn it up and set its IPv4 address
-15. TODO ~~test15: Create a tapN device, turn it up and set its IPv6 address~~
-16. TODO ~~test16: Create a tunN device, turn it up and set its IPv6 address~~
+15. test15: Create a tapN device, turn it up and set its IPv6 address
+16. test16: Create a tunN device, turn it up and set its IPv6 address
 17. test17: Create a tapN device, set its IPv4 address and turn it up
 18. test18: Create a tunN device, set its IPv4 address and turn it up
-19. TODO ~~test19: Create a tapN device, set its IPv6 address and turn it up~~
-20. TODO ~~test20: Create a tunN device, set its IPv6 address and turn it up~~
+19. test19: Create a tapN device, set its IPv6 address and turn it up
+20. test20: Create a tunN device, set its IPv6 address and turn it up
 21. test21: Create a tapN device and set its IP address to NULL
 22. test22: Create a tunN device and set its IP address to NULL
 23. test23: Create a tapN device and set its netmask to a negative value

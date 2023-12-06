@@ -22,11 +22,7 @@ main(void) {
 		tuntap_destroy(dev);
 		return 0;
 	}
-#ifdef enable_ipv6
-	if (tuntap_set_ip(dev, "fe80:1:2:3:4:5:6:7", -2) == -1) {
-		return 0;
-	}
-#endif
+
 	return 1;
 }
 
