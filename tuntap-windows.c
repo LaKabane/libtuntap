@@ -350,8 +350,11 @@ tuntap_read_tm(struct device *dev, void *buf, size_t size, int timeout_ms) {
 	ok = GetOverlappedResultEx(dev->tun_fd, &overlapped, &len, timeout, FALSE);
 	if (!ok) {
 		errcode = GetLastError();
-		if (errcode != WAIT_TIMEOUT)
+		if (errcode == ERROR_IO_INCOMPLETE || errcode == WAIT_TIMEOUT) {
+			CancelIo(dev->tun_fd);
+		} else {
 			tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
+		}
 		return -1;
 	}
 
@@ -404,8 +407,11 @@ tuntap_write_tm(struct device *dev, void *buf, size_t size, int timeout_ms) {
 	ok = GetOverlappedResultEx(dev->tun_fd, &overlapped, &len, timeout, FALSE);
 	if (!ok) {
 		errcode = GetLastError();
-		if (errcode != WAIT_TIMEOUT)
+		if (errcode == ERROR_IO_INCOMPLETE || errcode == WAIT_TIMEOUT) {
+			CancelIo(dev->tun_fd);
+		} else {
 			tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
+		}
 		return -1;
 	}
 
