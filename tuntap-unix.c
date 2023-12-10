@@ -325,7 +325,20 @@ tuntap_read2(struct device *dev, void *buf, size_t size, int timeout_ms) {
 
 int
 tuntap_write(struct device *dev, void *buf, size_t size) {
-	return tuntap_write2(dev, buf, size, -1);
+	int n;
+
+	/* Only accept started device */
+	if (dev->tun_fd == -1) {
+		tuntap_log(TUNTAP_LOG_NOTICE, "Device is not started");
+		return 0;
+	}
+
+	n = write(dev->tun_fd, buf, size);
+	if (n == -1) {
+		tuntap_log(TUNTAP_LOG_WARN, "Can't write to device");
+		return -1;
+	}
+	return n;
 }
 
 int

@@ -307,7 +307,16 @@ tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s, uint32_t mask) {
 
 int
 tuntap_read(struct device *dev, void *buf, size_t size) {
-	return tuntap_read2(dev, buf, size, -1);
+	DWORD len;
+
+	if (ReadFile(dev->tun_fd, buf, (DWORD)size, &len, NULL) == 0) {
+		int errcode = GetLastError();
+
+		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
+		return -1;
+	}
+
+	return (int)len;
 }
 
 int
@@ -351,7 +360,16 @@ tuntap_read2(struct device *dev, void *buf, size_t size, int timeout_ms) {
 
 int
 tuntap_write(struct device *dev, void *buf, size_t size) {
-	return tuntap_write2(dev, buf, size, -1);
+	DWORD len;
+
+	if (WriteFile(dev->tun_fd, buf, (DWORD)size, &len, NULL) == 0) {
+		int errcode = GetLastError();
+
+		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
+		return -1;
+	}
+
+	return (int)len;
 }
 
 int
