@@ -279,7 +279,7 @@ tuntap_read(struct device *dev, void *buf, size_t size) {
 }
 
 int
-tuntap_read2(struct device *dev, void *buf, size_t size, int timeout_ms) {
+tuntap_read_tm(struct device *dev, void *buf, size_t size, int timeout_ms) {
 	int n;
 
 	/* Only accept started device */
@@ -342,7 +342,7 @@ tuntap_write(struct device *dev, void *buf, size_t size) {
 }
 
 int
-tuntap_write2(struct device *dev, void *buf, size_t size, int timeout_ms) {
+tuntap_write_tm(struct device *dev, void *buf, size_t size, int timeout_ms) {
 	int n;
 
 	/* Only accept started device */
