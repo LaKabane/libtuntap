@@ -46,7 +46,6 @@ tuntap_init(void) {
 	dev->ctrl_sock = -1;
 	dev->flags     = 0;
 	dev->private   = 0;
-
 	tuntap_log = tuntap_log_default;
 	return dev;
 }
@@ -90,10 +89,6 @@ tuntap_set_ip(struct device *dev, const char *addr, int netmask) {
 		return -1;
 	}
 
-	/* Netmask */
-	mask = ~0;
-	mask = ~(mask >> netmask);
-	mask = htonl(mask);
 
 	/*
 	 * Destination address parsing: we try IPv4 first and fall back to
@@ -102,16 +97,16 @@ tuntap_set_ip(struct device *dev, const char *addr, int netmask) {
 	(void)memset(&baddr4, '\0', sizeof baddr4);
 	(void)memset(&baddr6, '\0', sizeof baddr6);
 
-	errval = inet_pton(AF_INET, addr, &(baddr4));
-	if (errval == 1) {
+	if (inet_pton(AF_INET, addr, &(baddr4)) == 1) {
+		/* Netmask */
+		mask = ~0;
+		mask = ~(mask >> netmask);
+		mask = htonl(mask);
 		return tuntap_sys_set_ipv4(dev, &baddr4, mask);
-	} else if (errval == 0) {
-		if (inet_pton(AF_INET6, addr, &(baddr6)) == -1) {
-			tuntap_log(TUNTAP_LOG_ERR, "Invalid parameters");
-			return -1;
-		}
-		return tuntap_sys_set_ipv6(dev, &baddr6, mask);
-	} else if (errval == -1) {
+	} else if (inet_pton(AF_INET6, addr, &(baddr6)) == 1) {
+		/* ipv6 prefix no need to convert */
+		return tuntap_sys_set_ipv6(dev, &baddr6, netmask);
+	} else {
 		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameters");
 		return -1;
 	}
