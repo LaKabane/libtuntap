@@ -63,7 +63,9 @@ tuntap::native_handle() const
 void
 tuntap::up()
 {
-    tuntap_up(_dev);
+    if (tuntap_up(_dev)) {
+        throw std::runtime_error("Failed to bring up tuntap device");
+    }
 }
 
 void
