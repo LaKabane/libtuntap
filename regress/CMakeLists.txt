@@ -34,8 +34,7 @@ endforeach(SOURCE_FILE)
 # "Will fail" tests
 # -----------------
 
-# Only NetBSD, FreeBSD and DragonFlyBSD have the debug mode compiled by default
-if(NOT NetBSD AND NOT FreeBSD AND NOT DragonFly)
+if(Darwin AND Windows)
   set_tests_properties(tuntap.test39 PROPERTIES WILL_FAIL true)
   set_tests_properties(tuntap.test40 PROPERTIES WILL_FAIL true)
 endif()
