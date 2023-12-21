@@ -71,7 +71,9 @@ tuntap::up()
 void
 tuntap::down()
 {
-    tuntap_down(_dev);
+    if (tuntap_down(_dev)) {
+        throw std::runtime_error("Failed to bring down tuntap device");
+    }
 }
 
 int
