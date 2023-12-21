@@ -113,7 +113,9 @@ tuntap::write(void *buf, size_t len)
 void
 tuntap::nonblocking(bool b)
 {
-    tuntap_set_nonblocking(_dev, int(b));
+    if (tuntap_set_nonblocking(_dev, int(b))) {
+        throw std::runtime_error("Failed to change non-blocking state for tuntap device");
+    }
 }
 
 } /* tuntap */
