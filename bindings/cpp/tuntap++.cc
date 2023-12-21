@@ -43,7 +43,7 @@ tuntap::release()
 std::string
 tuntap::name() const
 {
-    return tuntap_get_ifname(_dev);
+    return std::string(tuntap_get_ifname(_dev));
 }
 
 void
