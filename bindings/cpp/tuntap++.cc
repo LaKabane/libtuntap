@@ -85,7 +85,9 @@ tuntap::mtu() const
 void
 tuntap::mtu(int m)
 {
-    tuntap_set_mtu(_dev, m);
+    if (tuntap_set_mtu(_dev, m)) {
+        throw std::runtime_error("Failed to set mtu for tuntap device");
+    }
 }
 
 void
