@@ -93,7 +93,9 @@ tuntap::mtu(int m)
 void
 tuntap::ip(std::string const &s, int netmask)
 {
-    tuntap_set_ip(_dev, s.c_str(), netmask);
+    if (tuntap_set_ip(_dev, s.c_str(), netmask)) {
+        throw std::runtime_error("Failed to set ip for tuntap device");
+    }
 }
 
 int
