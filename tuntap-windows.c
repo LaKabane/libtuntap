@@ -327,6 +327,34 @@ tuntap_read(struct device *dev, void *buf, size_t size) {
 	return (int)len;
 }
 
+static int
+wait_completion_or_timeout(HANDLE fd, OVERLAPPED *overlapped, int timeout_ms)
+{
+	// An operation is pending (either a read or a write),
+	// so wait until either it completes or the timeout
+	// triggers. If timeout_ms < 0, then don't set a timeout.
+
+	DWORD timeout;
+	if (timeout_ms < 0)
+		timeout = INFINITE;
+	else
+		timeout = timeout_ms;
+
+	DWORD len;
+	BOOL ok = GetOverlappedResultEx(fd, overlapped, &len, timeout, FALSE);
+	if (!ok) {
+		int errcode = GetLastError();
+		if (errcode == ERROR_IO_INCOMPLETE || errcode == WAIT_TIMEOUT) {
+			CancelIo(fd);
+		} else {
+			tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
+		}
+		return -1;
+	}
+
+	return (int)len;
+}
+
 int
 tuntap_read_tm(struct device *dev, void *buf, size_t size, int timeout_ms) {
 	BOOL ok;
@@ -345,28 +373,7 @@ tuntap_read_tm(struct device *dev, void *buf, size_t size, int timeout_ms) {
 		return -1;
 	}
 
-	// Operation is pending, so wait until either it completes
-	// or the timeout triggers. If timeout_ms < 0, then don't
-	// set a timeout.
-
-	DWORD timeout;
-	if (timeout_ms < 0)
-		timeout = INFINITE;
-	else
-		timeout = timeout_ms;
-
-	ok = GetOverlappedResultEx(dev->tun_fd, &overlapped, &len, timeout, FALSE);
-	if (!ok) {
-		errcode = GetLastError();
-		if (errcode == ERROR_IO_INCOMPLETE || errcode == WAIT_TIMEOUT) {
-			CancelIo(dev->tun_fd);
-		} else {
-			tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
-		}
-		return -1;
-	}
-
-	return (int)len;
+	return wait_completion_or_timeout(dev->tun_fd, &overlapped, timeout_ms);
 }
 
 int
@@ -411,28 +418,7 @@ tuntap_write_tm(struct device *dev, void *buf, size_t size, int timeout_ms) {
 		return -1;
 	}
 
-	// Operation is pending, so wait until either it completes
-	// or the timeout triggers. If timeout_ms < 0, then don't
-	// set a timeout.
-
-	DWORD timeout;
-	if (timeout_ms < 0)
-		timeout = INFINITE;
-	else
-		timeout = timeout_ms;
-
-	ok = GetOverlappedResultEx(dev->tun_fd, &overlapped, &len, timeout, FALSE);
-	if (!ok) {
-		errcode = GetLastError();
-		if (errcode == ERROR_IO_INCOMPLETE || errcode == WAIT_TIMEOUT) {
-			CancelIo(dev->tun_fd);
-		} else {
-			tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
-		}
-		return -1;
-	}
-
-	return (int)len;
+	return wait_completion_or_timeout(dev->tun_fd, &overlapped, timeout_ms);
 }
 
 int
