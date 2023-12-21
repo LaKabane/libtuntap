@@ -49,7 +49,9 @@ tuntap::name() const
 void
 tuntap::name(std::string const &s)
 {
-    tuntap_set_ifname(_dev, s.c_str());
+    if (tuntap_set_ifname(_dev, s.c_str())) {
+        throw std::runtime_error("Failed to set ifname");
+    }
 }
 
 t_tun
