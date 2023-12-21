@@ -38,6 +38,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
@@ -278,6 +279,46 @@ tuntap_read(struct device *dev, void *buf, size_t size) {
 	return n;
 }
 
+static bool
+wait_ready_event_or_timeout(int fd, bool reading, int timeout_ms)
+{
+	if (timeout_ms < 0)
+		return true; // No timeout specified
+
+	struct timeval timeout;
+	timeout.tv_sec = timeout_ms / 1000;
+	timeout.tv_usec = (timeout_ms % 1000) * 1000;
+
+	fd_set set;
+	FD_ZERO(&set);
+	FD_SET(fd, &set);
+
+	fd_set *rdset;
+	fd_set *wrset;
+	if (reading) {
+		rdset = &set;
+		wrset = NULL;
+	} else {
+		rdset = NULL;
+		wrset = &set;
+	}
+
+	int res = select(fd+1, rdset, wrset, NULL, &timeout);
+
+	if (res < 0) {
+		tuntap_log(TUNTAP_LOG_NOTICE, "Can't run select on device");
+		return false;
+	}
+
+	if (res == 0)
+		return false; // Timed out
+
+	// Note that at this point the following is true:
+	//   res == 1 && FD_ISSET(&set, dev->tun_fd)
+
+	return true;
+}
+
 int
 tuntap_read_tm(struct device *dev, void *buf, size_t size, int timeout_ms) {
 	int n;
@@ -288,30 +329,8 @@ tuntap_read_tm(struct device *dev, void *buf, size_t size, int timeout_ms) {
 		return 0;
 	}
 
-	if (timeout_ms >= 0) {
-		// A timeout was specified
-
-		struct timeval timeout;
-		timeout.tv_sec = timeout_ms / 1000;
-		timeout.tv_usec = (timeout_ms % 1000) * 1000;
-
-		fd_set set;
-		FD_ZERO(&set);
-		FD_SET(dev->tun_fd, &set);
-
-		int res = select(dev->tun_fd+1, &set, NULL, NULL, &timeout);
-
-		if (res < 0) {
-			tuntap_log(TUNTAP_LOG_NOTICE, "Can't run select on device");
-			return -1;
-		}
-
-		if (res == 0)
-			return -1; // Timed out
-
-		// Note that at this point the following is true:
-		//   res == 1 && FD_ISSET(&set, dev->tun_fd)
-	}
+	if (!wait_ready_event_or_timeout(dev->tun_fd, true, timeout_ms))
+		return -1;
 
 	n = read(dev->tun_fd, buf, size);
 	if (n == -1) {
@@ -351,30 +370,8 @@ tuntap_write_tm(struct device *dev, void *buf, size_t size, int timeout_ms) {
 		return 0;
 	}
 
-	if (timeout_ms >= 0) {
-		// A timeout was specified
-
-		struct timeval timeout;
-		timeout.tv_sec = timeout_ms / 1000;
-		timeout.tv_usec = (timeout_ms % 1000) * 1000;
-
-		fd_set set;
-		FD_ZERO(&set);
-		FD_SET(dev->tun_fd, &set);
-
-		int res = select(dev->tun_fd+1, NULL, &set, NULL, &timeout);
-
-		if (res < 0) {
-			tuntap_log(TUNTAP_LOG_NOTICE, "Can't run select on device");
-			return -1;
-		}
-
-		if (res == 0)
-			return -1; // Timed out
-
-		// Note that at this point the following is true:
-		//   res == 1 && FD_ISSET(&set, dev->tun_fd)
-	}
+	if (!wait_ready_event_or_timeout(dev->tun_fd, false, timeout_ms))
+		return -1;
 
 	n = write(dev->tun_fd, buf, size);
 	if (n == -1) {
