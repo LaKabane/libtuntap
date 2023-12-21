@@ -1,0 +1,6 @@
+# cmake
+build/
+
+# Debian package
+deb/package/
+deb/libtuntap-dev.deb
