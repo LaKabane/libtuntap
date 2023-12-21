@@ -27,21 +27,21 @@ tuntap::~tuntap()
     }
 }
 
-tuntap::tuntap(tuntap &&t)
+tuntap::tuntap(tuntap &&t) noexcept
     : _dev(nullptr)
 {
     std::swap(t._dev, this->_dev);
 }
 
 void
-tuntap::release()
+tuntap::release() noexcept
 {
     tuntap_release(_dev);
     _started = false;
 }
 
 std::string
-tuntap::name() const
+tuntap::name() const noexcept
 {
     return std::string(tuntap_get_ifname(_dev));
 }
@@ -55,7 +55,7 @@ tuntap::name(std::string const &s)
 }
 
 t_tun
-tuntap::native_handle() const
+tuntap::native_handle() const noexcept
 {
     return tuntap_get_fd(this->_dev);
 }
@@ -77,7 +77,7 @@ tuntap::down()
 }
 
 int
-tuntap::mtu() const
+tuntap::mtu() const noexcept
 {
     return tuntap_get_mtu(_dev);
 }
@@ -105,13 +105,13 @@ tuntap::ip(std::string const &s, int netmask)
 }
 
 int
-tuntap::read(void *buf, size_t len)
+tuntap::read(void *buf, size_t len) noexcept
 {
 	return tuntap_read(_dev, buf, len);
 }
 
 int
-tuntap::write(void *buf, size_t len)
+tuntap::write(void *buf, size_t len) noexcept
 {
 	return tuntap_write(_dev, buf, len);
 }

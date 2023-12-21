@@ -15,14 +15,14 @@ class tuntap
   ~tuntap();
   tuntap(tuntap const &) = delete;
   tuntap & operator = (tuntap const &) = delete;
-  tuntap(tuntap &&);
+  tuntap(tuntap &&) noexcept;
 
   // Properties
-  std::string name() const;
+  std::string name() const noexcept;
   void name(std::string const &);
-  int mtu() const ;
+  int mtu() const noexcept;
   void mtu(int);
-  t_tun native_handle() const;
+  t_tun native_handle() const noexcept;
 
   // Network
   void up();
@@ -30,11 +30,11 @@ class tuntap
   void ip(std::string const &presentation, int netmask);
 
   //IO
-  int read(void *buf, size_t len);
-  int write(void *buf, size_t len);
+  int read(void *buf, size_t len) noexcept;
+  int write(void *buf, size_t len) noexcept;
 
   // System
-  void release();
+  void release() noexcept;
   void nonblocking(bool);
  private:
   struct device* _dev;
