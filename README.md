@@ -80,6 +80,8 @@ The following options can be tweaked:
 - `BUILD_TESTING`: Enable building of the regress tests;
 - `BUILD_SHARED_LIBS`: Build shared libraries instead of static ones.
 
+If you want to build it for a release, additionally use `-DCMAKE_BUILD_TYPE=Release` as cmake argument.
+
 #### Other languages bindings
 
 We currently provide wrappers for two other languages: C++ and Python,
