@@ -1,0 +1,17 @@
+name: main
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v2
+      - name: configure
+        run: cmake -B build -D CMAKE_BUILD_TYPE=Release 
+      - name: build
+        run: cmake --build build --parallel 2
+      # unfortunately the tests manipulate tap/tun drivers. This is not allowed in GA
+      # - name: test
+      #   run: cd build && ctest -VV

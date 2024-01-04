@@ -14,10 +14,9 @@ foreach(SOURCE_FILE ${ALL_C_TESTS})
            COMMAND $<TARGET_FILE:${TEST_NAME}>)
 endforeach(SOURCE_FILE)
 
-# Shell based tests (needs a posix shell and `ip' command)
+# Shell based tests (needs a posix shell)
 # -----------------
-find_program(IP_COMMAND ip)
-if (IP_COMMAND)
+if (UNIX)
   file(GLOB ALL_SH_TESTS test*.sh)
   foreach(SOURCE_FILE ${ALL_SH_TESTS})
     get_filename_component(TEST_NAME ${SOURCE_FILE} NAME_WE)
