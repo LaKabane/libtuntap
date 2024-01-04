@@ -53,7 +53,7 @@ formated_error(LPWSTR pMessage, DWORD m, ...) {
     LPWSTR pBuffer = NULL;
 
     va_list args = NULL;
-    va_start(args, pMessage);
+    va_start(args, m);
 
     FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
                   FORMAT_MESSAGE_ALLOCATE_BUFFER,

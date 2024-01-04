@@ -70,7 +70,6 @@ tuntap_set_ip(struct device *dev, const char *addr, int netmask) {
 	t_tun_in_addr baddr4;
 	t_tun_in6_addr baddr6;
 	uint32_t mask;
-	int errval;
 
 	/* Only accept started device */
 	if (dev->tun_fd == TUNFD_INVALID_VALUE) {
