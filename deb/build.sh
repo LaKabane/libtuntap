@@ -12,18 +12,20 @@ die () {
 )
 
 (
-    mkdir ../build
-    cd ../build
-    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr .. || die "Failed to configure project"
-    make -j "$(nproc)" || die "Failed to build project"
-    make DESTDIR="../deb/package/" install || die "Failed to install project into package directory"
+    cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -B build -S ".." || die "Failed to configure project"
+    cmake --build build || die "Failed to build project"
+    DESTDIR="../deb/package/" cmake --install build
 )
 
 mkdir -p package/DEBIAN/
 VERSION="$(git describe --long | sed 's/^libtuntap-//')"
+[ "$VERSION" ] || die "Failed to get version string"
+ARCH="$(dpkg --print-architecture)"
+[ "$ARCH" ] || die "Failed to get architecture string"
+
 cp control.template package/DEBIAN/control
 sed "s/%VERSION%/$VERSION/" -i package/DEBIAN/control
-sed "s/%ARCHITECTURE%/$(dpkg --print-architecture)/" -i package/DEBIAN/control
+sed "s/%ARCHITECTURE%/$ARCH/" -i package/DEBIAN/control
 
 mkdir -p package/usr/share/doc/libtuntap-dev/
 cp copyright package/usr/share/doc/libtuntap-dev/copyright
