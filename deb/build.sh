@@ -8,6 +8,7 @@ die () {
 
 (
     rm -rf package || die "Failed to remove old packages"
+    rm -rf ../build || die "Failed to remove build directory"
 )
 
 (
