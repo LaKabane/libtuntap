@@ -1,10 +1,10 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Source: https://github.com/LaKabane/libtuntap#license
 Upstream-Name: libtuntap
-Upstream-Contact: LaKabane <libtuntap@rooms.bouledef.eu>
+Upstream-Contact: LaKabane <tleguern+libtuntap@bouledef.eu>
 
 Files: *
-Copyright: LaKabane <libtuntap@rooms.bouledef.eu>
+Copyright: LaKabane <tleguern+libtuntap@bouledef.eu>
 License: ISC
 
 License: ISC

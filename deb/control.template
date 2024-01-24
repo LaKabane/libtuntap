@@ -4,7 +4,7 @@ Architecture: %ARCHITECTURE%
 Section: libdevel
 Priority: optional
 Homepage: https://github.com/LaKabane/libtuntap
-Maintainer: LaKabane <libtuntap@rooms.bouledef.eu>
+Maintainer: LaKabane <tleguern+libtuntap@bouledef.eu>
 Description: Portable Tun/Tap devices configuration utility/library
  TUN and TAP are virtual networking devices which allow userland applications
  to receive packets sent to it. The userland applications can also send their
