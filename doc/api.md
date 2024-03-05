@@ -86,8 +86,8 @@ This function returns the version number of libtuntap.
 You can extract the major and the minor like this:
 
     int version = tuntap_version();
-    int major = version >> 8;
-    int minor = version & major;
+    int major = (version >> 8) & 0xFF;
+    int minor = version & 0xFF;
 
 Note that this version number is not the same as the shared library version.
 
