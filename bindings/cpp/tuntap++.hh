@@ -3,6 +3,7 @@
 #define LIBTUNTAP_ALY0MA60
 
 #include <string>
+#include <memory>
 
 #include <tuntap.h>
 
@@ -12,7 +13,6 @@ class tuntap
 {
  public:
   tuntap(int, int = TUNTAP_ID_ANY);
-  ~tuntap();
   tuntap(tuntap const &) = delete;
   tuntap & operator = (tuntap const &) = delete;
   tuntap(tuntap &&) noexcept;
@@ -37,8 +37,14 @@ class tuntap
   void release() noexcept;
   void nonblocking(bool);
  private:
-  struct device* _dev;
-  bool _started;
+  class TunTapDestroyer final {
+      public:
+          void operator()(device * dev) const noexcept {
+              if (dev)
+                  ::tuntap_destroy(dev);
+          }
+  };
+  std::unique_ptr<device, TunTapDestroyer> _dev;
 };
 
 } /* tuntap */
