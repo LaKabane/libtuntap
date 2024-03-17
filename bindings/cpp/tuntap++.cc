@@ -1,9 +1,5 @@
 #include "tuntap++.hh"
 
-#include <string>
-#include <algorithm>
-#include <stdexcept>
-
 namespace tuntap {
 
 tuntap::tuntap(int mode, int id)
@@ -97,13 +93,13 @@ tuntap::ip(std::string const &s, int netmask)
 }
 
 int
-tuntap::read(void *buf, size_t len) noexcept
+tuntap::read(void *buf, std::size_t len) noexcept
 {
 	return ::tuntap_read(_dev.get(), buf, len);
 }
 
 int
-tuntap::write(void *buf, size_t len) noexcept
+tuntap::write(void *buf, std::size_t len) noexcept
 {
 	return ::tuntap_write(_dev.get(), buf, len);
 }

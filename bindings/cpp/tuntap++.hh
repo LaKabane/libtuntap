@@ -4,6 +4,8 @@
 
 #include <string>
 #include <memory>
+#include <stdexcept>
+#include <cstddef>
 
 #include <tuntap.h>
 
@@ -30,8 +32,8 @@ class tuntap
   void ip(std::string const &presentation, int netmask);
 
   //IO
-  int read(void *buf, size_t len) noexcept;
-  int write(void *buf, size_t len) noexcept;
+  int read(void *buf, std::size_t len) noexcept;
+  int write(void *buf, std::size_t len) noexcept;
 
   // System
   void release() noexcept;
