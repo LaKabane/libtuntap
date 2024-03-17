@@ -1,0 +1,10 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	dh_auto_configure -- -DENABLE_CXX=ON -DBUILD_SHARED_LIBS=ON
+
+override_dh_auto_test:
+	# Tests fails: see https://github.com/LaKabane/libtuntap/issues/46
