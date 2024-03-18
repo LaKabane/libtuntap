@@ -2,6 +2,12 @@
 #ifndef LIBTUNTAP_ALY0MA60
 #define LIBTUNTAP_ALY0MA60
 
+#if __cplusplus >= 202002L
+    #define LIBTUNTAP_ALY0MA60_CONSTEXPR constexpr
+#else
+    #define LIBTUNTAP_ALY0MA60_CONSTEXPR
+#endif
+
 #include <string>
 #include <memory>
 #include <stdexcept>
@@ -41,7 +47,7 @@ class tuntap
  private:
   class TunTapDestroyer final {
       public:
-          void operator()(device * dev) const noexcept {
+          LIBTUNTAP_ALY0MA60_CONSTEXPR void operator()(device * dev) const noexcept {
               if (dev)
                   ::tuntap_destroy(dev);
           }
