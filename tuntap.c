@@ -97,9 +97,13 @@ tuntap_set_ip(struct device *dev, const char *addr, int netmask) {
 
 	if (inet_pton(AF_INET, addr, &(baddr4)) == 1) {
 		/* Netmask */
-		mask = ~0;
-		mask = ~(mask >> netmask);
-		mask = htonl(mask);
+		if (netmask == 32) {
+			mask = htonl(INADDR_NONE);
+		} else {
+			mask = ~0;
+			mask = ~(mask >> netmask);
+			mask = htonl(mask);
+		}
 		return tuntap_sys_set_ipv4(dev, &baddr4, mask);
 	} else if (inet_pton(AF_INET6, addr, &(baddr6)) == 1) {
 		/* ipv6 prefix no need to convert */
