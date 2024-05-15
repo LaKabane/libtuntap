@@ -1,210 +1,115 @@
 #include "tuntap++.hh"
 
-#include <string>
-#include <algorithm>
-#include <stdexcept>
-
 namespace tuntap {
 
-tun::tun()
-    : _dev{tuntap_init()}, _started{true}
+tuntap::tuntap(int mode, int id)
+    : _dev{::tuntap_init()}
 {
-    if (tuntap_start(_dev, TUNTAP_MODE_TUNNEL, TUNTAP_ID_ANY) == -1) {
+    if (mode != TUNTAP_MODE_ETHERNET && mode != TUNTAP_MODE_TUNNEL) {
+        throw std::invalid_argument("Unknown tuntap mode");
+    }
+    if (id < 0 || id > TUNTAP_ID_MAX) {
+        throw std::invalid_argument("Tunnel ID is invalid");
+    }
+    if (::tuntap_start(_dev.get(), mode, id)) {
         throw std::runtime_error("tuntap_start failed");
     }
 }
 
-tun::~tun()
+tuntap::tuntap(tuntap &&t) noexcept
+    : _dev()
 {
-    if (_started) {
-        tuntap_destroy(_dev);
-    }
-}
-
-tun::tun(tun &&t)
-    : _dev(nullptr)
-{
-    std::swap(t._dev, this->_dev);
+    t._dev.swap(this->_dev);
 }
 
 void
-tun::release()
+tuntap::release() noexcept
 {
-    tuntap_release(_dev);
-    _started = false;
+    _dev.release();
 }
 
 std::string
-tun::name() const
+tuntap::name() const noexcept
 {
-    return tuntap_get_ifname(_dev);
+    return std::string(::tuntap_get_ifname(_dev.get()));
 }
 
 void
-tun::name(std::string const &s)
+tuntap::name(std::string const &s)
 {
-    tuntap_set_ifname(_dev, s.c_str());
+    if (::tuntap_set_ifname(_dev.get(), s.c_str())) {
+        throw std::runtime_error("Failed to set ifname");
+    }
 }
 
 t_tun
-tun::native_handle() const
+tuntap::native_handle() const noexcept
 {
-    return tuntap_get_fd(this->_dev);
+    return ::tuntap_get_fd(_dev.get());
 }
 
 void
-tun::up()
+tuntap::up()
 {
-    tuntap_up(_dev);
-}
-
-void
-tun::down()
-{
-    tuntap_down(_dev);
-}
-
-int
-tun::mtu() const
-{
-    return tuntap_get_mtu(_dev);
-}
-
-void
-tun::mtu(int m)
-{
-    tuntap_set_mtu(_dev, m);
-}
-
-void
-tun::ip(std::string const &s, int netmask)
-{
-    tuntap_set_ip(_dev, s.c_str(), netmask);
-}
-
-int
-tun::read(void *buf, size_t len)
-{
-	return tuntap_read(_dev, buf, len);
-}
-
-int
-tun::write(void *buf, size_t len)
-{
-	return tuntap_write(_dev, buf, len);
-}
-
-void
-tun::nonblocking(bool b)
-{
-    tuntap_set_nonblocking(_dev, int(b));
-}
-
-tap::tap()
-    : _dev{tuntap_init()}, _started{true}
-{
-    if (tuntap_start(_dev, TUNTAP_MODE_ETHERNET, TUNTAP_ID_ANY) == -1) {
-        throw std::runtime_error("tuntap_start failed");
+    if (::tuntap_up(_dev.get())) {
+        throw std::runtime_error("Failed to bring up tuntap device");
     }
 }
 
-tap::~tap()
+void
+tuntap::down()
 {
-    if (_started) {
-        tuntap_destroy(_dev);
+    if (::tuntap_down(_dev.get())) {
+        throw std::runtime_error("Failed to bring down tuntap device");
     }
 }
 
-tap::tap(tap &&t)
-    : _dev(nullptr)
+int
+tuntap::mtu() const noexcept
 {
-    std::swap(t._dev, this->_dev);
-}
-
-
-void
-tap::release()
-{
-    tuntap_release(_dev);
-    _started = false;
-}
-
-std::string
-tap::name() const
-{
-    return tuntap_get_ifname(_dev);
+    return ::tuntap_get_mtu(_dev.get());
 }
 
 void
-tap::name(std::string const &s)
+tuntap::mtu(int m)
 {
-    tuntap_set_ifname(_dev, s.c_str());
-}
-
-std::string
-tap::hwaddr() const
-{
-    return tuntap_get_hwaddr(_dev);
-}
-
-void
-tap::hwaddr(std::string const &s)
-{
-    tuntap_set_hwaddr(_dev, s.c_str());
-}
-
-t_tun
-tap::native_handle() const
-{
-    return tuntap_get_fd(this->_dev);
+    if (m < 1 || m > 65535) {
+        throw std::invalid_argument("Invalid mtu");
+    }
+    if (::tuntap_set_mtu(_dev.get(), m)) {
+        throw std::runtime_error("Failed to set mtu for tuntap device");
+    }
 }
 
 void
-tap::up()
+tuntap::ip(std::string const &s, int netmask)
 {
-    tuntap_up(_dev);
-}
-
-void
-tap::down()
-{
-    tuntap_down(_dev);
+    if (netmask > 128) {
+        throw std::invalid_argument("Invalid netmask");
+    }
+    if (::tuntap_set_ip(_dev.get(), s.c_str(), netmask)) {
+        throw std::runtime_error("Failed to set ip for tuntap device");
+    }
 }
 
 int
-tap::mtu() const
+tuntap::read(void *buf, std::size_t len) noexcept
 {
-    return tuntap_get_mtu(_dev);
-}
-
-void
-tap::mtu(int m)
-{
-    tuntap_set_mtu(_dev, m);
-}
-
-void
-tap::ip(std::string const &s, int netmask)
-{
-    tuntap_set_ip(_dev, s.c_str(), netmask);
+	return ::tuntap_read(_dev.get(), buf, len);
 }
 
 int
-tap::read(void *buf, size_t len)
+tuntap::write(void *buf, std::size_t len) noexcept
 {
-	return tuntap_read(_dev, buf, len);
-}
-
-int
-tap::write(void *buf, size_t len)
-{
-	return tuntap_write(_dev, buf, len);
+	return ::tuntap_write(_dev.get(), buf, len);
 }
 
 void
-tap::nonblocking(bool b)
+tuntap::nonblocking(bool b)
 {
-    tuntap_set_nonblocking(_dev, int(b));
+    if (::tuntap_set_nonblocking(_dev.get(), static_cast<int>(b))) {
+        throw std::runtime_error("Failed to change non-blocking state for tuntap device");
+    }
 }
 
 } /* tuntap */
