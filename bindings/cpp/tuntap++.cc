@@ -8,7 +8,7 @@ tuntap::tuntap(int mode, int id)
     if (mode != TUNTAP_MODE_ETHERNET && mode != TUNTAP_MODE_TUNNEL) {
         throw std::invalid_argument("Unknown tuntap mode");
     }
-    if (id < 0 || id > TUNTAP_ID_MAX) {
+    if (id < 0 || id > TUNTAP_ID_ANY) {
         throw std::invalid_argument("Tunnel ID is invalid");
     }
     if (::tuntap_start(_dev.get(), mode, id)) {
