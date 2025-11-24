@@ -4,21 +4,21 @@
 
 #include <stdio.h>
 #if defined Windows
-# include <windows.h>
+#include <windows.h>
 #endif
 
 #include "tuntap.h"
 
 int
-main(void) {
+main(void)
+{
 	struct device *dev;
 
 	dev = tuntap_init();
 	if (tuntap_start(dev, TUNTAP_MODE_TUNNEL, -1) == -1) {
-	    tuntap_destroy(dev);
-	    return 0;
+		tuntap_destroy(dev);
+		return 0;
 	}
 
 	return 1;
 }
-

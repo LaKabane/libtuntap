@@ -5,13 +5,14 @@
 #include <stdio.h>
 #include <string.h>
 #if defined Windows
-# include <windows.h>
+#include <windows.h>
 #endif
 
 #include "tuntap.h"
 
 int
-main(void) {
+main(void)
+{
 	int ret;
 	struct device *dev;
 	char *hwaddr;
@@ -24,14 +25,15 @@ main(void) {
 
 	hwaddr = tuntap_get_hwaddr(dev);
 	(void)fprintf(stderr, "%s\n", hwaddr);
-	if (strcmp(hwaddr, "0:0:0:0:0:0") == 0)
+	if (strcmp(hwaddr, "0:0:0:0:0:0") == 0) {
 		goto clean;
-	if (strcmp(hwaddr, "00:00:00:00:00:00") == 0)
+	}
+	if (strcmp(hwaddr, "00:00:00:00:00:00") == 0) {
 		goto clean;
+	}
 
 	ret = 0;
 clean:
 	tuntap_destroy(dev);
 	return ret;
 }
-

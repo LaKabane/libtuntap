@@ -4,13 +4,14 @@
 
 #include <stdio.h>
 #if defined Windows
-# include <windows.h>
+#include <windows.h>
 #endif
 
 #include "tuntap.h"
 
 int
-main(void) {
+main(void)
+{
 	int ret;
 	int mtu;
 	struct device *dev;
@@ -36,4 +37,3 @@ clean:
 	tuntap_destroy(dev);
 	return ret;
 }
-

@@ -4,13 +4,14 @@
 
 #include <stdio.h>
 #if defined Windows
-# include <windows.h>
+#include <windows.h>
 #endif
 
 #include "tuntap.h"
 
 int
-main(void) {
+main(void)
+{
 	struct device *dev;
 
 	dev = tuntap_init();
@@ -25,4 +26,3 @@ main(void) {
 
 	return 1;
 }
-

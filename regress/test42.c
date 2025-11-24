@@ -4,20 +4,22 @@
 
 #include <stdio.h>
 #if defined Windows
-# include <windows.h>
+#include <windows.h>
 #endif
 
 #include "tuntap.h"
 
 int
-main(void) {
+main(void)
+{
 	int ret;
 	struct device *dev;
 
 	ret = 1;
 	dev = tuntap_init();
-	if (tuntap_start(dev, TUNTAP_MODE_ETHERNET, TUNTAP_ID_ANY) == -1)
+	if (tuntap_start(dev, TUNTAP_MODE_ETHERNET, TUNTAP_ID_ANY) == -1) {
 		ret = 1;
+	}
 
 	if (tuntap_set_ifname(dev, NULL) == -1) {
 		ret = 0;
@@ -26,4 +28,3 @@ main(void) {
 	tuntap_destroy(dev);
 	return ret;
 }
-

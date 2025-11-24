@@ -14,18 +14,18 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/param.h> /* For MAXPATHLEN */
 #include <sys/socket.h>
+#include <sys/types.h>
 
+#include <arpa/inet.h>
 #include <net/if.h>
 #include <net/if_tun.h>
 #include <net/if_types.h>
-#include <netinet/in.h>
 #include <netinet/if_ether.h>
+#include <netinet/in.h>
 #include <netinet6/in6_var.h>
-#include <arpa/inet.h>
 
 #include <fcntl.h>
 #include <stdint.h>
@@ -34,11 +34,12 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "tuntap.h"
 #include "private.h"
+#include "tuntap.h"
 
 static int
-tuntap_sys_create_dev(struct device *dev, const char *ifname, int tun) {
+tuntap_sys_create_dev(struct device *dev, const char *ifname, int tun)
+{
 	struct ifreq ifr;
 
 	/* At this point 'tun' can't be TUNTAP_ID_ANY */
@@ -53,7 +54,8 @@ tuntap_sys_create_dev(struct device *dev, const char *ifname, int tun) {
 }
 
 int
-tuntap_sys_start(struct device *dev, int mode, int tun) {
+tuntap_sys_start(struct device *dev, int mode, int tun)
+{
 	int fd;
 	int persist;
 	char *ifname;
@@ -68,7 +70,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 		persist = 0;
 	}
 
-        /* Set the mode: tun or tap */
+	/* Set the mode: tun or tap */
 	if (mode == TUNTAP_MODE_ETHERNET) {
 		ifname = "tap";
 	} else if (mode == TUNTAP_MODE_TUNNEL) {
@@ -79,9 +81,10 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	}
 
 	/* And force the creation of the driver, if needed */
-	if (persist == 1 ) {
-		if (tuntap_sys_create_dev(dev, ifname, tun) == -1)
+	if (persist == 1) {
+		if (tuntap_sys_create_dev(dev, ifname, tun) == -1) {
 			return -1;
+		}
 	}
 
 	/* Try to use the given driver or loop throught the avaible ones */
@@ -92,10 +95,10 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	} else if (tun == TUNTAP_ID_ANY) {
 		for (tun = 0; tun < TUNTAP_ID_MAX; ++tun) {
 			(void)memset(name, '\0', sizeof name);
-			(void)snprintf(name, sizeof name, "/dev/%s%i",
-			    ifname, tun);
-			if ((fd = open(name, O_RDWR)) > 0)
+			(void)snprintf(name, sizeof name, "/dev/%s%i", ifname, tun);
+			if ((fd = open(name, O_RDWR)) > 0) {
 				break;
+			}
 		}
 	} else {
 		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'tun'");
@@ -139,8 +142,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 		struct ether_addr addr;
 
 		if (ioctl(fd, SIOCGIFADDR, &addr) == -1) {
-			tuntap_log(TUNTAP_LOG_WARN,
-			    "Can't get link-layer address");
+			tuntap_log(TUNTAP_LOG_WARN, "Can't get link-layer address");
 			return fd;
 		}
 		(void)memcpy(dev->hwaddr, &addr, ETHER_ADDR_LEN);
@@ -149,18 +151,21 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 }
 
 void
-tuntap_sys_destroy(struct device *dev) {
+tuntap_sys_destroy(struct device *dev)
+{
 	struct ifreq ifr;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof ifr.ifr_name);
 
-	if (ioctl(dev->ctrl_sock, SIOCIFDESTROY, &ifr) == -1)
+	if (ioctl(dev->ctrl_sock, SIOCIFDESTROY, &ifr) == -1) {
 		tuntap_log(TUNTAP_LOG_WARN, "Can't destroy the interface");
+	}
 }
 
 int
-tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
+tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr)
+{
 	struct ifreq ifr;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
@@ -170,14 +175,15 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 	(void)memcpy(ifr.ifr_addr.sa_data, eth_addr, ETHER_ADDR_LEN);
 
 	if (ioctl(dev->ctrl_sock, SIOCSIFLLADDR, (caddr_t)&ifr) < 0) {
-	        tuntap_log(TUNTAP_LOG_ERR, "Can't set link-layer address");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't set link-layer address");
 		return -1;
 	}
 	return 0;
 }
 
 int
-tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s4, uint32_t bits) {
+tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s4, uint32_t bits)
+{
 	struct ifaliasreq ifa;
 	struct ifreq ifr;
 	struct sockaddr_in mask;
@@ -194,7 +200,7 @@ tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s4, uint32_t bits) {
 
 	/*
 	 * Fill-in the destination address and netmask,
-         * but don't care of the broadcast address
+	 * but don't care of the broadcast address
 	 */
 	(void)memset(&addr, '\0', sizeof addr);
 	addr.sin_family = AF_INET;
@@ -217,7 +223,8 @@ tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s4, uint32_t bits) {
 }
 
 int
-tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len) {
+tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len)
+{
 	struct ifreq ifr;
 	(void)len;
 
@@ -227,15 +234,15 @@ tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len) {
 	ifr.ifr_data = (void *)descr;
 
 	if (ioctl(dev->ctrl_sock, SIOCSIFDESCR, &ifr) == -1) {
-		tuntap_log(TUNTAP_LOG_ERR,
-		    "Can't set the interface description");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't set the interface description");
 		return -1;
 	}
 	return 0;
 }
 
 char *
-tuntap_sys_get_descr(struct device *dev) {
+tuntap_sys_get_descr(struct device *dev)
+{
 	struct ifreq ifr;
 	char buf[4096];
 	void *descr;
@@ -246,8 +253,7 @@ tuntap_sys_get_descr(struct device *dev) {
 	ifr.ifr_data = descr;
 
 	if (ioctl(dev->ctrl_sock, SIOCGIFDESCR, &ifr) == -1) {
-		tuntap_log(TUNTAP_LOG_ERR,
-		    "Can't get the interface description");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't get the interface description");
 		return NULL;
 	}
 	return (char *)descr;
