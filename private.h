@@ -33,6 +33,8 @@
 #include <netinet/in.h>
 #endif
 
+#include "tuntap.h"
+
 #ifndef PRIVATE_H_
 #define PRIVATE_H_
 
