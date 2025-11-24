@@ -2,22 +2,15 @@
 # ========================
 cmake_minimum_required(VERSION 3.5)
 
-project(libtuntap VERSION 1.0)
+project(libtuntap VERSION 2.2)
 
 include(CTest)
 include(CMakePackageConfigHelpers)
+include(GenerateExportHeader)
 
 # CMake global options
 # --------------------
 option(ENABLE_CXX "Enable the C++ wrapper library" ON)
-option(ENABLE_PYTHON "Enable the Python wrapper library" OFF)
-
-include(GenerateExportHeader)
-
-if(ENABLE_PYTHON AND NOT ENABLE_CXX)
-    set(ENABLE_CXX ON)
-    message(WARNING "ENABLE_CXX also set to ON")
-endif()
 
 # Tuntap library declaration and portable source files
 # --------------------------
@@ -29,7 +22,7 @@ target_sources(tuntap
     PUBLIC FILE_SET HEADERS FILES tuntap.h)
 
 set_target_properties(tuntap PROPERTIES
-    VERSION 2.2
+    VERSION ${CMAKE_PROJECT_VERSION}
     POSITION_INDEPENDENT_CODE TRUE
     C_VISIBILITY_PRESET hidden
     VISIBILITY_INLINES_HIDDEN ON)
@@ -102,12 +95,6 @@ endif(Windows)
 if(ENABLE_CXX)
     add_subdirectory(bindings/cpp)
 endif(ENABLE_CXX)
-
-# Python Binding definition
-# -------------------------
-if(ENABLE_PYTHON)
-    add_subdirectory(bindings/python)
-endif (ENABLE_PYTHON)
 
 # Install rules
 # -------------
