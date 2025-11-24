@@ -43,7 +43,7 @@ if(UNIX)
     target_sources(tuntap PRIVATE tuntap-unix.c)
 endif(UNIX)
 
-if(Windows)
+if(WIN32)
     # Windows specific definitions
     # ----------------------------
     target_compile_definitions(tuntap PUBLIC Windows)
@@ -51,7 +51,11 @@ if(Windows)
     # Windows specific source files
     # -----------------------------
     target_sources(tuntap PRIVATE tuntap-windows.c)
-endif(Windows)
+
+    # Windows specific dependencies
+    # -----------------------------
+    target_link_libraries(tuntap PUBLIC Ws2_32)
+endif(WIN32)
 
 # OS specific things
 # ------------------
@@ -78,10 +82,6 @@ if(UNIX)
         message(FATAL_ERROR "Your operating system is not supported yet")
     endif()
 endif(UNIX)
-
-if(Windows)
-    target_link_libraries(tuntap PUBLIC Ws2_32.lib)
-endif(Windows)
 
 # C++ Binding definition
 # ----------------------
