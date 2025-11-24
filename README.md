@@ -16,7 +16,7 @@ TUN and TAP are virtual networking devices which allow userland applications
 to receive packets sent to it. The userland applications can also send their
 own packets to the devices and they will be forwarded to the kernel.
 
-This is useful for developping tunnels, private networks or virtualisation
+This is useful for developing tunnels, private networks or virtualisation
 systems.
 
 #### Supported Features
@@ -43,11 +43,6 @@ systems.
 
    * Windows;
    * FreeBSD.
-
-#### In the future
-
-   * AIX;
-   * Solaris.
 
 ## Install
 
@@ -76,7 +71,6 @@ Example make invocation:
 The following options can be tweaked:
 
 - `ENABLE_CXX`: Enable building of the C++ wrapper library libtuntap++;
-- `ENABLE_PYTHON`: Enable building of the Python wrapper library pytuntap;
 - `BUILD_TESTING`: Enable building of the regress tests;
 - `BUILD_SHARED_LIBS`: Build shared libraries instead of static ones.
 
@@ -84,20 +78,15 @@ If you want to build it for a release, additionally use `-DCMAKE_BUILD_TYPE=Rele
 
 #### Other languages bindings
 
-We currently provide wrappers for two other languages: C++ and Python,
-respectively named libtuntap++ and pytuntap.  More instructions about them is
-provided in the [`bindings`](bindings/README.md) folder.
+We currently provide a wrapper for C++, named libtuntap++.
+More instructions about it is provided in the [`bindings`](bindings/README.md) folder.
 
-The C++ library is built by default and can be disabled with the flag
-`ENABLE_CXX`.
-
-The Python library is disabled by default and requires both `ENABLE_CXX` and
-`ENABLE_PYTHON` to work.  You will also need Python 3.6 and Boost libraries.
+The C++ library is built by default and can be disabled with the flag `ENABLE_CXX`.
 
 Example cmake invocation:
 
     $ mkdir build; cd build
-    $ cmake -D ENABLE_CXX=ON -D ENABLE_PYTHON=ON ../
+    $ cmake -D ENABLE_CXX=ON ../
 
 #### Tests
 
@@ -145,9 +134,7 @@ You need to install the tap-windows driver provided by the [OpenVPN project](htt
 
 ## Contributing
 
-Feel free to open issues and pull-requests, even if we are bad at replying
-on time.  You can also chat with us on the XMPP network: libtuntap channel
-at rooms.bouledef.eu.
+Feel free to open issues and pull-requests, even if we are bad at replying on time.
 
 ## License
 
