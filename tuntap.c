@@ -17,28 +17,30 @@
 #include <sys/types.h>
 
 #if defined Windows
-# include <winsock2.h>
-# include <ws2tcpip.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #else
-# include <netinet/in.h>
-# include <arpa/inet.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 #endif
 
-#include <stdio.h>
+#include <ctype.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
-#include "tuntap.h"
 #include "private.h"
+#include "tuntap.h"
 
 struct device *
-tuntap_init(void) {
+tuntap_init(void)
+{
 	struct device *dev = NULL;
 
-	if ((dev = (struct device *)malloc(sizeof(*dev))) == NULL)
+	if ((dev = (struct device *)malloc(sizeof(*dev))) == NULL) {
 		return NULL;
+	}
 
 	(void)memset(dev->if_name, '\0', sizeof dev->if_name);
 	(void)memset(dev->hwaddr, '\0', sizeof dev->hwaddr);
@@ -50,23 +52,27 @@ tuntap_init(void) {
 }
 
 void
-tuntap_destroy(struct device *dev) {
+tuntap_destroy(struct device *dev)
+{
 	tuntap_sys_destroy(dev);
 	tuntap_release(dev);
 }
 
 char *
-tuntap_get_ifname(struct device *dev) {
+tuntap_get_ifname(struct device *dev)
+{
 	return dev->if_name;
 }
 
 int
-tuntap_version(void) {
-    return TUNTAP_VERSION;
+tuntap_version(void)
+{
+	return TUNTAP_VERSION;
 }
 
 int
-tuntap_set_ip(struct device *dev, const char *addr, int netmask) {
+tuntap_set_ip(struct device *dev, const char *addr, int netmask)
+{
 	t_tun_in_addr baddr4;
 	t_tun_in6_addr baddr6;
 	uint32_t mask;
@@ -86,7 +92,6 @@ tuntap_set_ip(struct device *dev, const char *addr, int netmask) {
 		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'netmask'");
 		return -1;
 	}
-
 
 	/*
 	 * Destination address parsing: we try IPv4 first and fall back to
@@ -118,6 +123,7 @@ tuntap_set_ip(struct device *dev, const char *addr, int netmask) {
 }
 
 t_tun
-tuntap_get_fd(struct device *dev) {
+tuntap_get_fd(struct device *dev)
+{
 	return dev->tun_fd;
 }

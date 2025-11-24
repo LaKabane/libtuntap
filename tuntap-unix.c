@@ -14,45 +14,46 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
 #include <sys/ioctl.h>
-#include <sys/socket.h>
 #include <sys/select.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 
-#include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
 #if defined Linux
-# include <netinet/ether.h>
-# include <linux/if_tun.h>
+#include <linux/if_tun.h>
+#include <netinet/ether.h>
 #else
-# include <net/if.h>
-# if defined DragonFly
-#  include <net/tun/if_tun.h>
-# elif !defined Darwin
-#  include <net/if_tun.h>
-# endif
-# include <netinet/in.h>
-# include <netinet/if_ether.h>
+#include <net/if.h>
+#if defined DragonFly
+#include <net/tun/if_tun.h>
+#elif !defined Darwin
+#include <net/if_tun.h>
+#endif
+#include <netinet/if_ether.h>
+#include <netinet/in.h>
 #endif
 
 #include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
 
-#include "tuntap.h"
 #include "private.h"
+#include "tuntap.h"
 
 int
-tuntap_start(struct device *dev, int mode, int tun) {
+tuntap_start(struct device *dev, int mode, int tun)
+{
 	int sock;
 	int fd;
 
 	fd = sock = -1;
-	
+
 	/* Don't re-initialise a previously started device */
 	if (dev->tun_fd != -1) {
 		tuntap_log(TUNTAP_LOG_ERR, "Device is already started");
@@ -89,14 +90,16 @@ clean:
 }
 
 void
-tuntap_release(struct device *dev) {
+tuntap_release(struct device *dev)
+{
 	(void)close(dev->tun_fd);
 	(void)close(dev->ctrl_sock);
 	free(dev);
 }
 
 int
-tuntap_set_descr(struct device *dev, const char *descr) {
+tuntap_set_descr(struct device *dev, const char *descr)
+{
 	size_t len;
 
 	if (descr == NULL) {
@@ -117,12 +120,14 @@ tuntap_set_descr(struct device *dev, const char *descr) {
 }
 
 char *
-tuntap_get_descr(struct device *dev) {
+tuntap_get_descr(struct device *dev)
+{
 	return tuntap_sys_get_descr(dev);
 }
 
 int
-tuntap_set_ifname(struct device *dev, const char *ifname) {
+tuntap_set_ifname(struct device *dev, const char *ifname)
+{
 	size_t len;
 
 	if (ifname == NULL) {
@@ -146,7 +151,8 @@ tuntap_set_ifname(struct device *dev, const char *ifname) {
 }
 
 char *
-tuntap_get_hwaddr(struct device *dev) {
+tuntap_get_hwaddr(struct device *dev)
+{
 	struct ether_addr eth_attr;
 
 	(void)memcpy(&eth_attr, dev->hwaddr, sizeof dev->hwaddr);
@@ -154,7 +160,8 @@ tuntap_get_hwaddr(struct device *dev) {
 }
 
 int
-tuntap_set_hwaddr(struct device *dev, const char *hwaddr) {
+tuntap_set_hwaddr(struct device *dev, const char *hwaddr)
+{
 	struct ether_addr *eth_addr, eth_rand;
 
 	if (strcmp(hwaddr, "random") == 0) {
@@ -179,13 +186,15 @@ tuntap_set_hwaddr(struct device *dev, const char *hwaddr) {
 	}
 	(void)memcpy(dev->hwaddr, eth_addr, ETHER_ADDR_LEN);
 
-	if (tuntap_sys_set_hwaddr(dev, eth_addr) == -1)
+	if (tuntap_sys_set_hwaddr(dev, eth_addr) == -1) {
 		return -1;
+	}
 	return 0;
 }
 
 int
-tuntap_up(struct device *dev) {
+tuntap_up(struct device *dev)
+{
 	struct ifreq ifr;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
@@ -202,7 +211,8 @@ tuntap_up(struct device *dev) {
 }
 
 int
-tuntap_down(struct device *dev) {
+tuntap_down(struct device *dev)
+{
 	struct ifreq ifr;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
@@ -219,7 +229,8 @@ tuntap_down(struct device *dev) {
 }
 
 int
-tuntap_get_mtu(struct device *dev) {
+tuntap_get_mtu(struct device *dev)
+{
 	struct ifreq ifr;
 
 	/* Only accept started device */
@@ -239,7 +250,8 @@ tuntap_get_mtu(struct device *dev) {
 }
 
 int
-tuntap_set_mtu(struct device *dev, int mtu) {
+tuntap_set_mtu(struct device *dev, int mtu)
+{
 	struct ifreq ifr;
 
 	/* Only accept started device */
@@ -260,7 +272,8 @@ tuntap_set_mtu(struct device *dev, int mtu) {
 }
 
 int
-tuntap_read(struct device *dev, void *buf, size_t size) {
+tuntap_read(struct device *dev, void *buf, size_t size)
+{
 	int n;
 
 	/* Only accept started device */
@@ -271,9 +284,9 @@ tuntap_read(struct device *dev, void *buf, size_t size) {
 
 	n = read(dev->tun_fd, buf, size);
 	if (n == -1) {
-        if (errno != EAGAIN) {
-		    tuntap_log(TUNTAP_LOG_WARN, "Can't to read from device");
-        }
+		if (errno != EAGAIN) {
+			tuntap_log(TUNTAP_LOG_WARN, "Can't to read from device");
+		}
 		return -1;
 	}
 	return n;
@@ -282,8 +295,9 @@ tuntap_read(struct device *dev, void *buf, size_t size) {
 static bool
 wait_ready_event_or_timeout(int fd, bool reading, int timeout_ms)
 {
-	if (timeout_ms < 0)
+	if (timeout_ms < 0) {
 		return true; // No timeout specified
+	}
 
 	struct timeval timeout;
 	timeout.tv_sec = timeout_ms / 1000;
@@ -303,15 +317,16 @@ wait_ready_event_or_timeout(int fd, bool reading, int timeout_ms)
 		wrset = &set;
 	}
 
-	int res = select(fd+1, rdset, wrset, NULL, &timeout);
+	int res = select(fd + 1, rdset, wrset, NULL, &timeout);
 
 	if (res < 0) {
 		tuntap_log(TUNTAP_LOG_NOTICE, "Can't run select on device");
 		return false;
 	}
 
-	if (res == 0)
+	if (res == 0) {
 		return false; // Timed out
+	}
 
 	// Note that at this point the following is true:
 	//   res == 1 && FD_ISSET(&set, dev->tun_fd)
@@ -320,7 +335,8 @@ wait_ready_event_or_timeout(int fd, bool reading, int timeout_ms)
 }
 
 int
-tuntap_read_tm(struct device *dev, void *buf, size_t size, int timeout_ms) {
+tuntap_read_tm(struct device *dev, void *buf, size_t size, int timeout_ms)
+{
 	int n;
 
 	/* Only accept started device */
@@ -329,21 +345,23 @@ tuntap_read_tm(struct device *dev, void *buf, size_t size, int timeout_ms) {
 		return 0;
 	}
 
-	if (!wait_ready_event_or_timeout(dev->tun_fd, true, timeout_ms))
+	if (!wait_ready_event_or_timeout(dev->tun_fd, true, timeout_ms)) {
 		return -1;
+	}
 
 	n = read(dev->tun_fd, buf, size);
 	if (n == -1) {
-        if (errno != EAGAIN) {
-		    tuntap_log(TUNTAP_LOG_WARN, "Can't to read from device");
-        }
+		if (errno != EAGAIN) {
+			tuntap_log(TUNTAP_LOG_WARN, "Can't to read from device");
+		}
 		return -1;
 	}
 	return n;
 }
 
 int
-tuntap_write(struct device *dev, void *buf, size_t size) {
+tuntap_write(struct device *dev, void *buf, size_t size)
+{
 	int n;
 
 	/* Only accept started device */
@@ -361,7 +379,8 @@ tuntap_write(struct device *dev, void *buf, size_t size) {
 }
 
 int
-tuntap_write_tm(struct device *dev, void *buf, size_t size, int timeout_ms) {
+tuntap_write_tm(struct device *dev, void *buf, size_t size, int timeout_ms)
+{
 	int n;
 
 	/* Only accept started device */
@@ -370,8 +389,9 @@ tuntap_write_tm(struct device *dev, void *buf, size_t size, int timeout_ms) {
 		return 0;
 	}
 
-	if (!wait_ready_event_or_timeout(dev->tun_fd, false, timeout_ms))
+	if (!wait_ready_event_or_timeout(dev->tun_fd, false, timeout_ms)) {
 		return -1;
+	}
 
 	n = write(dev->tun_fd, buf, size);
 	if (n == -1) {
@@ -382,22 +402,24 @@ tuntap_write_tm(struct device *dev, void *buf, size_t size, int timeout_ms) {
 }
 
 int
-tuntap_get_readable(struct device *dev) {
+tuntap_get_readable(struct device *dev)
+{
 	int n;
 
 	n = 0;
 	if (ioctl(dev->tun_fd, FIONREAD, &n) == -1) {
 		tuntap_log(TUNTAP_LOG_INFO, "Your system does not support"
-		    " FIONREAD, fallback to MTU");
+		                            " FIONREAD, fallback to MTU");
 		return tuntap_get_mtu(dev);
 	}
 	return n;
 }
 
 int
-tuntap_set_nonblocking(struct device *dev, int set) {
+tuntap_set_nonblocking(struct device *dev, int set)
+{
 	if (ioctl(dev->tun_fd, FIONBIO, &set) == -1) {
-		switch(set) {
+		switch (set) {
 		case 0:
 			tuntap_log(TUNTAP_LOG_ERR, "Can't unset nonblocking");
 			break;
@@ -413,7 +435,8 @@ tuntap_set_nonblocking(struct device *dev, int set) {
 }
 
 int
-tuntap_set_debug(struct device *dev, int set) {
+tuntap_set_debug(struct device *dev, int set)
+{
 	/* Only accept started device */
 	if (dev->tun_fd == -1) {
 		tuntap_log(TUNTAP_LOG_NOTICE, "Device is not started");
@@ -422,7 +445,7 @@ tuntap_set_debug(struct device *dev, int set) {
 
 #if !defined Darwin
 	if (ioctl(dev->tun_fd, TUNSDEBUG, &set) == -1) {
-		switch(set) {
+		switch (set) {
 		case 0:
 			tuntap_log(TUNTAP_LOG_WARN, "Can't unset debug");
 			break;
@@ -436,9 +459,7 @@ tuntap_set_debug(struct device *dev, int set) {
 	}
 	return 0;
 #else
-	tuntap_log(TUNTAP_LOG_NOTICE,
-	    "Your system does not support tuntap_set_debug()");
+	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_set_debug()");
 	return -1;
 #endif
 }
-

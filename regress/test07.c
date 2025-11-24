@@ -4,24 +4,24 @@
 
 #include <stdio.h>
 #if defined Windows
-# include <windows.h>
-# define strcasecmp(x, y) _stricmp((x), (y))
+#include <windows.h>
+#define strcasecmp(x, y) _stricmp((x), (y))
 #else
-# include <strings.h>
+#include <strings.h>
 #endif
 
 #include "tuntap.h"
 
 int
-main(void) {
+main(void)
+{
 	int ret;
 	char *hwaddr;
 	struct device *dev;
 
 	ret = 0;
 	dev = tuntap_init();
-	if (tuntap_start(dev, TUNTAP_MODE_ETHERNET, TUNTAP_ID_ANY)
-	    == -1) {
+	if (tuntap_start(dev, TUNTAP_MODE_ETHERNET, TUNTAP_ID_ANY) == -1) {
 		ret = 1;
 		goto clean;
 	}
@@ -32,11 +32,11 @@ main(void) {
 	}
 
 	hwaddr = tuntap_get_hwaddr(dev);
-	if (strcasecmp(hwaddr, "54:1a:13:ef:b6:b5") != 0)
+	if (strcasecmp(hwaddr, "54:1a:13:ef:b6:b5") != 0) {
 		ret = 1;
+	}
 
 clean:
 	tuntap_destroy(dev);
 	return ret;
 }
-

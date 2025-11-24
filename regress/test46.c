@@ -4,14 +4,15 @@
 
 #include <stdio.h>
 #if defined Windows
-# include <windows.h>
+#include <windows.h>
 #endif
 #include <string.h>
 
 #include "tuntap.h"
 
 int
-main(void) {
+main(void)
+{
 	int ret;
 	struct device *dev;
 	const char *s = "This tap interface is here for testing purpose";
@@ -42,4 +43,3 @@ clean:
 	tuntap_destroy(dev);
 	return ret;
 }
-

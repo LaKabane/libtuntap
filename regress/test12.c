@@ -4,13 +4,14 @@
 
 #include <stdio.h>
 #if defined Windows
-# include <windows.h>
+#include <windows.h>
 #endif
 
 #include "tuntap.h"
 
 int
-main(void) {
+main(void)
+{
 	int ret;
 	struct device *dev;
 
@@ -21,11 +22,11 @@ main(void) {
 		goto clean;
 	}
 
-	if (tuntap_up(dev) == -1)
+	if (tuntap_up(dev) == -1) {
 		ret = 1;
+	}
 
 clean:
 	tuntap_destroy(dev);
 	return ret;
 }
-

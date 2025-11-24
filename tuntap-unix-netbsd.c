@@ -14,19 +14,19 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
 #include <sys/ioctl.h>
-#include <sys/sockio.h>
-#include <sys/socket.h>
 #include <sys/param.h> /* For MAXPATHLEN */
+#include <sys/socket.h>
+#include <sys/sockio.h>
+#include <sys/types.h>
 
-#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <net/if.h>
-#include <net/if_types.h>
-#include <net/if_tun.h>
 #include <net/if_tap.h>
+#include <net/if_tun.h>
+#include <net/if_types.h>
 #include <netinet/if_ether.h>
+#include <netinet/in.h>
 
 #include <fcntl.h>
 #include <ifaddrs.h>
@@ -36,18 +36,20 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "tuntap.h"
 #include "private.h"
+#include "tuntap.h"
 
 static int
-tuntap_sys_create_dev(struct device *dev, int mode, int tun) {
+tuntap_sys_create_dev(struct device *dev, int mode, int tun)
+{
 	struct ifreq ifr;
 	char *name;
 
-	if (mode == TUNTAP_MODE_ETHERNET)
+	if (mode == TUNTAP_MODE_ETHERNET) {
 		name = "tap%i";
-	else
+	} else {
 		name = "tun%i";
+	}
 
 	/* At this point 'tun' can't be TUNTAP_ID_ANY */
 	(void)memset(&ifr, '\0', sizeof ifr);
@@ -65,7 +67,8 @@ tuntap_sys_create_dev(struct device *dev, int mode, int tun) {
  * To access /dev/tapN we have to create it before.
  */
 static int
-tuntap_sys_start_tap(struct device *dev, int tun) {
+tuntap_sys_start_tap(struct device *dev, int tun)
+{
 	int fd;
 	struct ifreq ifr;
 	struct ifaddrs *ifa;
@@ -126,28 +129,24 @@ tuntap_sys_start_tap(struct device *dev, int tun) {
 				 * And yes, I know, the buffer is supposed
 				 * to have a size of 14 bytes.
 				 */
-				(void)memcpy(dev->hwaddr,
-				  pifa->ifa_addr->sa_data + 10,
-				  ETHER_ADDR_LEN);
+				(void)memcpy(dev->hwaddr, pifa->ifa_addr->sa_data + 10, ETHER_ADDR_LEN);
 
-				(void)memset(&eth_addr.ether_addr_octet, 0,
-				  ETHER_ADDR_LEN);
-				(void)memcpy(&eth_addr.ether_addr_octet,
-				  pifa->ifa_addr->sa_data + 10,
-				  ETHER_ADDR_LEN);
+				(void)memset(&eth_addr.ether_addr_octet, 0, ETHER_ADDR_LEN);
+				(void)memcpy(&eth_addr.ether_addr_octet, pifa->ifa_addr->sa_data + 10, ETHER_ADDR_LEN);
 				break;
 			}
 		}
-		if (pifa == NULL)
-			tuntap_log(TUNTAP_LOG_WARN,
-			    "Can't get link-layer address");
+		if (pifa == NULL) {
+			tuntap_log(TUNTAP_LOG_WARN, "Can't get link-layer address");
+		}
 		freeifaddrs(ifa);
 	}
 	return fd;
 }
 
 static int
-tuntap_sys_start_tun(struct device *dev, int tun) {
+tuntap_sys_start_tun(struct device *dev, int tun)
+{
 	struct ifreq ifr;
 	char name[MAXPATHLEN];
 	int fd;
@@ -163,8 +162,9 @@ tuntap_sys_start_tun(struct device *dev, int tun) {
 		for (tun = 0; tun < TUNTAP_ID_MAX; ++tun) {
 			(void)memset(name, '\0', sizeof name);
 			(void)snprintf(name, sizeof name, "/dev/tun%i", tun);
-			if ((fd = open(name, O_RDWR)) > 0)
+			if ((fd = open(name, O_RDWR)) > 0) {
 				break;
+			}
 		}
 	} else {
 		return -1;
@@ -200,24 +200,24 @@ tuntap_sys_start_tun(struct device *dev, int tun) {
 }
 
 int
-tuntap_sys_start(struct device *dev, int mode, int tun) {
+tuntap_sys_start(struct device *dev, int mode, int tun)
+{
 	int fd;
 
 	/* Force creation of the driver if needed or let it resilient */
 	if (mode & TUNTAP_MODE_PERSIST) {
 		mode &= ~TUNTAP_MODE_PERSIST;
-		if (tuntap_sys_create_dev(dev, mode, tun) == -1)
+		if (tuntap_sys_create_dev(dev, mode, tun) == -1) {
 			return -1;
+		}
 	}
 
-        /* tun and tap devices are not created in the same way */
+	/* tun and tap devices are not created in the same way */
 	if (mode == TUNTAP_MODE_ETHERNET) {
 		fd = tuntap_sys_start_tap(dev, tun);
-	}
-	else if (mode == TUNTAP_MODE_TUNNEL) {
+	} else if (mode == TUNTAP_MODE_TUNNEL) {
 		fd = tuntap_sys_start_tun(dev, tun);
-	}
-	else {
+	} else {
 		return -1;
 	}
 
@@ -225,18 +225,21 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 }
 
 void
-tuntap_sys_destroy(struct device *dev) {
+tuntap_sys_destroy(struct device *dev)
+{
 	struct ifreq ifr;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof ifr.ifr_name);
 
-	if (ioctl(dev->ctrl_sock, SIOCIFDESTROY, &ifr) == -1)
+	if (ioctl(dev->ctrl_sock, SIOCIFDESTROY, &ifr) == -1) {
 		tuntap_log(TUNTAP_LOG_WARN, "Can't destroy the interface");
+	}
 }
 
 int
-tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
+tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr)
+{
 	struct ifaliasreq ifra;
 
 	(void)memset(&ifra, 0, sizeof ifra);
@@ -246,14 +249,15 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 	(void)memcpy(ifra.ifra_addr.sa_data, eth_addr, ETHER_ADDR_LEN);
 
 	if (ioctl(dev->ctrl_sock, SIOCSIFPHYADDR, &ifra) == -1) {
-	        tuntap_log(TUNTAP_LOG_ERR, "Can't set link-layer address");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't set link-layer address");
 		return -1;
 	}
 	return 0;
 }
 
 int
-tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s, uint32_t bits) {
+tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s, uint32_t bits)
+{
 	struct ifaliasreq ifa;
 	struct ifreq ifr;
 	struct sockaddr_in mask;
@@ -270,7 +274,7 @@ tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s, uint32_t bits) {
 
 	/*
 	 * Fill-in the destination address and netmask,
-         * but don't care of the broadcast address
+	 * but don't care of the broadcast address
 	 */
 	(void)memset(&addr, '\0', sizeof addr);
 	addr.sin_family = AF_INET;
@@ -293,16 +297,16 @@ tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s, uint32_t bits) {
 }
 
 int
-tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len) {
-	tuntap_log(TUNTAP_LOG_NOTICE,
-	    "Your system does not support tuntap_set_descr()");
+tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len)
+{
+	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_set_descr()");
 	return -1;
 }
 
 char *
-tuntap_sys_get_descr(struct device *dev) {
+tuntap_sys_get_descr(struct device *dev)
+{
 	(void)dev;
-	tuntap_log(TUNTAP_LOG_NOTICE,
-	    "Your system does not support tuntap_get_descr()");
+	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_get_descr()");
 	return NULL;
 }

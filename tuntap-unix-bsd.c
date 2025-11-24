@@ -14,19 +14,20 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 
 #include <net/if.h>
 
 #include <string.h>
 
-#include "tuntap.h"
 #include "private.h"
+#include "tuntap.h"
 
 int
-tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s6, uint32_t bits) {
+tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s6, uint32_t bits)
+{
 	(void)dev;
 	(void)s6;
 	(void)bits;
@@ -35,12 +36,11 @@ tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s6, uint32_t bits) {
 }
 
 int
-tuntap_sys_set_ifname(struct device *dev, const char *ifname, size_t len) {
+tuntap_sys_set_ifname(struct device *dev, const char *ifname, size_t len)
+{
 	(void)dev;
 	(void)ifname;
 	(void)len;
-	tuntap_log(TUNTAP_LOG_NOTICE,
-	    "Your system does not support tuntap_set_ifname()");
+	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_set_ifname()");
 	return -1;
 }
-

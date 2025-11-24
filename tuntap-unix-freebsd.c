@@ -14,17 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/param.h> /* For MAXPATHLEN */
 #include <sys/socket.h>
+#include <sys/types.h>
 
 #include <arpa/inet.h>
 #include <net/if.h>
 #if defined FreeBSD
-# include <net/if_tun.h>
+#include <net/if_tun.h>
 #elif defined DragonFly
-# include <net/tun/if_tun.h>
+#include <net/tun/if_tun.h>
 #endif
 #include <net/if_types.h>
 #include <netinet/if_ether.h>
@@ -39,11 +39,12 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "tuntap.h"
 #include "private.h"
+#include "tuntap.h"
 
 int
-tuntap_sys_start(struct device *dev, int mode, int tun) {
+tuntap_sys_start(struct device *dev, int mode, int tun)
+{
 	int fd;
 	int persist;
 	char *ifname;
@@ -59,7 +60,7 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 		persist = 0;
 	}
 
-        /* Set the mode: tun or tap */
+	/* Set the mode: tun or tap */
 	if (mode == TUNTAP_MODE_ETHERNET) {
 		ifname = "tap";
 	} else if (mode == TUNTAP_MODE_TUNNEL) {
@@ -77,10 +78,10 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 	} else if (tun == TUNTAP_ID_ANY) {
 		for (tun = 0; tun < TUNTAP_ID_MAX; ++tun) {
 			(void)memset(name, '\0', sizeof name);
-			(void)snprintf(name, sizeof name, "/dev/%s%i",
-			    ifname, tun);
-			if ((fd = open(name, O_RDWR)) > 0)
+			(void)snprintf(name, sizeof name, "/dev/%s%i", ifname, tun);
+			if ((fd = open(name, O_RDWR)) > 0) {
 				break;
+			}
 		}
 	} else {
 		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'tun'");
@@ -127,34 +128,31 @@ tuntap_sys_start(struct device *dev, int mode, int tun) {
 				 * And yes, I know, the buffer is supposed
 				 * to have a size of 14 bytes.
 				 */
-				(void)memcpy(dev->hwaddr,
-				  pifa->ifa_addr->sa_data + 10,
-				  ETHER_ADDR_LEN);
+				(void)memcpy(dev->hwaddr, pifa->ifa_addr->sa_data + 10, ETHER_ADDR_LEN);
 
-				(void)memset(&eth_addr.octet, 0,
-				  ETHER_ADDR_LEN);
-				(void)memcpy(&eth_addr.octet,
-				  pifa->ifa_addr->sa_data + 10,
-				  ETHER_ADDR_LEN);
+				(void)memset(&eth_addr.octet, 0, ETHER_ADDR_LEN);
+				(void)memcpy(&eth_addr.octet, pifa->ifa_addr->sa_data + 10, ETHER_ADDR_LEN);
 
 				break;
 			}
 		}
-		if (pifa == NULL)
-			tuntap_log(TUNTAP_LOG_WARN,
-			    "Can't get link-layer address");
+		if (pifa == NULL) {
+			tuntap_log(TUNTAP_LOG_WARN, "Can't get link-layer address");
+		}
 		freeifaddrs(ifa);
 	}
 	return fd;
 }
 
 void
-tuntap_sys_destroy(struct device *dev) {
+tuntap_sys_destroy(struct device *dev)
+{
 	return;
 }
 
 int
-tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
+tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr)
+{
 	struct ifreq ifr;
 
 	(void)memset(&ifr, '\0', sizeof ifr);
@@ -163,14 +161,15 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr) {
 	ifr.ifr_addr.sa_family = AF_LINK;
 	(void)memcpy(ifr.ifr_addr.sa_data, eth_addr, ETHER_ADDR_LEN);
 	if (ioctl(dev->ctrl_sock, SIOCSIFLLADDR, &ifr) < 0) {
-	        tuntap_log(TUNTAP_LOG_ERR, "Can't set link-layer address");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't set link-layer address");
 		return -1;
 	}
 	return 0;
 }
 
 int
-tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s4, uint32_t bits) {
+tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s4, uint32_t bits)
+{
 	struct ifreq ifr;
 	struct sockaddr_in mask;
 	struct sockaddr_in addr;
@@ -208,7 +207,8 @@ tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s4, uint32_t bits) {
 }
 
 int
-tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len) {
+tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len)
+{
 #if defined FreeBSD
 	struct ifreq ifr;
 	struct ifreq_buffer ifrbuf;
@@ -221,22 +221,20 @@ tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len) {
 	ifr.ifr_buffer = ifrbuf;
 
 	if (ioctl(dev->ctrl_sock, SIOCSIFDESCR, &ifr) == -1) {
-		tuntap_log(TUNTAP_LOG_ERR,
-		    "Can't set the interface description");
+		tuntap_log(TUNTAP_LOG_ERR, "Can't set the interface description");
 		return -1;
 	}
 	return 0;
 #elif defined DragonFly
-	tuntap_log(TUNTAP_LOG_NOTICE,
-	    "Your system does not support tuntap_set_descr()");
+	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_set_descr()");
 	return -1;
 #endif
 }
 
 char *
-tuntap_sys_get_descr(struct device *dev) {
+tuntap_sys_get_descr(struct device *dev)
+{
 	(void)dev;
-	tuntap_log(TUNTAP_LOG_NOTICE,
-	    "Your system does not support tuntap_get_descr()");
+	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_get_descr()");
 	return NULL;
 }

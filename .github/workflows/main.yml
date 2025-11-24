@@ -1,5 +1,9 @@
 name: main
-on: [push, pull_request]
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -8,10 +12,14 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v2
-      - name: configure
-        run: cmake -B build -D CMAKE_BUILD_TYPE=Release 
-      - name: build
-        run: cmake --build build --parallel 2
-      # unfortunately the tests manipulate tap/tun drivers. This is not allowed in GA
-      # - name: test
-      #   run: cd build && ctest -VV
+      - name: Build & Install
+        run: |
+          cmake -S . -B build -D BUILD_TESTING=OFF -D CMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake --build build --config RelWithDebInfo
+          cmake --install build --prefix install --config RelWithDebInfo
+      - name: Run Tests
+        run: |
+          cmake -S regress -B regress_build -D CMAKE_PREFIX_PATH=../install -D CMAKE_BUILD_TYPE=Debug
+          cmake --build regress_build --config Debug
+          # unfortunately the tests manipulate tap/tun drivers. This is not allowed in GA
+          # ctest --test-dir regress_build --no-tests=error

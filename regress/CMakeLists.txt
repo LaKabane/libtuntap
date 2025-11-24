@@ -1,5 +1,13 @@
 # libtuntap regression tests CMakeLists.txt
 # =========================================
+#
+cmake_minimum_required(VERSION 3.10...4.0)
+project(libtuntap-tests)
+
+if (PROJECT_IS_TOP_LEVEL)
+  find_package(tuntap REQUIRED)
+  include(CTest)
+endif()
 
 # C based tests
 # -------------
@@ -8,8 +16,7 @@ foreach(SOURCE_FILE ${ALL_C_TESTS})
   get_filename_component(TEST_NAME ${SOURCE_FILE} NAME_WE)
 
   add_executable(${TEST_NAME} ${SOURCE_FILE})
-  target_link_libraries(${TEST_NAME} tuntap)
-
+  target_link_libraries(${TEST_NAME} tuntap::tuntap)
   add_test(NAME tuntap.${TEST_NAME}
            COMMAND $<TARGET_FILE:${TEST_NAME}>)
 endforeach(SOURCE_FILE)
@@ -26,7 +33,7 @@ if (UNIX)
 
     if (EXISTS ${TEST_SRC_PATH}/${HELPER_NAME}.c)
         add_executable(${HELPER_NAME} ${TEST_SRC_PATH}/${HELPER_NAME}.c)
-        target_link_libraries(${HELPER_NAME} tuntap)
+        target_link_libraries(${HELPER_NAME} tuntap::tuntap)
     endif()
     add_test(NAME tuntap.${TEST_NAME}
             COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/${TEST_NAME}.sh)
