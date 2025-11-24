@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #if defined Windows
-# include <windows.h>
+#include <windows.h>
 #endif
 
 #include "tuntap.h"
@@ -12,7 +12,8 @@
 /* This test SHOULD fail, it's normal */
 
 int
-main(void) {
+main(void)
+{
 	int ret;
 	struct device *dev;
 
@@ -30,4 +31,3 @@ clean:
 	tuntap_destroy(dev);
 	return ret;
 }
-

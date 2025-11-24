@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #if defined Windows
-# include <windows.h>
+#include <windows.h>
 #endif
 
 #include "tuntap.h"
@@ -12,20 +12,22 @@
 /* This test SHOULD fail, it's normal */
 
 int
-main(void) {
+main(void)
+{
 	int ret;
 	struct device *dev;
 
 	ret = 1;
 	dev = tuntap_init();
-	if (tuntap_start(dev, TUNTAP_MODE_TUNNEL, TUNTAP_ID_ANY) == -1)
+	if (tuntap_start(dev, TUNTAP_MODE_TUNNEL, TUNTAP_ID_ANY) == -1) {
 		goto clean;
+	}
 
-	if (tuntap_set_hwaddr(dev, "54:1a:13:ef:b6:b5") == -1)
+	if (tuntap_set_hwaddr(dev, "54:1a:13:ef:b6:b5") == -1) {
 		ret = 0;
+	}
 
 clean:
 	tuntap_destroy(dev);
 	return ret;
 }
-

@@ -3,23 +3,19 @@
 
 # tuntap++ declaration
 # --------------------
-add_library(tuntap++ tuntap++.cc tuntap++.hh)
+add_library(tuntap++)
+target_sources(tuntap++ PRIVATE tuntap++.cc
+    PUBLIC FILE_SET HEADERS FILES tuntap++.hh)
 
-target_include_directories(tuntap++ PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-
-target_link_libraries(tuntap++ PUBLIC tuntap)
+target_link_libraries(tuntap++ PUBLIC tuntap::tuntap)
 
 set_target_properties(tuntap++ PROPERTIES
                       POSITION_INDEPENDENT_CODE TRUE
-                      VERSION 2.1
+                      VERSION 2.2
                       CXX_STANDARD 11)
 
-# install rules for shared and static
+# install rules
 # -----------------------------------
 install(TARGETS tuntap++
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        PUBLIC_HEADER DESTINATION include)
-
-install(FILES tuntap++.hh
-        DESTINATION include)
+        EXPORT tuntap-targets
+        FILE_SET HEADERS DESTINATION include)
