@@ -14,12 +14,12 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build & Install
         run: |
-          cmake -S . -B build -D BUILD_TESTING=OFF
-          cmake --build build
-          cmake --install build --prefix install
+          cmake -S . -B build -D BUILD_TESTING=OFF -D CMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake --build build --config RelWithDebInfo
+          cmake --install build --prefix install --config RelWithDebInfo
       - name: Run Tests
         run: |
-          cmake -S regress -B regress_build -D CMAKE_PREFIX_PATH=../install
-          cmake --build regress_build
+          cmake -S regress -B regress_build -D CMAKE_PREFIX_PATH=../install -D CMAKE_BUILD_TYPE=Debug
+          cmake --build regress_build --config Debug
           # unfortunately the tests manipulate tap/tun drivers. This is not allowed in GA
           # ctest --test-dir regress_build --no-tests=error

@@ -1,6 +1,6 @@
 # libtuntap CMakeLists.txt
 # ========================
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10..4.0)
 
 project(libtuntap VERSION 2.2)
 
@@ -34,13 +34,6 @@ target_sources(tuntap PUBLIC FILE_SET HEADERS FILES tuntap-export.h)
 # OS families specific things
 # ---------------------------
 if(UNIX)
-    # Unix specific include directories
-    # ---------------------------------
-    target_include_directories(tuntap PUBLIC
-        /usr/include/
-        /usr/local/include/
-    )
-
     # Unix specific definitions
     # -------------------------
     target_compile_definitions(tuntap PUBLIC Unix)

@@ -1,7 +1,7 @@
 # libtuntap regression tests CMakeLists.txt
 # =========================================
 #
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10...4.0)
 project(libtuntap-tests)
 
 if (PROJECT_IS_TOP_LEVEL)
