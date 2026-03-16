@@ -31,10 +31,7 @@ t_tuntap_log tuntap_log = NULL;
 void
 tuntap_log_set_cb(t_tuntap_log cb)
 {
-	if (cb == NULL) {
-		tuntap_log = tuntap_log_default;
-	}
-	tuntap_log = cb;
+	tuntap_log = (NULL == cb) ? tuntap_log_default : cb;
 }
 
 void
