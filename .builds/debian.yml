@@ -1,4 +1,4 @@
-image: debian/buster
+image: debian/stable
 packages:
   - cmake
   - git
@@ -6,16 +6,15 @@ packages:
 sources:
   - https://github.com/LaKabane/libtuntap
 tasks:
-  - setup: |
+  - build_lib: |
       cd libtuntap
-      mkdir build
-      cd build
-      cmake ..
-  - build: |
+      cmake -S . -B build -D BUILD_TESTING=ON -D CMAKE_BUILD_TYPE=RelWithDebInfo
+      cmake --build build --config RelWithDebInfo
+      cmake --install build --prefix install --config RelWithDebInfo
+  - build_regress: |
       cd libtuntap
-      cd build
-      make
+      cmake -S regress -B regress_build -D CMAKE_PREFIX_PATH=../install -D CMAKE_BUILD_TYPE=Debug
+      cmake --build regress_build --config Debug
   - test: |
       cd libtuntap
-      cd build
-      sudo make test
+      sudo ctest --test-dir regress_build --no-tests=error
