@@ -1,6 +1,6 @@
 # libtuntap CMakeLists.txt
 # ========================
-cmake_minimum_required(VERSION 3.10..4.0)
+cmake_minimum_required(VERSION 3.23..4.0)
 
 project(libtuntap VERSION 2.2)
 
@@ -28,8 +28,12 @@ set_target_properties(tuntap PROPERTIES
     VISIBILITY_INLINES_HIDDEN ON)
 
 target_compile_definitions(tuntap PUBLIC ${CMAKE_SYSTEM_NAME})
-generate_export_header(tuntap EXPORT_FILE_NAME ${CMAKE_CURRENT_SOURCE_DIR}/tuntap-export.h)
-target_sources(tuntap PUBLIC FILE_SET HEADERS FILES tuntap-export.h)
+generate_export_header(tuntap EXPORT_FILE_NAME tuntap-export.h)
+target_sources(tuntap PUBLIC 
+    FILE_SET generated_headers
+    TYPE HEADERS
+    BASE_DIRS ${CMAKE_CURRENT_BINARY_DIR}
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/tuntap-export.h)
 
 # OS families specific things
 # ---------------------------
@@ -101,7 +105,8 @@ write_basic_package_version_file(tuntap-config-version.cmake
 
 install(TARGETS tuntap
     EXPORT tuntap-targets
-    FILE_SET HEADERS DESTINATION include)
+    FILE_SET HEADERS DESTINATION include
+    FILE_SET generated_headers DESTINATION include)
 
 install(EXPORT tuntap-targets
     DESTINATION lib/cmake/tuntap
