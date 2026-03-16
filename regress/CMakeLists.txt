@@ -43,18 +43,18 @@ endif()
 # "Will fail" tests
 # -----------------
 
-if(Darwin OR Windows)
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin" OR ${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
   set_tests_properties(tuntap.test39 PROPERTIES WILL_FAIL true)
   set_tests_properties(tuntap.test40 PROPERTIES WILL_FAIL true)
 endif()
 
 # There is no debug mode for tap on NetBSD
-if(NetBSD)
+if(${CMAKE_SYSTEM_NAME} STREQUAL "NetBSD")
   set_tests_properties(tuntap.test39 PROPERTIES WILL_FAIL true)
 endif()
 
 # Persistence is not implemented on Darwin
-if(Darwin)
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
   set_tests_properties(tuntap.test33 PROPERTIES WILL_FAIL true)
   set_tests_properties(tuntap.test34 PROPERTIES WILL_FAIL true)
   set_tests_properties(tuntap.test35 PROPERTIES WILL_FAIL true)
@@ -62,12 +62,12 @@ if(Darwin)
 endif()
 
 # Only Linux has a tuntap_set_ifname() implemented
-if(NOT Linux)
+if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
   set_tests_properties(tuntap.test41 PROPERTIES WILL_FAIL true)
 endif()
 
 # Only Linux has a tuntap_sys_set_ipv6() implemented
-if(NOT Linux)
+if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
   set_tests_properties(tuntap.test15 PROPERTIES WILL_FAIL true)
   set_tests_properties(tuntap.test16 PROPERTIES WILL_FAIL true)
   set_tests_properties(tuntap.test19 PROPERTIES WILL_FAIL true)
@@ -75,13 +75,13 @@ if(NOT Linux)
 endif()
 
 # Only FreeBSD and OpenBSD have a tuntap_set_descr() implemented
-if(NOT FreeBSD AND NOT OpenBSD)
+if((NOT ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD") AND (NOT ${CMAKE_SYSTEM_NAME} STREQUAL "OpenBSD"))
   set_tests_properties(tuntap.test44 PROPERTIES WILL_FAIL true)
   set_tests_properties(tuntap.test46 PROPERTIES WILL_FAIL true)
 endif()
 
 # Windows work-in-progress (tap)
-if (Windows)
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
   set_tests_properties(tuntap.test05 PROPERTIES WILL_FAIL true)
   set_tests_properties(tuntap.test07 PROPERTIES WILL_FAIL true)
   set_tests_properties(tuntap.test09 PROPERTIES WILL_FAIL true)
@@ -91,7 +91,7 @@ if (Windows)
 endif()
 
 # Windows work-in-progress (tun)
-if (Windows)
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
   set_tests_properties(tuntap.test02 PROPERTIES WILL_FAIL true)
   set_tests_properties(tuntap.test04 PROPERTIES WILL_FAIL true)
   set_tests_properties(tuntap.test06 PROPERTIES WILL_FAIL true)
