@@ -6,7 +6,8 @@ namespace tuntap
 tuntap::tuntap(int mode, int id)
     : _dev{::tuntap_init()}
 {
-	if (mode != TUNTAP_MODE_ETHERNET && mode != TUNTAP_MODE_TUNNEL) {
+	if (((mode & TUNTAP_MODE_ETHERNET) == TUNTAP_MODE_ETHERNET) ==
+        ((mode & TUNTAP_MODE_TUNNEL) == TUNTAP_MODE_TUNNEL)) {
 		throw std::invalid_argument("Unknown tuntap mode");
 	}
 	if (id < 0 || id > TUNTAP_ID_ANY) {
