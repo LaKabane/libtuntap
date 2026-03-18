@@ -50,12 +50,19 @@ class tuntap
 	class TunTapDestroyer final
 	{
 	      public:
+		TunTapDestroyer(bool persist = false)
+		    : persist(persist)
+		{
+		}
 		LIBTUNTAP_ALY0MA60_CONSTEXPR void operator()(device *dev) const noexcept
 		{
 			if (dev) {
 				::tuntap_destroy(dev);
 			}
 		}
+
+	      private:
+		bool persist;
 	};
 	std::unique_ptr<device, TunTapDestroyer> _dev;
 };

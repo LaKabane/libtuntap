@@ -4,7 +4,7 @@ namespace tuntap
 {
 
 tuntap::tuntap(int mode, int id)
-    : _dev{::tuntap_init()}
+    : _dev{::tuntap_init(), TunTapDestroyer(0 != (mode & TUNTAP_MODE_PERSIST))}
 {
 	if (((mode & TUNTAP_MODE_ETHERNET) == TUNTAP_MODE_ETHERNET) == ((mode & TUNTAP_MODE_TUNNEL) == TUNTAP_MODE_TUNNEL)) {
 		throw std::invalid_argument("Unknown tuntap mode");
@@ -18,7 +18,7 @@ tuntap::tuntap(int mode, int id)
 }
 
 tuntap::tuntap(tuntap &&t) noexcept
-    : _dev()
+    : _dev{::tuntap_init(), TunTapDestroyer(false)}
 {
 	t._dev.swap(this->_dev);
 }
