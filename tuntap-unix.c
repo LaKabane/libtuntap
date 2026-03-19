@@ -76,7 +76,6 @@ tuntap_start(struct device *dev, int mode, int tun)
 	}
 
 	dev->tun_fd = fd;
-	tuntap_set_debug(dev, 0);
 	return 0;
 
 clean:
