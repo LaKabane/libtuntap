@@ -57,7 +57,11 @@ class tuntap
 		LIBTUNTAP_ALY0MA60_CONSTEXPR void operator()(device *dev) const noexcept
 		{
 			if (dev) {
-				::tuntap_destroy(dev);
+				if (persist) {
+					::tuntap_release(dev);
+				} else {
+					::tuntap_destroy(dev);
+				}
 			}
 		}
 
