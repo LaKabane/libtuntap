@@ -29,6 +29,7 @@
 #else
 #include <net/if.h>
 #endif
+#include <arpa/inet.h>
 #include <netinet/if_ether.h>
 #include <netinet/in.h>
 #endif

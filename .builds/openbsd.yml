@@ -1,8 +1,7 @@
-image: debian/stable
+image: openbsd/latest
 packages:
   - cmake
   - git
-  - build-essential
 sources:
   - https://github.com/LaKabane/libtuntap
 tasks:
@@ -17,4 +16,4 @@ tasks:
       cmake --build regress_build --config Debug
   - test: |
       cd libtuntap
-      sudo ctest --test-dir regress_build --no-tests=error
+      doas ctest --test-dir regress_build --no-tests=error

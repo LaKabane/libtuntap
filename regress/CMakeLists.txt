@@ -53,6 +53,12 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "NetBSD")
   set_tests_properties(tuntap.test39 PROPERTIES WILL_FAIL true)
 endif()
 
+# Debug mode is a disabled compile time option on OpenBSD
+if(${CMAKE_SYSTEM_NAME} STREQUAL "OpenBSD")
+  set_tests_properties(tuntap.test39 PROPERTIES WILL_FAIL true)
+  set_tests_properties(tuntap.test40 PROPERTIES WILL_FAIL true)
+endif()
+
 # Persistence is not implemented on Darwin
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
   set_tests_properties(tuntap.test33 PROPERTIES WILL_FAIL true)
