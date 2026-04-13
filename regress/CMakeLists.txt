@@ -67,8 +67,8 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
   set_tests_properties(tuntap.test36 PROPERTIES WILL_FAIL true)
 endif()
 
-# Only Linux has a tuntap_set_ifname() implemented
-if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+# Only Linux, FreeBSD and Dragonfly have a tuntap_set_ifname() implemented
+if((NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Linux") AND (NOT ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD") AND (NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Dragonfly"))
   set_tests_properties(tuntap.test41 PROPERTIES WILL_FAIL true)
 endif()
 

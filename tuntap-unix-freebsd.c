@@ -207,6 +207,31 @@ tuntap_sys_set_ipv4(struct device *dev, t_tun_in_addr *s4, uint32_t bits)
 }
 
 int
+tuntap_sys_set_ipv6(struct device *dev, t_tun_in6_addr *s6, uint32_t bits)
+{
+	(void)dev;
+	(void)s6;
+	(void)bits;
+	tuntap_log(TUNTAP_LOG_NOTICE, "IPv6 is not implemented on your system");
+	return -1;
+}
+
+int
+tuntap_sys_set_ifname(struct device *dev, const char *ifname, size_t len)
+{
+	struct ifreq ifr;
+
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof(ifr.ifr_name));
+	ifr.ifr_data = ifname;
+	if (ioctl(dev->ctrl_sock, SIOCSIFNAME, (caddr_t)&ifr) == -1) {
+		tuntap_log(TUNTAP_LOG_ERR, "Can't set interface name");
+		return -1;
+	}
+	(void)strlcpy(dev->if_name, ifr.ifr_name, sizeof(dev->if_name));
+	return 0;
+}
+int
 tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len)
 {
 #if defined FreeBSD

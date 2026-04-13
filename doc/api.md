@@ -136,7 +136,7 @@ This function replaces the name of the interface described by `dev` with the giv
 
 It returns -1 on error.
 
-Compatibility: Linux.
+Compatibility: Linux, FreeBSD, Dragonfly.
 
 ### tuntap_get_hwaddr
 
