@@ -16,4 +16,4 @@ tasks:
       cmake --build regress_build --config Debug
   - test: |
       cd libtuntap
-      sudo ctest --test-dir regress_build --no-tests=error
+      sudo ctest --test-dir regress_build --no-tests=error --timeout 5
