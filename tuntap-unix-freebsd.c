@@ -168,7 +168,16 @@ ifcreated:
 void
 tuntap_sys_destroy(struct device *dev)
 {
-	return;
+	struct ifreq ifr;
+
+	/* Close tun_fd early otherwise SIOCIFDESTROY will block */
+	(void)close(dev->tun_fd);
+	dev->tun_fd = -1;
+	(void)memset(&ifr, '\0', sizeof ifr);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof ifr.ifr_name);
+	if (ioctl(dev->ctrl_sock, SIOCIFDESTROY, &ifr) < 0) {
+		tuntap_log(TUNTAP_LOG_WARN, "Can't destroy the interface");
+	}
 }
 
 int

@@ -91,7 +91,10 @@ clean:
 void
 tuntap_release(struct device *dev)
 {
-	(void)close(dev->tun_fd);
+	/* tun_fd might already have been closed */
+	if (dev->tun_fd != -1) {
+		(void)close(dev->tun_fd);
+	}
 	(void)close(dev->ctrl_sock);
 	free(dev);
 }
