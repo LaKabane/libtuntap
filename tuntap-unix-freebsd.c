@@ -23,8 +23,10 @@
 #include <net/if.h>
 #if defined FreeBSD
 #include <net/if_tun.h>
+#include <net/if_tap.h>
 #elif defined DragonFly
 #include <net/tun/if_tun.h>
+#include <net/tap/if_tap.h>
 #endif
 #include <net/if_types.h>
 #include <netinet/if_ether.h>
@@ -42,15 +44,35 @@
 #include "private.h"
 #include "tuntap.h"
 
-int
-tuntap_sys_start(struct device *dev, int mode, int tun)
+static int
+tuntap_sys_create_dev(struct device *dev, const char *iftype, int unit)
 {
-	int fd;
-	int persist;
-	char *ifname;
-	char name[MAXPATHLEN];
-	struct ifaddrs *ifa;
-	struct ifreq ifr;
+	struct ifreq    ifr;
+	char	    	ifname[MAXPATHLEN];
+
+	(void)memset(ifname, 0, sizeof ifname);
+	(void)snprintf(ifname, sizeof ifname, "%s%i", iftype, unit);
+	(void)memset(&ifr, 0, sizeof ifr);
+	(void)strlcpy(ifr.ifr_name, ifname, sizeof ifr.ifr_name);
+	if (ioctl(dev->ctrl_sock, SIOCIFCREATE2 ,&ifr) < 0) {
+		switch (errno) {
+		case EEXIST:
+			return 0;
+		default:
+			return -1;
+		}
+	}
+	return 1;
+}
+
+int
+tuntap_sys_start(struct device *dev, int mode, int unit)
+{
+	int		 fd;
+	int		 persist;
+	char 		 ifname[MAXPATHLEN];
+	struct ifreq	 ifr;
+	char		*iftype;
 
 	/* Get the persistence bit */
 	if (mode & TUNTAP_MODE_PERSIST) {
@@ -62,84 +84,83 @@ tuntap_sys_start(struct device *dev, int mode, int tun)
 
 	/* Set the mode: tun or tap */
 	if (mode == TUNTAP_MODE_ETHERNET) {
-		ifname = "tap";
+		iftype = "tap";
 	} else if (mode == TUNTAP_MODE_TUNNEL) {
-		ifname = "tun";
+		iftype = "tun";
 	} else {
 		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'mode'");
 		return -1;
 	}
 
-	/* Try to use the given driver or loop throught the avaible ones */
-	fd = -1;
-	if (tun < TUNTAP_ID_MAX) {
-		(void)snprintf(name, sizeof name, "/dev/%s%i", ifname, tun);
-		fd = open(name, O_RDWR);
-	} else if (tun == TUNTAP_ID_ANY) {
-		for (tun = 0; tun < TUNTAP_ID_MAX; ++tun) {
-			(void)memset(name, '\0', sizeof name);
-			(void)snprintf(name, sizeof name, "/dev/%s%i", ifname, tun);
-			if ((fd = open(name, O_RDWR)) > 0) {
+	/* Create the interface if required */
+	if (unit < TUNTAP_ID_MAX) {
+		if (persist == 1) {
+			int result = tuntap_sys_create_dev(dev, iftype, unit);
+			switch (result) {
+			case -1:
+				tuntap_log(TUNTAP_LOG_ERR, "Can't create interface");
+				return -1;
+			case 0:
+				tuntap_log(TUNTAP_LOG_ERR, "Interface already exists");
+				return -1;
+			default:
 				break;
+			}
+		}
+	} else if (unit == TUNTAP_ID_ANY) {
+		for (unit = 0; unit < TUNTAP_ID_MAX; unit++) {
+			int result = tuntap_sys_create_dev(dev, iftype, unit);
+			switch (result) {
+			case -1:
+				tuntap_log(TUNTAP_LOG_ERR, "Can't create interface");
+				return -1;
+			case 0:
+				continue;
+			default:
+				goto ifcreated;
 			}
 		}
 	} else {
 		tuntap_log(TUNTAP_LOG_ERR, "Invalid parameter 'tun'");
 		return -1;
 	}
-	switch (fd) {
-	case -1:
+
+ifcreated:
+	/*
+	 * Interfaces with custom names are symbolic-link to the "real" tun or
+	 * tap interfaces. Opening /dev/tun0 instead of /dev/foobar0 works.
+	 */
+	(void)memset(ifname, 0, sizeof ifname);
+	(void)snprintf(ifname, sizeof ifname, "/dev/%s%i", iftype, unit);
+	if ((fd = open(ifname, O_RDWR)) == -1) {
 		tuntap_log(TUNTAP_LOG_ERR, "Permission denied");
 		return -1;
-	case 256:
-		tuntap_log(TUNTAP_LOG_ERR, "Can't find a tun entry");
-		return -1;
-	default:
-		/* NOTREACHED */
-		break;
 	}
 
-	/* Set the interface name */
-	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)snprintf(ifr.ifr_name, sizeof ifr.ifr_name, "%s%i", ifname, tun);
-	/* And save it */
+	/* Get the real interface name */
+	(void)memset(&ifr, 0, sizeof ifr);
+	if (ioctl(fd, mode == TUNTAP_MODE_ETHERNET ? TAPGIFNAME : TUNGIFNAME, &ifr) == -1) {
+		tuntap_log(TUNTAP_LOG_ERR, "Can't get the interface name");
+		return -1;
+	}
 	(void)strlcpy(dev->if_name, ifr.ifr_name, sizeof dev->if_name);
 
-	/* Get the interface default values */
+	/* Save the interface default flags for tuntap_{up, down} */
 	if (ioctl(dev->ctrl_sock, SIOCGIFFLAGS, &ifr) == -1) {
 		tuntap_log(TUNTAP_LOG_ERR, "Can't get interface values");
 		return -1;
 	}
-
-	/* Save flags for tuntap_{up, down} */
 	dev->flags = ifr.ifr_flags;
 
 	/* Save pre-existing MAC address */
-	if (mode == TUNTAP_MODE_ETHERNET && getifaddrs(&ifa) == 0) {
-		struct ifaddrs *pifa;
+	if (mode == TUNTAP_MODE_ETHERNET) {
+		struct ether_addr addr;
 
-		for (pifa = ifa; pifa != NULL; pifa = pifa->ifa_next) {
-			if (strcmp(pifa->ifa_name, dev->if_name) == 0) {
-				struct ether_addr eth_addr;
-
-				/*
-				 * The MAC address is from 10 to 15.
-				 *
-				 * And yes, I know, the buffer is supposed
-				 * to have a size of 14 bytes.
-				 */
-				(void)memcpy(dev->hwaddr, pifa->ifa_addr->sa_data + 10, ETHER_ADDR_LEN);
-
-				(void)memset(&eth_addr.octet, 0, ETHER_ADDR_LEN);
-				(void)memcpy(&eth_addr.octet, pifa->ifa_addr->sa_data + 10, ETHER_ADDR_LEN);
-
-				break;
-			}
-		}
-		if (pifa == NULL) {
+		if (ioctl(fd, SIOCGIFADDR, &addr) == -1) {
 			tuntap_log(TUNTAP_LOG_WARN, "Can't get link-layer address");
+			return fd;
 		}
-		freeifaddrs(ifa);
+		(void)memcpy(dev->hwaddr, &addr, ETHER_ADDR_LEN);
 	}
 	return fd;
 }
@@ -223,7 +244,7 @@ tuntap_sys_set_ifname(struct device *dev, const char *ifname, size_t len)
 
 	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof(ifr.ifr_name));
-	ifr.ifr_data = ifname;
+	ifr.ifr_data = (caddr_t)ifname;
 	if (ioctl(dev->ctrl_sock, SIOCSIFNAME, (caddr_t)&ifr) == -1) {
 		tuntap_log(TUNTAP_LOG_ERR, "Can't set interface name");
 		return -1;
