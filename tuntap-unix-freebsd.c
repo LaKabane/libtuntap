@@ -270,7 +270,7 @@ tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len)
 	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof ifr.ifr_name);
 	ifrbuf.buffer = (void *)descr;
-	ifrbuf.length = len;
+	ifrbuf.length = len + 1; /* counting the terminating nul */
 	ifr.ifr_buffer = ifrbuf;
 	if (ioctl(dev->ctrl_sock, SIOCSIFDESCR, &ifr) == -1) {
 		tuntap_log(TUNTAP_LOG_ERR, "Can't set the interface description");
