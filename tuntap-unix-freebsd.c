@@ -264,7 +264,6 @@ tuntap_sys_set_ifname(struct device *dev, const char *ifname, size_t len)
 int
 tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len)
 {
-#if defined FreeBSD
 	struct ifreq ifr;
 	struct ifreq_buffer ifrbuf;
 
@@ -280,10 +279,8 @@ tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len)
 		return -1;
 	}
 	return 0;
-#elif defined DragonFly
 	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_set_descr()");
 	return -1;
-#endif
 }
 
 char *
