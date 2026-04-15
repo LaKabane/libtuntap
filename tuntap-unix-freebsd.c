@@ -269,11 +269,9 @@ tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len)
 
 	(void)memset(&ifr, '\0', sizeof ifr);
 	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof ifr.ifr_name);
-
 	ifrbuf.buffer = (void *)descr;
 	ifrbuf.length = len;
 	ifr.ifr_buffer = ifrbuf;
-
 	if (ioctl(dev->ctrl_sock, SIOCSIFDESCR, &ifr) == -1) {
 		tuntap_log(TUNTAP_LOG_ERR, "Can't set the interface description");
 		return -1;
@@ -286,7 +284,16 @@ tuntap_sys_set_descr(struct device *dev, const char *descr, size_t len)
 char *
 tuntap_sys_get_descr(struct device *dev)
 {
-	(void)dev;
-	tuntap_log(TUNTAP_LOG_NOTICE, "Your system does not support tuntap_get_descr()");
-	return NULL;
+	struct ifreq ifr;
+	static char ifdesrc[IF_DESCRSIZE];
+
+	(void)memset(&ifr, 0, sizeof ifr);
+	(void)strlcpy(ifr.ifr_name, dev->if_name, sizeof ifr.ifr_name);
+	ifr.ifr_buffer.buffer = ifdesrc;
+	ifr.ifr_buffer.length = sizeof ifdesrc;
+	if (ioctl(dev->ctrl_sock, SIOCGIFDESCR, &ifr) == -1) {
+		tuntap_log(TUNTAP_LOG_ERR, "Can't get the interface description");
+		return NULL;
+	}
+	return ifdesrc;
 }
