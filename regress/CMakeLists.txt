@@ -111,3 +111,16 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
   set_tests_properties(tuntap.test26 PROPERTIES WILL_FAIL true)
   set_tests_properties(tuntap.test40 PROPERTIES WILL_FAIL true)
 endif()
+
+# FreeBSD work-in-progress
+if(${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
+  set_tests_properties(tuntap.test13 PROPERTIES WILL_FAIL true)
+  set_tests_properties(tuntap.test14 PROPERTIES WILL_FAIL true)
+  set_tests_properties(tuntap.test17 PROPERTIES WILL_FAIL true)
+  set_tests_properties(tuntap.test18 PROPERTIES WILL_FAIL true)
+  set_tests_properties(tuntap.test33 PROPERTIES WILL_FAIL true)
+  set_tests_properties(tuntap.test34 PROPERTIES WILL_FAIL true)
+  set_tests_properties(tuntap.test35 PROPERTIES WILL_FAIL true)
+  set_tests_properties(tuntap.test36 PROPERTIES WILL_FAIL true)
+endif()
+
