@@ -22,11 +22,11 @@
 #include <arpa/inet.h>
 #include <net/if.h>
 #if defined FreeBSD
-#include <net/if_tun.h>
 #include <net/if_tap.h>
+#include <net/if_tun.h>
 #elif defined DragonFly
-#include <net/tun/if_tun.h>
 #include <net/tap/if_tap.h>
+#include <net/tun/if_tun.h>
 #endif
 #include <net/if_types.h>
 #include <netinet/if_ether.h>
@@ -47,14 +47,14 @@
 static int
 tuntap_sys_create_dev(struct device *dev, const char *iftype, int unit)
 {
-	struct ifreq    ifr;
-	char	    	ifname[MAXPATHLEN];
+	struct ifreq ifr;
+	char ifname[MAXPATHLEN];
 
 	(void)memset(ifname, 0, sizeof ifname);
 	(void)snprintf(ifname, sizeof ifname, "%s%i", iftype, unit);
 	(void)memset(&ifr, 0, sizeof ifr);
 	(void)strlcpy(ifr.ifr_name, ifname, sizeof ifr.ifr_name);
-	if (ioctl(dev->ctrl_sock, SIOCIFCREATE2 ,&ifr) < 0) {
+	if (ioctl(dev->ctrl_sock, SIOCIFCREATE2, &ifr) < 0) {
 		switch (errno) {
 		case EEXIST:
 			return 0;
@@ -68,11 +68,11 @@ tuntap_sys_create_dev(struct device *dev, const char *iftype, int unit)
 int
 tuntap_sys_start(struct device *dev, int mode, int unit)
 {
-	int		 fd;
-	int		 persist;
-	char 		 ifname[MAXPATHLEN];
-	struct ifreq	 ifr;
-	char		*iftype;
+	int fd;
+	int persist;
+	char ifname[MAXPATHLEN];
+	struct ifreq ifr;
+	char *iftype;
 
 	/* Get the persistence bit */
 	if (mode & TUNTAP_MODE_PERSIST) {
