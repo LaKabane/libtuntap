@@ -18,7 +18,7 @@ tuntap::tuntap(int mode, int id)
 }
 
 tuntap::tuntap(tuntap &&t) noexcept
-    : _dev{::tuntap_init(), TunTapDestroyer(false)}
+    : _dev{nullptr, TunTapDestroyer()}
 {
 	t._dev.swap(this->_dev);
 }
