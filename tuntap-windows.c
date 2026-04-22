@@ -269,7 +269,7 @@ tuntap_get_mtu(struct device *dev)
 		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
 		return -1;
 	}
-	return 0;
+	return mtu;
 }
 
 int
