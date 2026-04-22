@@ -17,7 +17,7 @@
 #include <sys/types.h>
 
 #if defined Windows
-#include <In6addr.h>
+#include <in6addr.h>
 #include <stdint.h>
 #else /* Unix */
 #include <sys/socket.h>
