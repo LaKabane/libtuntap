@@ -68,7 +68,7 @@ formated_error(LPWSTR pMessage, DWORD m, ...)
 /* TODO: Rework to be more generic and allow arbitrary key modification (MTU and
  * stuff) */
 static char *
-reg_query(char *key_name)
+reg_query(char *key_name, int id)
 {
 	HKEY adapters, adapter;
 	DWORD i, ret, len;
@@ -124,13 +124,24 @@ reg_query(char *key_name)
 			DWORD type;
 
 			len = sizeof data;
-			ret = RegQueryValueEx(adapter, "NetCfgInstanceId", NULL, &type, (LPBYTE)data, &len);
+			ret = RegQueryValueEx(adapter, "DeviceInstanceId", NULL, &type, (LPBYTE)data, &len);
 			if (ret != ERROR_SUCCESS) {
 				tuntap_log(TUNTAP_LOG_INFO, (const char *)formated_error(L"%1", ret));
 				goto clean;
 			}
-			deviceid = strdup(data);
-			break;
+			int idx = 0;
+			if (1 == sscanf(data, "ROOT\\NET\\%i", &idx)) {
+				if (idx == id) {
+					len = sizeof data;
+					ret = RegQueryValueEx(adapter, "NetCfgInstanceId", NULL, &type, (LPBYTE)data, &len);
+					if (ret != ERROR_SUCCESS) {
+						tuntap_log(TUNTAP_LOG_INFO, (const char *)formated_error(L"%1", ret));
+						goto clean;
+					}
+					deviceid = strdup(data);
+					break;
+				}
+			}
 		}
 	clean:
 		RegCloseKey(adapter);
@@ -152,6 +163,8 @@ tuntap_start(struct device *dev, int mode, int tun)
 	HANDLE tun_fd;
 	char *deviceid;
 	char buf[60];
+	int tun_start = 0;
+	int tun_end = 0;
 
 	/* Don't re-initialise a previously started device */
 	if (dev->tun_fd != TUNFD_INVALID_VALUE) {
@@ -171,13 +184,36 @@ tuntap_start(struct device *dev, int mode, int tun)
 		return -1;
 	}
 
-	deviceid = reg_query(NETWORK_ADAPTERS);
-	snprintf(buf, sizeof buf, "\\\\.\\Global\\%s.tap", deviceid);
-	tun_fd = CreateFile(buf, GENERIC_WRITE | GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM | FILE_FLAG_OVERLAPPED, 0);
+	if (TUNTAP_ID_ANY == tun) {
+		tun_start = 0;
+		tun_end = TUNTAP_ID_MAX + 1;
+	} else {
+		tun_start = tun;
+		tun_end = tun + 1;
+	}
+
+	/* loop through adapters open first available */
+	tun_fd = TUNFD_INVALID_VALUE;
+	for (int id = tun_start; id < tun_end; ++id) {
+		deviceid = reg_query(NETWORK_ADAPTERS, id);
+		if (NULL == deviceid) {
+			break;
+		}
+		snprintf(buf, sizeof buf, "\\\\.\\Global\\%s.tap", deviceid);
+		free(deviceid);
+		tun_fd = CreateFile(buf, GENERIC_WRITE | GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM | FILE_FLAG_OVERLAPPED, 0);
+		if (tun_fd != TUNFD_INVALID_VALUE) {
+			break;
+		}
+	}
+
 	if (tun_fd == TUNFD_INVALID_VALUE) {
 		int errcode = GetLastError();
-
-		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
+		if (NOERROR == errcode) {
+			tuntap_log(TUNTAP_LOG_ERR, "Nonexisting device requested");
+		} else {
+			tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
+		}
 		return -1;
 	}
 
