@@ -136,7 +136,7 @@ This function replaces the name of the interface described by `dev` with the giv
 
 It returns -1 on error.
 
-Compatibility: Linux.
+Compatibility: Linux, FreeBSD, Dragonfly.
 
 ### tuntap_get_hwaddr
 
@@ -159,8 +159,9 @@ It returns -1 on error.
     char *tuntap_get_descr(struct device *dev);
 
 This function returns the current description of the interface described by `dev`.
+It does so by returning a pointer to a static buffer that is reused for each call.
 
-Compatibility: OpenBSD.
+Compatibility: OpenBSD, FreeBSD, Dragonfly.
 
 ### tuntap_set_descr
 
@@ -168,7 +169,7 @@ Compatibility: OpenBSD.
 
 This function replaces the description of the interface described by `dev` with the given string `desc`.
 
-Compatibility: OpenBSD, FreeBSD.
+Compatibility: OpenBSD, FreeBSD, Dragonfly.
 
 ### tuntap_up
 

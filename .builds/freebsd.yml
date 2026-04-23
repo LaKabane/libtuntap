@@ -1,0 +1,19 @@
+image: freebsd/latest
+packages:
+  - cmake
+  - git
+sources:
+  - https://github.com/LaKabane/libtuntap
+tasks:
+  - build_lib: |
+      cd libtuntap
+      cmake -S . -B build -D BUILD_TESTING=OFF -D CMAKE_BUILD_TYPE=RelWithDebInfo
+      cmake --build build --config RelWithDebInfo
+      cmake --install build --prefix install --config RelWithDebInfo
+  - build_regress: |
+      cd libtuntap
+      cmake -S regress -B regress_build -D CMAKE_PREFIX_PATH=../install -D CMAKE_BUILD_TYPE=Debug
+      cmake --build regress_build --config Debug
+  - test: |
+      cd libtuntap
+      sudo ctest --test-dir regress_build --no-tests=error --timeout 5
