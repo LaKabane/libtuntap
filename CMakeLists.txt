@@ -58,7 +58,7 @@ if(WIN32)
 
     # Windows specific dependencies
     # -----------------------------
-    target_link_libraries(tuntap PUBLIC Ws2_32)
+    target_link_libraries(tuntap PUBLIC ws2_32)
 endif(WIN32)
 
 # OS specific things
