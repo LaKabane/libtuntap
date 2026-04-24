@@ -142,7 +142,8 @@ tuntap::nonblocking(bool b)
 }
 
 void
-tuntap::debug(bool b) {
+tuntap::debug(bool b)
+{
 	if (::tuntap_set_debug(_dev.get(), static_cast<int>(b))) {
 		throw std::runtime_error("Failed to change debugging state for tuntap device");
 	}
