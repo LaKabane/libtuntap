@@ -38,8 +38,36 @@ tuntap::name() const noexcept
 void
 tuntap::name(std::string const &s)
 {
-	if (::tuntap_set_ifname(_dev.get(), s.c_str())) {
+	if (::tuntap_set_hwaddr(_dev.get(), s.c_str())) {
 		throw std::runtime_error("Failed to set ifname");
+	}
+}
+
+std::string
+tuntap::hwaddr() const noexcept
+{
+	return std::string(::tuntap_get_hwaddr(_dev.get()));
+}
+
+void
+tuntap::hwaddr(std::string const &s)
+{
+	if (::tuntap_set_ifname(_dev.get(), s.c_str())) {
+		throw std::runtime_error("Failed to set hwaddr");
+	}
+}
+
+std::string
+tuntap::descr() const noexcept
+{
+	return std::string(::tuntap_get_descr(_dev.get()));
+}
+
+void
+tuntap::descr(std::string const &s)
+{
+	if (::tuntap_set_descr(_dev.get(), s.c_str())) {
+		throw std::runtime_error("Failed to set descr");
 	}
 }
 
@@ -110,6 +138,13 @@ tuntap::nonblocking(bool b)
 {
 	if (::tuntap_set_nonblocking(_dev.get(), static_cast<int>(b))) {
 		throw std::runtime_error("Failed to change non-blocking state for tuntap device");
+	}
+}
+
+void
+tuntap::debug(bool b) {
+	if (::tuntap_set_debug(_dev.get(), static_cast<int>(b))) {
+		throw std::runtime_error("Failed to change debugging state for tuntap device");
 	}
 }
 
