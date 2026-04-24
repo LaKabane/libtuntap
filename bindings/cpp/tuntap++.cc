@@ -38,7 +38,7 @@ tuntap::name() const noexcept
 void
 tuntap::name(std::string const &s)
 {
-	if (::tuntap_set_hwaddr(_dev.get(), s.c_str())) {
+	if (::tuntap_set_ifname(_dev.get(), s.c_str())) {
 		throw std::runtime_error("Failed to set ifname");
 	}
 }
@@ -52,7 +52,7 @@ tuntap::hwaddr() const noexcept
 void
 tuntap::hwaddr(std::string const &s)
 {
-	if (::tuntap_set_ifname(_dev.get(), s.c_str())) {
+	if (::tuntap_set_hwaddr(_dev.get(), s.c_str())) {
 		throw std::runtime_error("Failed to set hwaddr");
 	}
 }
