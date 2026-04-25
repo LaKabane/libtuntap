@@ -67,13 +67,18 @@ formated_error(LPWSTR pMessage, DWORD m, ...)
 
 /* TODO: Rework to be more generic and allow arbitrary key modification (MTU and
  * stuff) */
-static char *
-reg_query(char *key_name)
+static char **
+reg_query(char *key_name, int id)
 {
 	HKEY adapters, adapter;
 	DWORD i, ret, len;
-	char *deviceid = NULL;
+	char **deviceids;
+	int devicecnt;
 	DWORD sub_keys = 0;
+
+	deviceids = malloc(sizeof(char *));
+	*deviceids = NULL; /* sentinel */
+	devicecnt = 1;
 
 	ret = RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT(key_name), 0, KEY_READ, &adapters);
 	if (ret != ERROR_SUCCESS) {
@@ -124,19 +129,32 @@ reg_query(char *key_name)
 			DWORD type;
 
 			len = sizeof data;
-			ret = RegQueryValueEx(adapter, "NetCfgInstanceId", NULL, &type, (LPBYTE)data, &len);
+			ret = RegQueryValueEx(adapter, "DeviceInstanceId", NULL, &type, (LPBYTE)data, &len);
 			if (ret != ERROR_SUCCESS) {
 				tuntap_log(TUNTAP_LOG_INFO, (const char *)formated_error(L"%1", ret));
 				goto clean;
 			}
-			deviceid = strdup(data);
-			break;
+			int idx = 0;
+			if (1 == sscanf(data, "ROOT\\NET\\%i", &idx)) {
+				if (TUNTAP_ID_ANY == id || idx == id) {
+					len = sizeof data;
+					ret = RegQueryValueEx(adapter, "NetCfgInstanceId", NULL, &type, (LPBYTE)data, &len);
+					if (ret != ERROR_SUCCESS) {
+						tuntap_log(TUNTAP_LOG_INFO, (const char *)formated_error(L"%1", ret));
+						goto clean;
+					}
+					/* append to result list */
+					deviceids[devicecnt - 1] = strdup(data);
+					deviceids = realloc(deviceids, (++devicecnt) * sizeof(char *));
+					deviceids[devicecnt - 1] = NULL;
+				}
+			}
 		}
 	clean:
 		RegCloseKey(adapter);
 	}
 	RegCloseKey(adapters);
-	return deviceid;
+	return deviceids;
 }
 
 void
@@ -150,7 +168,7 @@ int
 tuntap_start(struct device *dev, int mode, int tun)
 {
 	HANDLE tun_fd;
-	char *deviceid;
+	// char *deviceid;
 	char buf[60];
 
 	/* Don't re-initialise a previously started device */
@@ -171,13 +189,32 @@ tuntap_start(struct device *dev, int mode, int tun)
 		return -1;
 	}
 
-	deviceid = reg_query(NETWORK_ADAPTERS);
-	snprintf(buf, sizeof buf, "\\\\.\\Global\\%s.tap", deviceid);
-	tun_fd = CreateFile(buf, GENERIC_WRITE | GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM | FILE_FLAG_OVERLAPPED, 0);
+	/* get a list of candidate adapters, "tun" may be TUNTAP_ID_ANY */
+	char **deviceids = reg_query(NETWORK_ADAPTERS, tun);
+
+	/* loop through adapters open first available */
+	tun_fd = TUNFD_INVALID_VALUE;
+	for (char **idptr = deviceids; *idptr != NULL; ++idptr) {
+		snprintf(buf, sizeof buf, "\\\\.\\Global\\%s.tap", *idptr);
+		tun_fd = CreateFile(buf, GENERIC_WRITE | GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM | FILE_FLAG_OVERLAPPED, 0);
+		if (tun_fd != TUNFD_INVALID_VALUE) {
+			break;
+		}
+	}
+
+	/* clean up device id list */
+	for (char **idptr = deviceids; *idptr != NULL; ++idptr) {
+		free(*idptr);
+	}
+	free(deviceids);
+
 	if (tun_fd == TUNFD_INVALID_VALUE) {
 		int errcode = GetLastError();
-
-		tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
+		if (NOERROR == errcode) {
+			tuntap_log(TUNTAP_LOG_ERR, "Nonexisting device requested");
+		} else {
+			tuntap_log(TUNTAP_LOG_ERR, (const char *)formated_error(L"%1%0", errcode));
+		}
 		return -1;
 	}
 
