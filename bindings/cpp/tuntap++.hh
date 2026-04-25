@@ -29,6 +29,10 @@ class tuntap
 	// Properties
 	std::string name() const noexcept;
 	void name(std::string const &);
+	std::string hwaddr() const noexcept;
+	void hwaddr(std::string const &);
+	std::string descr() const noexcept;
+	void descr(std::string const &);
 	int mtu() const noexcept;
 	void mtu(int);
 	t_tun native_handle() const noexcept;
@@ -45,6 +49,7 @@ class tuntap
 	// System
 	void release() noexcept;
 	void nonblocking(bool);
+	void debug(bool);
 
       private:
 	class TunTapDestroyer final
