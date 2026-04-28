@@ -96,6 +96,7 @@ struct device {
 	int flags; /* ifr.ifr_flags on Unix */
 	unsigned char hwaddr[ETHER_ADDR_LEN];
 	char if_name[IF_NAMESIZE + 1];
+	void *sys; /* pointer for system dependent data*/
 };
 
 /*
