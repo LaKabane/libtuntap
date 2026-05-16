@@ -498,7 +498,8 @@ tuntap_get_mtu(struct device *dev)
 int
 tuntap_set_mtu(struct device *dev, int mtu)
 {
-#if 0	/* The following did not work reliably for me */
+#if 0
+/* The following did not work reliably for me */
 	system_device *psys = dev->sys;
 	DWORD err = 0;
 	MIB_IPINTERFACE_ROW ipiface;
