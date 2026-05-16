@@ -8,6 +8,11 @@ include(CTest)
 include(CMakePackageConfigHelpers)
 include(GenerateExportHeader)
 
+# Temporary for debugging via CI
+if(MSVC)
+  add_link_options("/VERBOSE:LIB")
+endif()
+
 # CMake global options
 # --------------------
 option(ENABLE_CXX "Enable the C++ wrapper library" ON)
