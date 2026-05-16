@@ -17,8 +17,16 @@
 #include <sys/types.h>
 
 #if defined Windows
-#include <in6addr.h>
+/* prevent reordering of windows headers !! */
+/* clang-format off */
 #include <stdint.h>
+#include <winsock2.h>
+#include <windows.h>
+#include <ws2tcpip.h>
+#include <iphlpapi.h>
+#include <in6addr.h>
+#include <inaddr.h>
+/* clang-format on */
 #else /* Unix */
 #include <sys/socket.h>
 #endif
@@ -85,6 +93,9 @@
 #if defined Windows
 typedef IN_ADDR t_tun_in_addr;
 typedef IN6_ADDR t_tun_in6_addr;
+struct ether_addr {
+	uint8_t ether_addr_octet[ETHER_ADDR_LEN];
+} __attribute__((__packed__));
 #else /* Unix */
 typedef struct in_addr t_tun_in_addr;
 typedef struct in6_addr t_tun_in6_addr;
