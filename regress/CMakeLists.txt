@@ -4,11 +4,6 @@
 cmake_minimum_required(VERSION 3.10...4.0)
 project(libtuntap-tests)
 
-# Temporary for debugging via CI
-if(MSVC)
-  add_link_options("/VERBOSE:LIB")
-endif()
-
 if (PROJECT_IS_TOP_LEVEL)
   find_package(tuntap REQUIRED)
   include(CTest)
