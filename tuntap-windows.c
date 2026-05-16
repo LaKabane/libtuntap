@@ -36,6 +36,10 @@
 
 #include <wbemidl.h>
 
+#ifndef strcasecmp
+#define strcasecmp(x, y) _stricmp((x), (y))
+#endif
+
 #define MALLOC(x) HeapAlloc(GetProcessHeap(), 0, (x))
 #define FREE(x) HeapFree(GetProcessHeap(), 0, (x))
 
