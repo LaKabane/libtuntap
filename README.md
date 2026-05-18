@@ -131,6 +131,19 @@ which is a third-party kext.
 ### Notes for Windows users
 
 You need to install the tap-windows driver provided by the [OpenVPN project](https://openvpn.net/index.php/open-source/downloads.html).
+On windows only persistent mode is available, i.e. the adapters need to be
+added manually. This can be done e.g. by using the "add legacy adapter" function
+from the device manager pane.
+
+Due to a current limitation in the API only the names tun<X> and tap<X> are
+allowed, unless the adapter is opened in "use any" mode, where the first that is
+available will be opened.
+
+The library may be run without elevated privileges when no configuration of the
+adapter is attempted, e.g. setting the IP address via libtuntap API. Even in
+that circumstance it may be possible to change the IP address using the built
+in fake DHCP while using TUN mode. It is recommended, however to configure the
+adapter by external means.
 
 ## Contributing
 
