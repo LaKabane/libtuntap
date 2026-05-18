@@ -151,17 +151,6 @@ ifcreated:
 		return -1;
 	}
 	dev->flags = ifr.ifr_flags;
-
-	/* Save pre-existing MAC address */
-	if (mode == TUNTAP_MODE_ETHERNET) {
-		struct ether_addr addr;
-
-		if (ioctl(fd, SIOCGIFADDR, &addr) == -1) {
-			tuntap_log(TUNTAP_LOG_WARN, "Can't get link-layer address");
-			return fd;
-		}
-		(void)memcpy(dev->hwaddr, &addr, ETHER_ADDR_LEN);
-	}
 	return fd;
 }
 
@@ -195,6 +184,18 @@ tuntap_sys_set_hwaddr(struct device *dev, struct ether_addr *eth_addr)
 		return -1;
 	}
 	return 0;
+}
+
+char *
+tuntap_sys_get_hwaddr(struct device *dev, struct ether_addr *eth_addr)
+{
+	struct ether_addr eth_addr;
+
+	if (ioctl(dev->tun_fd, SIOCGIFADDR, &addr) == -1) {
+		tuntap_log(TUNTAP_LOG_WARN, "Can't get link-layer address");
+		return NULL;
+	}
+	return ether_ntoa(&eth_addr);
 }
 
 int
