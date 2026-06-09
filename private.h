@@ -84,6 +84,9 @@
 #if defined Windows
 typedef IN_ADDR t_tun_in_addr;
 typedef IN6_ADDR t_tun_in6_addr;
+struct ether_addr {
+	uint8_t ether_addr_octet[ETHER_ADDR_LEN];
+};
 #else /* Unix */
 typedef struct in_addr t_tun_in_addr;
 typedef struct in6_addr t_tun_in6_addr;
