@@ -1,0 +1,28 @@
+Source: libtuntap
+Section: libs
+Priority: optional
+Maintainer: LaKabane <tleguern+libtuntap@bouledef.eu>
+Rules-Requires-Root: no
+Build-Depends:
+ debhelper-compat (= 13),
+ cmake,
+Standards-Version: 4.6.2
+Vcs-Browser: https://github.com/LaKabane/libtuntap
+Vcs-Git: https://github.com/LaKabane/libtuntap.git
+
+Package: libtuntap-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Depends:
+ libtuntap (= ${binary:Version}),
+ ${misc:Depends},
+Description: The portable Tun/Tap devices configuration utility 
+
+Package: libtuntap
+Architecture: any
+Multi-Arch: same
+Depends:
+ ${shlibs:Depends},
+ ${misc:Depends},
+Description: The portable Tun/Tap devices configuration utility 
