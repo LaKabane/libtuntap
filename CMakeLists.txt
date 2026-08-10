@@ -2,11 +2,14 @@
 # ========================
 cmake_minimum_required(VERSION 3.23..4.0)
 
-project(libtuntap VERSION 2.2)
+project(libtuntap VERSION 2.2
+        DESCRIPTION "Portable tun/tap library"
+        HOMEPAGE_URL "https://github.com/BouleDeFeu/libtuntap")
 
 include(CTest)
 include(CMakePackageConfigHelpers)
 include(GenerateExportHeader)
+include(GNUInstallDirs)
 
 # CMake global options
 # --------------------
@@ -101,6 +104,8 @@ write_basic_package_version_file(tuntap-config-version.cmake
     VERSION ${CMAKE_PROJECT_VERSION}
     COMPATIBILITY AnyNewerVersion)
 
+configure_file(libtuntap.pc.in ${CMAKE_CURRENT_BINARY_DIR}/libtuntap.pc @ONLY)
+
 install(TARGETS tuntap
     EXPORT tuntap-targets
     FILE_SET HEADERS DESTINATION include
@@ -114,6 +119,10 @@ install(FILES
       "${CMAKE_CURRENT_BINARY_DIR}/tuntap-config.cmake"
       "${CMAKE_CURRENT_BINARY_DIR}/tuntap-config-version.cmake"
     DESTINATION lib/cmake/tuntap
+)
+install(FILES
+      "${CMAKE_CURRENT_BINARY_DIR}/libtuntap.pc"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
 )
 
 # Tests rules
